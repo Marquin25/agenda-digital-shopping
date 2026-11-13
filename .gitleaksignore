@@ -1,0 +1,5 @@
+# Reviewed false positives (gitleaks fingerprints). Do not add real secrets here.
+# Deny-list of weak passwords that the app rejects (not a credential).
+bb4e1d80c530045471dcf61d97ecf2252715d6d0:src/infrastructure/auth/password.ts:generic-api-key:22
+# Test asserting that a weak password from that deny-list is rejected.
+bb4e1d80c530045471dcf61d97ecf2252715d6d0:tests/integration/admin-auth.test.ts:generic-api-key:41
