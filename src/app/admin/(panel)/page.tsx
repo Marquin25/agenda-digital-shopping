@@ -7,6 +7,7 @@ import { getDb } from "@/infrastructure/db";
 import { requireAdmin } from "@/infrastructure/web/admin-session";
 import { formatNumber } from "@/ui/format";
 import { MetricCard, QualityBadge } from "@/ui/admin/metric-card";
+import { ScrollableTable } from "@/ui/admin/scrollable-table";
 
 export const dynamic = "force-dynamic";
 
@@ -88,7 +89,7 @@ export default async function DashboardPage({
         </li>
       </ul>
 
-      <div className="table-wrap">
+      <ScrollableTable label="Origem dos acessos">
         <table>
           <caption>
             Origem dos acessos <QualityBadge quality="estimated" />
@@ -129,14 +130,14 @@ export default async function DashboardPage({
             )}
           </tbody>
         </table>
-      </div>
+      </ScrollableTable>
       {totalSourceDevices > 0 && totalSourceDevices < SMALL_SAMPLE_THRESHOLD && (
         <p className="notice notice--warning">
           Amostra pequena (n = {totalSourceDevices}): interprete com cautela.
         </p>
       )}
 
-      <div className="table-wrap">
+      <ScrollableTable label="Visualizações por evento">
         <table>
           <caption>Visualizações por evento</caption>
           <thead>
@@ -168,9 +169,9 @@ export default async function DashboardPage({
             )}
           </tbody>
         </table>
-      </div>
+      </ScrollableTable>
 
-      <div className="table-wrap">
+      <ScrollableTable label="Acessos por link e QR de divulgação">
         <table>
           <caption>
             Acessos por link e QR de divulgação <QualityBadge quality="measured" />
@@ -204,7 +205,7 @@ export default async function DashboardPage({
             )}
           </tbody>
         </table>
-      </div>
+      </ScrollableTable>
       <p className="hint">
         Acessos aos links contam aberturas, não pessoas. Ações da equipe logada não são contadas.
       </p>

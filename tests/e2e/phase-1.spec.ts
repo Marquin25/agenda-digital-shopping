@@ -66,6 +66,11 @@ test.describe.serial("Phase 1 — admin publishes, visitor discovers", () => {
     await expect(admin.getByRole("heading", { name: "Painel", level: 1 })).toBeVisible();
     await expect(admin.getByText("Indisponível").first()).toBeVisible();
     await expectNoSeriousA11yViolations(admin);
+    // Narrowest supported screen: wide tables overflow and must stay keyboard-scrollable.
+    const viewport = admin.viewportSize()!;
+    await admin.setViewportSize({ width: 320, height: 640 });
+    await expectNoSeriousA11yViolations(admin);
+    await admin.setViewportSize(viewport);
   });
 
   test("editor flow: create venue, create and publish an event", async () => {

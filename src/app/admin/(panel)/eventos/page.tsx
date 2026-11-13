@@ -7,6 +7,7 @@ import { getDb } from "@/infrastructure/db";
 import { requireAdmin } from "@/infrastructure/web/admin-session";
 import { formatDateTime } from "@/ui/format";
 import { StatusBadge } from "@/ui/status-badge";
+import { ScrollableTable } from "@/ui/admin/scrollable-table";
 
 export const metadata: Metadata = { title: "Eventos" };
 export const dynamic = "force-dynamic";
@@ -59,7 +60,7 @@ export default async function AdminEventsPage({
           Filtrar
         </button>
       </form>
-      <div className="table-wrap">
+      <ScrollableTable label="Eventos cadastrados">
         <table>
           <caption>{events.length} evento(s)</caption>
           <thead>
@@ -93,7 +94,7 @@ export default async function AdminEventsPage({
             )}
           </tbody>
         </table>
-      </div>
+      </ScrollableTable>
     </>
   );
 }

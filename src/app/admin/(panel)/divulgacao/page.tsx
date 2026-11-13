@@ -9,6 +9,7 @@ import { getDb } from "@/infrastructure/db";
 import { requireAdmin } from "@/infrastructure/web/admin-session";
 import { togglePromoLinkAction } from "./actions";
 import { PromoLinkForm } from "./promo-link-form";
+import { ScrollableTable } from "@/ui/admin/scrollable-table";
 
 export const metadata: Metadata = { title: "Divulgação" };
 export const dynamic = "force-dynamic";
@@ -49,7 +50,7 @@ export default async function PromoLinksPage({
           />
         </section>
       )}
-      <div className="table-wrap">
+      <ScrollableTable label="Links de divulgação">
         <table>
           <caption>
             {shown.length} link(s){eventFilter ? " deste evento" : ""}
@@ -107,7 +108,7 @@ export default async function PromoLinksPage({
             )}
           </tbody>
         </table>
-      </div>
+      </ScrollableTable>
     </>
   );
 }
