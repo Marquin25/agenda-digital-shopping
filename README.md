@@ -104,6 +104,11 @@ Requisitos: Node.js 22.12 ou mais recente. O PostgreSQL é opcional, porque a ap
 
 Para o primeiro `test:e2e`, instale o navegador com `npx playwright install chromium`.
 
+## Integração contínua e implantação
+
+- **CI:** o workflow `.github/workflows/ci.yml` roda lint, tipos, formatação, testes, build e E2E em cada pull request e em cada push na `main`.
+- **Vercel:** está preparada, mas não vinculada. Veja [`docs/implantacao-vercel.md`](docs/implantacao-vercel.md) para as variáveis, os serviços pendentes e os passos que dependem do responsável.
+
 ## Convenções
 
 A documentação e a interface ficam em português do Brasil, e o código em inglês. Veja [`CLAUDE.md`](CLAUDE.md), [`GLOSSARY.md`](GLOSSARY.md) e [`docs/spec/05-arquitetura.md`](docs/spec/05-arquitetura.md) §6.

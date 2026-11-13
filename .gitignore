@@ -31,3 +31,6 @@ playwright-report/
 test-results/
 *.tsbuildinfo
 next-env.d.ts
+
+# Vercel CLI link data (project/org IDs) and pulled env files
+.vercel/
