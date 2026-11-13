@@ -1,0 +1,36 @@
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Segredos e configuração local — nunca versionar
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Dependências e builds
+node_modules/
+dist/
+build/
+.next/
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Local runtime data
+/storage/
+playwright-report/
+test-results/
+*.tsbuildinfo
+next-env.d.ts
+
+# Vercel CLI link data (project/org IDs) and pulled env files
+.vercel/

@@ -1,0 +1,247 @@
+import {
+  boolean,
+  date,
+  index,
+  integer,
+  jsonb,
+  pgTable,
+  primaryKey,
+  serial,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+} from "drizzle-orm/pg-core";
+
+const id = () =>
+  uuid("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID());
+const createdAt = () => timestamp("created_at", { withTimezone: true }).notNull().defaultNow();
+const updatedAt = () => timestamp("updated_at", { withTimezone: true }).notNull().defaultNow();
+
+export const categories = pgTable("categories", {
+  id: serial("id").primaryKey(),
+  slug: text("slug").notNull().unique(),
+  name: text("name").notNull(),
+  sortOrder: integer("sort_order").notNull().default(0),
+  active: boolean("active").notNull().default(true),
+});
+
+export const accessibilityFeatures = pgTable("accessibility_features", {
+  id: serial("id").primaryKey(),
+  slug: text("slug").notNull().unique(),
+  name: text("name").notNull(),
+  description: text("description").notNull().default(""),
+});
+
+export const adminUsers = pgTable("admin_users", {
+  id: id(),
+  name: text("name").notNull(),
+  email: text("email").notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
+  role: text("role", { enum: ["administrator", "editor", "analyst"] }).notNull(),
+  active: boolean("active").notNull().default(true),
+  mustChangePassword: boolean("must_change_password").notNull().default(true),
+  failedLogins: integer("failed_logins").notNull().default(0),
+  lockedUntil: timestamp("locked_until", { withTimezone: true }),
+  createdAt: createdAt(),
+  updatedAt: updatedAt(),
+});
+
+export const adminSessions = pgTable(
+  "admin_sessions",
+  {
+    /** SHA-256 of the session token; the token itself only lives in the cookie. */
+    id: text("id").primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => adminUsers.id, { onDelete: "cascade" }),
+    createdAt: createdAt(),
+    lastSeenAt: timestamp("last_seen_at", { withTimezone: true }).notNull().defaultNow(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  },
+  (t) => [index("admin_sessions_user_idx").on(t.userId)],
+);
+
+export const venues = pgTable("venues", {
+  id: id(),
+  name: text("name").notNull(),
+  floor: text("floor").notNull().default(""),
+  reference: text("reference").notNull().default(""),
+  areaSquareMeters: integer("area_square_meters"),
+  capacity: integer("capacity"),
+  facilities: text("facilities").array().notNull().default([]),
+  active: boolean("active").notNull().default(true),
+  createdAt: createdAt(),
+  updatedAt: updatedAt(),
+});
+
+export const events = pgTable(
+  "events",
+  {
+    id: id(),
+    slug: text("slug").notNull().unique(),
+    title: text("title").notNull(),
+    description: text("description").notNull(),
+    searchText: text("search_text").notNull(),
+    startsAt: timestamp("starts_at", { withTimezone: true }).notNull(),
+    endsAt: timestamp("ends_at", { withTimezone: true }).notNull(),
+    endedAt: timestamp("ended_at", { withTimezone: true }),
+    venueId: uuid("venue_id")
+      .notNull()
+      .references(() => venues.id),
+    locationDetail: text("location_detail").notNull().default(""),
+    categoryId: integer("category_id")
+      .notNull()
+      .references(() => categories.id),
+    bannerPath: text("banner_path"),
+    bannerAlt: text("banner_alt"),
+    admissionInfo: text("admission_info").notNull().default(""),
+    /** "reservation" is intentionally absent until reservations are approved (docs/spec/03 §6). */
+    capacityMode: text("capacity_mode", { enum: ["unlimited", "first_come"] })
+      .notNull()
+      .default("unlimited"),
+    displayedCapacity: integer("displayed_capacity"),
+    publicationStatus: text("publication_status", { enum: ["draft", "published", "cancelled"] })
+      .notNull()
+      .default("draft"),
+    icsSequence: integer("ics_sequence").notNull().default(0),
+    publishedAt: timestamp("published_at", { withTimezone: true }),
+    createdBy: uuid("created_by").references(() => adminUsers.id, { onDelete: "set null" }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index("events_starts_at_idx").on(t.startsAt), index("events_status_idx").on(t.publicationStatus)],
+);
+
+export const eventAccessibilityFeatures = pgTable(
+  "event_accessibility_features",
+  {
+    eventId: uuid("event_id")
+      .notNull()
+      .references(() => events.id, { onDelete: "cascade" }),
+    featureId: integer("feature_id")
+      .notNull()
+      .references(() => accessibilityFeatures.id, { onDelete: "cascade" }),
+  },
+  (t) => [primaryKey({ columns: [t.eventId, t.featureId] })],
+);
+
+export const promoLinks = pgTable("promo_links", {
+  id: id(),
+  code: text("code").notNull().unique(),
+  channel: text("channel", {
+    enum: ["instagram", "wifi", "qr_poster", "qr_kiosk", "digital_signage", "direct_link", "other"],
+  }).notNull(),
+  description: text("description").notNull(),
+  /** Null means the link points at the agenda (optionally with filters). */
+  eventId: uuid("event_id").references(() => events.id, { onDelete: "cascade" }),
+  agendaQuery: text("agenda_query").notNull().default(""),
+  active: boolean("active").notNull().default(true),
+  createdBy: uuid("created_by").references(() => adminUsers.id, { onDelete: "set null" }),
+  createdAt: createdAt(),
+});
+
+/** Measured: every redirect through a promo link, per day. */
+export const promoLinkHitsDaily = pgTable(
+  "promo_link_hits_daily",
+  {
+    promoLinkId: uuid("promo_link_id")
+      .notNull()
+      .references(() => promoLinks.id, { onDelete: "cascade" }),
+    day: date("day").notNull(),
+    hits: integer("hits").notNull().default(0),
+  },
+  (t) => [primaryKey({ columns: [t.promoLinkId, t.day] })],
+);
+
+/** Estimated: one row per device, page and local day (deduplication). Pseudonymised; subject to retention. */
+export const pageViewsDaily = pgTable(
+  "page_views_daily",
+  {
+    targetKey: text("target_key").notNull(),
+    eventId: uuid("event_id").references(() => events.id, { onDelete: "cascade" }),
+    day: date("day").notNull(),
+    deviceHash: text("device_hash").notNull(),
+    channel: text("channel").notNull(),
+    promoCode: text("promo_code"),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    uniqueIndex("page_views_daily_unique").on(t.targetKey, t.day, t.deviceHash),
+    index("page_views_daily_day_idx").on(t.day),
+  ],
+);
+
+/** Measured: raw page loads (including reloads) per page, day and channel. No device data. */
+export const pageViewsRawDaily = pgTable(
+  "page_views_raw_daily",
+  {
+    targetKey: text("target_key").notNull(),
+    eventId: uuid("event_id").references(() => events.id, { onDelete: "cascade" }),
+    day: date("day").notNull(),
+    channel: text("channel").notNull(),
+    views: integer("views").notNull().default(0),
+  },
+  (t) => [primaryKey({ columns: [t.targetKey, t.day, t.channel] })],
+);
+
+/** Long-term estimated unique views per page, day and channel, aggregated from expired `page_views_daily` rows. */
+export const pageViewDailyTotals = pgTable(
+  "page_view_daily_totals",
+  {
+    targetKey: text("target_key").notNull(),
+    eventId: uuid("event_id").references(() => events.id, { onDelete: "cascade" }),
+    day: date("day").notNull(),
+    channel: text("channel").notNull(),
+    devices: integer("devices").notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.targetKey, t.day, t.channel] })],
+);
+
+/** Estimated: one row per device, event, action and local day (share, add to calendar). Pseudonymised. */
+export const engagementDaily = pgTable(
+  "engagement_daily",
+  {
+    eventId: uuid("event_id")
+      .notNull()
+      .references(() => events.id, { onDelete: "cascade" }),
+    deviceHash: text("device_hash").notNull(),
+    action: text("action").notNull(),
+    day: date("day").notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    uniqueIndex("engagement_daily_unique").on(t.eventId, t.deviceHash, t.action, t.day),
+    index("engagement_daily_day_idx").on(t.day),
+  ],
+);
+
+/** Long-term engagement counts aggregated from expired `engagement_daily` rows. No device data. */
+export const engagementDailyTotals = pgTable(
+  "engagement_daily_totals",
+  {
+    eventId: uuid("event_id")
+      .notNull()
+      .references(() => events.id, { onDelete: "cascade" }),
+    action: text("action").notNull(),
+    day: date("day").notNull(),
+    devices: integer("devices").notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.eventId, t.action, t.day] })],
+);
+
+export const auditLog = pgTable(
+  "audit_log",
+  {
+    id: serial("id").primaryKey(),
+    userId: uuid("user_id").references(() => adminUsers.id, { onDelete: "set null" }),
+    action: text("action").notNull(),
+    entity: text("entity").notNull(),
+    entityId: text("entity_id"),
+    details: jsonb("details").$type<Record<string, unknown>>().notNull().default({}),
+    createdAt: createdAt(),
+  },
+  (t) => [index("audit_log_created_idx").on(t.createdAt)],
+);
