@@ -1,4 +1,13 @@
-import { Accessibility, ArrowLeft, CalendarDays, Clock, MapPin, Ticket, Users } from "lucide-react";
+import {
+  Accessibility,
+  ArrowLeft,
+  CalendarDays,
+  Clock,
+  MapPin,
+  ShoppingBag,
+  Ticket,
+  Users,
+} from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { headers } from "next/headers";
@@ -199,6 +208,27 @@ export default async function EventPage({ params }: { params: Params }) {
                 </ul>
               )}
             </section>
+
+            {event.stores.length > 0 && (
+              <section aria-labelledby="lojas">
+                <h2 id="lojas">Lojas participantes</h2>
+                <ul className="feature-list">
+                  {event.stores.map((s) => (
+                    <li key={s.id} className="feature">
+                      <span className="feature__icon" aria-hidden="true">
+                        <ShoppingBag size={20} />
+                      </span>
+                      <div>
+                        <strong>{s.name}</strong>
+                        <span>
+                          {[s.segmentName, s.floor && `Piso ${s.floor}`].filter(Boolean).join(" · ")}
+                        </span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
           </div>
         </div>
 

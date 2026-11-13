@@ -210,6 +210,7 @@ export default async function DashboardPage({
                             {e.categoryName} · {[e.venue.floor, e.venue.name].filter(Boolean).join(" · ")}
                           </small>
                           <small>{formatEventWhen(e.startsAt, e.endsAt)}</small>
+                          {e.stores.length > 0 && <small>Lojas: {e.stores.join(", ")}</small>}
                         </div>
                       </div>
                     </th>

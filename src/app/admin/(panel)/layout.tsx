@@ -7,6 +7,7 @@ import {
   LogOut,
   Plus,
   QrCode,
+  ShoppingBag,
   Users,
 } from "lucide-react";
 import type { Metadata } from "next";
@@ -38,6 +39,9 @@ export default async function AdminPanelLayout({ children }: { children: React.R
     { href: "/admin/eventos", label: "Eventos", icon: icon(CalendarRange) },
     ...(can(admin.role, "venues:manage")
       ? [{ href: "/admin/espacos", label: "Espaços", icon: icon(Building2) }]
+      : []),
+    ...(can(admin.role, "stores:manage")
+      ? [{ href: "/admin/estabelecimentos", label: "Lojas", icon: icon(ShoppingBag) }]
       : []),
     { href: "/admin/divulgacao", label: "Divulgação", icon: icon(QrCode) },
     ...(can(admin.role, "users:manage")

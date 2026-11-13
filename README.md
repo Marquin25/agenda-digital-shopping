@@ -160,6 +160,7 @@ O visual segue as referências da equipe: paleta terracota e creme, fonte Plus J
 
 - **Painel:** acessos, origem por canal, visualizações, compartilhamentos e adições à agenda por evento. Cada número tem um selo (Medido, Estimado ou Indisponível) e há aviso de amostra pequena.
 - **Eventos:** rascunho, publicação, cancelamento (com confirmação) e encerramento, com banner e texto alternativo obrigatório.
+- **Lojas:** cadastro de segmentos e lojas participantes, só com dados comerciais (nome, segmento e piso, nunca contatos de pessoas). As lojas vinculadas aparecem na página do evento e no relatório do painel.
 - **Divulgação:** um link curto e um QR Code (PNG ou SVG) para cada canal: Instagram, Wi-Fi, cartaz, totem.
 
 ### Funcionalidades planejadas (próximas fases)
@@ -202,6 +203,9 @@ O projeto segue os princípios da LGPD desde o desenho. A conformidade formal de
 - CSP com nonce;
 - "Salvos" no aparelho e visual novo (terracota/creme).
 
+**Fase 2, em andamento:**
+- [#37](https://github.com/Marquin25/agenda-digital-shopping/issues/37) segmentos e lojas participantes (base do motor de recomendações).
+
 **Fase 1, ainda aberto:** [#7](https://github.com/Marquin25/agenda-digital-shopping/issues/7) teste em celulares reais (Instagram e Wi-Fi); [#23](https://github.com/Marquin25/agenda-digital-shopping/issues/23) limitador compartilhado e checklist ASVS; [#24](https://github.com/Marquin25/agenda-digital-shopping/issues/24) Dockerfile, backup e restauração.
 
 **Fora do escopo atual, porque aguarda decisão** ([`docs/spec/07-mvp-e-riscos.md`](docs/spec/07-mvp-e-riscos.md) §4):
@@ -236,7 +240,7 @@ O arquivo `.env.local` está no `.gitignore` e **nunca** deve ser versionado. As
 
 ```sh
 npm run db:migrate     # cria as tabelas
-npm run db:seed        # categorias, recursos de acessibilidade, 2 espaços e 7 eventos de exemplo (todos os status)
+npm run db:seed        # categorias, recursos de acessibilidade, 2 espaços, 5 lojas fictícias e 7 eventos de exemplo (todos os status)
 npm run admin:create -- --name "Seu nome" --email voce@example.com --role administrator
 npm run dev
 ```

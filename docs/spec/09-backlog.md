@@ -204,7 +204,7 @@ Tabelas do núcleo (`04-dados-e-integracoes.md` §Núcleo), migrações e sement
 ### E-ADM / E-INT
 
 **[B-37](https://github.com/Marquin25/agenda-digital-shopping/issues/37) Segmentos e estabelecimentos participantes** · P1 · P · depende de B-10 · [PDF]
-- [ ] CRUD de segmentos e lojas (dado empresarial, sem contatos de pessoas); vínculo loja ↔ evento; o relatório mostra as lojas participantes.
+- [x] CRUD de segmentos e lojas (dado empresarial, sem contatos de pessoas); vínculo loja ↔ evento; o relatório mostra as lojas participantes.
 
 **[B-38](https://github.com/Marquin25/agenda-digital-shopping/issues/38) Cadastro de planejamento (briefing)** · P1 · M · depende de B-12, B-37 · [C][PDF] · permissões [P]
 - [ ] Objetivo, público desejado (faixas e perfis fixos), segmentos, lojas, faixa de orçamento, período e espaços; validações; ajuda explicando que o público é uma descrição de alvo.

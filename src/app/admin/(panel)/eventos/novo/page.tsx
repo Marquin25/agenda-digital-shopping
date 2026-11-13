@@ -33,6 +33,7 @@ export default async function NewEventPage() {
           locationDetail: "",
           categoryId: "",
           featureIds: [],
+          storeIds: [],
           admissionInfo: "",
           capacityMode: "unlimited",
           displayedCapacity: "",

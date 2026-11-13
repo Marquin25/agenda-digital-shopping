@@ -15,6 +15,12 @@ describe("permissions matrix (docs/spec/01 §7)", () => {
     expect(can("editor", "users:manage")).toBe(false);
   });
 
+  it("lets administrators and editors manage stores and segments, not analysts", () => {
+    expect(can("administrator", "stores:manage")).toBe(true);
+    expect(can("editor", "stores:manage")).toBe(true);
+    expect(can("analyst", "stores:manage")).toBe(false);
+  });
+
   it("keeps analysts read-only", () => {
     expect(can("analyst", "events:manage")).toBe(false);
     expect(can("analyst", "promo-links:manage")).toBe(false);

@@ -14,6 +14,7 @@ export interface EventFormValues {
   locationDetail: string;
   categoryId: string;
   featureIds: number[];
+  storeIds: string[];
   admissionInfo: string;
   capacityMode: "unlimited" | "first_come";
   displayedCapacity: string;
@@ -34,18 +35,26 @@ const LABELS: Record<string, string> = {
   bannerAlt: "Texto alternativo",
 };
 
+function groupBySegment<T extends { segmentName: string }>(items: T[]): [string, T[]][] {
+  const groups = new Map<string, T[]>();
+  for (const item of items) groups.set(item.segmentName, [...(groups.get(item.segmentName) ?? []), item]);
+  return [...groups];
+}
+
 export function EventForm({
   eventId,
   values,
   venues,
   categories,
   features,
+  stores,
 }: {
   eventId: string | null;
   values: EventFormValues;
   venues: { id: string; name: string; floor: string }[];
   categories: { id: number; name: string }[];
   features: { id: number; name: string }[];
+  stores: { id: string; name: string; floor: string; segmentName: string }[];
 }) {
   const [state, action] = useActionState<FormState, FormData>(saveEventAction.bind(null, eventId), {});
   const e = state.fieldErrors ?? {};
@@ -182,6 +191,35 @@ export function EventForm({
             ))}
           </ul>
         </fieldset>
+        {stores.length > 0 && (
+          <fieldset className="full">
+            <legend>Lojas participantes</legend>
+            {groupBySegment(stores).map(([segment, list]) => (
+              <div key={segment}>
+                <p className="store-segment">{segment}</p>
+                <ul className="choice-list">
+                  {list.map((s) => (
+                    <li className="choice" key={s.id}>
+                      <input
+                        type="checkbox"
+                        id={`store-${s.id}`}
+                        name="storeIds"
+                        value={s.id}
+                        defaultChecked={values.storeIds.includes(s.id)}
+                      />
+                      <span>
+                        <label htmlFor={`store-${s.id}`}>
+                          {s.name}
+                          {s.floor && ` · ${s.floor}`}
+                        </label>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </fieldset>
+        )}
         <fieldset className="full" aria-describedby="vagas-dica">
           <legend>Vagas *</legend>
           <div className="checkbox-row">

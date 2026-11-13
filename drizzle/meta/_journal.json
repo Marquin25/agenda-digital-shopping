@@ -15,6 +15,13 @@
       "when": 1794579231220,
       "tag": "0001_engagement_and_retention",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794611555995,
+      "tag": "0002_stores_and_segments",
+      "breakpoints": true
     }
   ]
 }

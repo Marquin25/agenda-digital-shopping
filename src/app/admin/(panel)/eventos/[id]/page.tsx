@@ -36,7 +36,7 @@ export default async function EditEventPage({
   const db = await getDb();
   const found = await getEventForEdit(db, id);
   if (!found) notFound();
-  const { event, featureIds } = found;
+  const { event, featureIds, storeIds } = found;
   const status = getEventStatus(event, new Date());
   const canManage = can(admin.role, "events:manage");
   const message = flags.salvo ? "Alterações salvas." : flags.acao ? ACTION_MESSAGES[flags.acao] : undefined;
@@ -86,7 +86,7 @@ export default async function EditEventPage({
           <h2>Dados do evento</h2>
           <EventForm
             eventId={event.id}
-            {...await loadEventFormOptions(db)}
+            {...await loadEventFormOptions(db, storeIds)}
             values={{
               title: event.title,
               description: event.description,
@@ -96,6 +96,7 @@ export default async function EditEventPage({
               locationDetail: event.locationDetail,
               categoryId: String(event.categoryId),
               featureIds,
+              storeIds,
               admissionInfo: event.admissionInfo,
               capacityMode: event.capacityMode,
               displayedCapacity: event.displayedCapacity ? String(event.displayedCapacity) : "",
