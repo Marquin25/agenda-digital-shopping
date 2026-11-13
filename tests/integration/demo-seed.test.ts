@@ -1,5 +1,7 @@
 import { afterAll, describe, expect, it } from "vitest";
 import { seedDemoData } from "@/application/demo/demo-seed";
+import { listStores } from "@/application/catalog/stores";
+import { getEventForEdit } from "@/application/events/event-queries";
 import { getEventStatus } from "@/domain/events/event-status";
 import { events } from "@/infrastructure/db/schema";
 import { createTestDb } from "./test-db";
@@ -17,6 +19,12 @@ describe("demo seed", async () => {
     const rows = await db.select().from(events);
     const statuses = new Set(rows.map((e) => getEventStatus(e, NOW)));
     expect([...statuses].sort()).toEqual(["cancelled", "draft", "ended", "ongoing", "scheduled"]);
+  });
+
+  it("creates fictional participating stores and links some to events", async () => {
+    expect((await listStores(db)).length).toBeGreaterThanOrEqual(3);
+    const festival = (await db.select().from(events)).find((e) => e.title === "Festival de Sabores")!;
+    expect((await getEventForEdit(db, festival.id))!.storeIds.length).toBeGreaterThan(0);
   });
 
   it("skips when events already exist, so it never duplicates data", async () => {

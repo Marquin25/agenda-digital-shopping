@@ -31,6 +31,7 @@ function readEventForm(formData: FormData) {
     locationDetail: text("locationDetail"),
     categoryId: text("categoryId"),
     featureIds: formData.getAll("featureIds").map(String),
+    storeIds: formData.getAll("storeIds").map(String),
     admissionInfo: text("admissionInfo"),
     capacityMode: text("capacityMode"),
     displayedCapacity: text("displayedCapacity"),

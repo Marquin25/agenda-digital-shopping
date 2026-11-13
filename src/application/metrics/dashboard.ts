@@ -18,6 +18,7 @@ import type { EngagementAction } from "@/domain/metrics/engagement";
 import type { Metric } from "@/domain/metrics/metric-quality";
 import type { TrafficChannel } from "@/domain/metrics/traffic-source";
 import { addDaysToDateKey } from "@/domain/time/time-zone";
+import { loadEventStores } from "@/application/events/event-queries";
 import type { Database } from "@/infrastructure/db/client";
 import {
   categories,
@@ -53,6 +54,8 @@ export interface EventViewsRow {
   endsAt: Date;
   status: EventStatus;
   bannerPath: string | null;
+  /** Names of the active participating stores. */
+  stores: string[];
 }
 
 export interface DailyAgendaPoint {
@@ -168,6 +171,17 @@ async function agendaDailySeries(
     devices: devicesByDay.get(day) ?? 0,
     pageLoads: loadsByDay.get(day) ?? 0,
   }));
+}
+
+async function withStores<T extends { eventId: string }>(
+  db: Database,
+  rows: T[],
+): Promise<(T & { stores: string[] })[]> {
+  const storeMap = await loadEventStores(
+    db,
+    rows.map((r) => r.eventId),
+  );
+  return rows.map((r) => ({ ...r, stores: (storeMap.get(r.eventId) ?? []).map((s) => s.name) }));
 }
 
 export async function getDashboardSummary(
@@ -304,12 +318,15 @@ export async function getDashboardSummary(
     sales: { quality: "unavailable", reason: "Sem integração com dados de vendas (Fase 3)." },
     sources: sources.map((s) => ({ channel: s.channel as TrafficChannel, devices: s.devices })),
     agendaDaily,
-    eventViews: eventViews.map(({ venueName, venueFloor, endedAt, publicationStatus, ...e }) => ({
-      ...e,
-      devices: Number(e.devices),
-      venue: { name: venueName, floor: venueFloor },
-      status: getEventStatus({ publicationStatus, startsAt: e.startsAt, endsAt: e.endsAt, endedAt }, now),
-    })),
+    eventViews: await withStores(
+      db,
+      eventViews.map(({ venueName, venueFloor, endedAt, publicationStatus, ...e }) => ({
+        ...e,
+        devices: Number(e.devices),
+        venue: { name: venueName, floor: venueFloor },
+        status: getEventStatus({ publicationStatus, startsAt: e.startsAt, endsAt: e.endsAt, endedAt }, now),
+      })),
+    ),
     promoLinks: links,
   };
 }

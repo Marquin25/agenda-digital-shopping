@@ -500,6 +500,11 @@ legend {
   font-weight: 650;
 }
 
+.store-segment {
+  margin: var(--space-3) 0 var(--space-2);
+  font-size: 0.875rem;
+  color: var(--color-muted);
+}
 .choice-list {
   display: flex;
   flex-wrap: wrap;

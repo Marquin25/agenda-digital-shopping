@@ -14,6 +14,7 @@ export const eventInputSchema = z
     locationDetail: z.string().trim().max(200).default(""),
     categoryId: z.coerce.number().int().positive("Escolha a categoria."),
     featureIds: z.array(z.coerce.number().int().positive()).max(20).default([]),
+    storeIds: z.array(z.uuid()).max(50).default([]),
     admissionInfo: z.string().trim().max(300).default(""),
     capacityMode: z.enum(["unlimited", "first_come"], "Escolha como funcionam as vagas."),
     displayedCapacity: z

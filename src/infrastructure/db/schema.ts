@@ -128,6 +128,46 @@ export const eventAccessibilityFeatures = pgTable(
   (t) => [primaryKey({ columns: [t.eventId, t.featureId] })],
 );
 
+/** Commercial segment (moda, alimentação…). `slug` is a stable key so renamed defaults are not re-created. */
+export const segments = pgTable("segments", {
+  id: serial("id").primaryKey(),
+  slug: text("slug").notNull().unique(),
+  name: text("name").notNull(),
+  active: boolean("active").notNull().default(true),
+  createdAt: createdAt(),
+  updatedAt: updatedAt(),
+});
+
+/** Participating store. Business data only: never names or contacts of people (docs/spec/04). */
+export const stores = pgTable(
+  "stores",
+  {
+    id: id(),
+    name: text("name").notNull(),
+    segmentId: integer("segment_id")
+      .notNull()
+      .references(() => segments.id),
+    floor: text("floor").notNull().default(""),
+    active: boolean("active").notNull().default(true),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index("stores_segment_idx").on(t.segmentId)],
+);
+
+export const eventStores = pgTable(
+  "event_stores",
+  {
+    eventId: uuid("event_id")
+      .notNull()
+      .references(() => events.id, { onDelete: "cascade" }),
+    storeId: uuid("store_id")
+      .notNull()
+      .references(() => stores.id, { onDelete: "cascade" }),
+  },
+  (t) => [primaryKey({ columns: [t.eventId, t.storeId] }), index("event_stores_store_idx").on(t.storeId)],
+);
+
 export const promoLinks = pgTable("promo_links", {
   id: id(),
   code: text("code").notNull().unique(),

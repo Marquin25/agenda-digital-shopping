@@ -9,6 +9,9 @@ import {
   categories,
   eventAccessibilityFeatures,
   events,
+  eventStores,
+  segments,
+  stores,
   venues,
 } from "@/infrastructure/db/schema";
 
@@ -31,6 +34,8 @@ export interface EventView {
   displayedCapacity: number | null;
   icsSequence: number;
   features: { slug: string; name: string; description: string }[];
+  /** Active participating stores, by name. */
+  stores: { id: string; name: string; floor: string; segmentName: string }[];
 }
 
 const effectiveEnd = sql`coalesce(${events.endedAt}, ${events.endsAt})`;
@@ -64,9 +69,35 @@ async function loadFeatures(db: Database, eventIds: string[]) {
   return map;
 }
 
+/** Active participating stores of each event (inactive stores are hidden from visitors). */
+export async function loadEventStores(db: Database, eventIds: string[]) {
+  const map = new Map<string, EventView["stores"]>();
+  if (eventIds.length === 0) return map;
+  const rows = await db
+    .select({
+      eventId: eventStores.eventId,
+      id: stores.id,
+      name: stores.name,
+      floor: stores.floor,
+      segmentName: segments.name,
+    })
+    .from(eventStores)
+    .innerJoin(stores, eq(stores.id, eventStores.storeId))
+    .innerJoin(segments, eq(segments.id, stores.segmentId))
+    .where(and(inArray(eventStores.eventId, eventIds), eq(stores.active, true)))
+    .orderBy(asc(stores.name));
+  for (const { eventId, ...store } of rows) map.set(eventId, [...(map.get(eventId) ?? []), store]);
+  return map;
+}
+
 type Row = { event: typeof events.$inferSelect } & Omit<{ [K in keyof typeof baseSelect]: string }, "event">;
 
-function toView(row: Row, features: EventView["features"], now: Date): EventView {
+function toView(
+  row: Row,
+  features: EventView["features"],
+  eventStoreList: EventView["stores"],
+  now: Date,
+): EventView {
   const e = row.event;
   return {
     id: e.id,
@@ -87,15 +118,14 @@ function toView(row: Row, features: EventView["features"], now: Date): EventView
     displayedCapacity: e.displayedCapacity,
     icsSequence: e.icsSequence,
     features,
+    stores: eventStoreList,
   };
 }
 
 async function hydrate(db: Database, rows: Row[], now: Date): Promise<EventView[]> {
-  const features = await loadFeatures(
-    db,
-    rows.map((r) => r.event.id),
-  );
-  return rows.map((r) => toView(r, features.get(r.event.id) ?? [], now));
+  const ids = rows.map((r) => r.event.id);
+  const [features, storeMap] = await Promise.all([loadFeatures(db, ids), loadEventStores(db, ids)]);
+  return rows.map((r) => toView(r, features.get(r.event.id) ?? [], storeMap.get(r.event.id) ?? [], now));
 }
 
 /**
@@ -183,7 +213,15 @@ export async function getEventForEdit(db: Database, eventId: string) {
     .select({ featureId: eventAccessibilityFeatures.featureId })
     .from(eventAccessibilityFeatures)
     .where(eq(eventAccessibilityFeatures.eventId, eventId));
-  return { event, featureIds: features.map((f) => f.featureId) };
+  const linkedStores = await db
+    .select({ storeId: eventStores.storeId })
+    .from(eventStores)
+    .where(eq(eventStores.eventId, eventId));
+  return {
+    event,
+    featureIds: features.map((f) => f.featureId),
+    storeIds: linkedStores.map((s) => s.storeId),
+  };
 }
 
 /** True when the event can be seen by visitors (published or cancelled, never a draft). */

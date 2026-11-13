@@ -92,6 +92,21 @@ test.describe.serial("Phase 1 — admin publishes, visitor discovers", () => {
     await admin.setViewportSize(viewport);
   });
 
+  test("staff registers a participating store with business data only", async () => {
+    await admin.goto("/admin/estabelecimentos");
+    await expect(admin.getByRole("heading", { name: "Lojas e segmentos", level: 1 })).toBeVisible();
+    await admin.locator("#nova-loja-name").fill("Empório Violão");
+    await admin.locator("#nova-loja-segmentId").selectOption({ label: "Lazer" });
+    await admin.locator("#nova-loja-floor").fill("L2");
+    await admin.getByRole("button", { name: "Cadastrar loja" }).click();
+    await expect(admin.getByRole("status").filter({ hasText: "Loja cadastrada." })).toBeVisible();
+
+    await admin.locator("#novo-segmento-name").fill("lazer");
+    await admin.getByRole("button", { name: "Cadastrar segmento" }).click();
+    await expect(admin.getByText("Já existe um segmento com esse nome.")).toBeVisible();
+    await expectNoSeriousA11yViolations(admin);
+  });
+
   test("editor flow: create venue, create and publish an event", async () => {
     await admin.goto("/admin/espacos");
     await admin.locator("#novo-name").fill("Praça Central");
@@ -107,6 +122,7 @@ test.describe.serial("Phase 1 — admin publishes, visitor discovers", () => {
     await admin.getByLabel("Espaço *").selectOption({ label: "L1 · Praça Central" });
     await admin.getByLabel("Categoria *").selectOption({ label: "Música" });
     await admin.getByRole("checkbox", { name: "Intérprete de Libras" }).check();
+    await admin.getByRole("checkbox", { name: "Empório Violão · L2" }).check();
     await admin.getByLabel("Limitadas, por ordem de chegada").check();
     await expect(admin.getByLabel("Com reserva — pendente de aprovação")).toBeDisabled();
     await admin
@@ -147,6 +163,9 @@ test.describe.serial("Phase 1 — admin publishes, visitor discovers", () => {
     await expect(visitor.getByRole("heading", { name: "Show Acústico E2E", level: 1 })).toBeVisible();
     await expect(visitor.getByText("Vagas limitadas, por ordem de chegada.")).toBeVisible();
     await expect(visitor.getByText("Tenho interesse")).toHaveCount(0);
+    const stores = visitor.getByRole("region", { name: "Lojas participantes" });
+    await expect(stores.getByText("Empório Violão")).toBeVisible();
+    await expect(stores.getByText("Lazer · Piso L2")).toBeVisible();
     const banner = visitor.getByRole("img", { name: "Violão e microfone no palco da praça" });
     const srcset = (await banner.getAttribute("srcset")) ?? "";
     expect(srcset).toMatch(/\.webp 1200w, .*-600\.webp 600w$/);

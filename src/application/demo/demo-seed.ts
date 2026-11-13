@@ -4,6 +4,7 @@ import {
   saveVenue,
   venueInputSchema,
 } from "@/application/catalog/catalog";
+import { listSegments, saveStore, storeInputSchema } from "@/application/catalog/stores";
 import { cancelEvent, createEvent, publishEvent } from "@/application/events/event-commands";
 import { eventInputSchema } from "@/application/events/event-input";
 import { addDaysToDateKey, toLocalDateKey, toLocalDateTimeInput } from "@/domain/time/time-zone";
@@ -21,10 +22,19 @@ interface DemoEvent {
   features: string[];
   admission: string;
   capacity?: string;
+  stores?: string[];
   outcome: Outcome;
 }
 
 const HOUR = 3_600_000;
+
+const DEMO_STORES: [name: string, segmentSlug: string, floor: string][] = [
+  ["Café Grão Dourado", "alimentacao", "L2"],
+  ["Doceria Flor de Açúcar", "alimentacao", "L2"],
+  ["Brinquedos Pião", "lazer", "L1"],
+  ["Ateliê Linho & Algodão", "moda", "L1"],
+  ["Pixel Eletrônicos", "tecnologia", "L3"],
+];
 
 /** Fictional events relative to `now`, one or more for every event status. */
 function demoEvents(now: Date): DemoEvent[] {
@@ -42,6 +52,7 @@ function demoEvents(now: Date): DemoEvent[] {
       features: ["cadeira-de-rodas", "espaco-sensorial"],
       admission: "Gratuito",
       capacity: "30",
+      stores: ["Brinquedos Pião"],
       outcome: "published", // ongoing
     },
     {
@@ -62,6 +73,7 @@ function demoEvents(now: Date): DemoEvent[] {
       end: day(5, "18:00"),
       features: ["pet-friendly"],
       admission: "Degustações pagas nas lojas participantes",
+      stores: ["Café Grão Dourado", "Doceria Flor de Açúcar"],
       outcome: "published",
     },
     {
@@ -141,6 +153,18 @@ export async function seedDemoData(
     ),
   };
 
+  // Fictional business names only; no real brands and no contacts of people.
+  const segmentId = async (slug: string) => (await listSegments(db)).find((s) => s.slug === slug)!.id;
+  const storeIds = new Map<string, string>();
+  for (const [name, segment, floor] of DEMO_STORES) {
+    const id = await saveStore(
+      db,
+      null,
+      storeInputSchema.parse({ name, segmentId: await segmentId(segment), floor }),
+    );
+    storeIds.set(name, id);
+  }
+
   const demo = demoEvents(now);
   for (const d of demo) {
     const id = await createEvent(
@@ -154,6 +178,7 @@ export async function seedDemoData(
         venueId: venues[d.venue],
         categoryId: categoryId(d.category),
         featureIds: featureIds(d.features),
+        storeIds: (d.stores ?? []).map((name) => storeIds.get(name)!),
         admissionInfo: d.admission,
         capacityMode: d.capacity ? "first_come" : "unlimited",
         displayedCapacity: d.capacity ?? "",

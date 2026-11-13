@@ -2,7 +2,7 @@ import { and, eq } from "drizzle-orm";
 import { recordAudit } from "@/application/audit";
 import { slugify, normalizeSearchText } from "@/domain/text/normalize";
 import type { Database } from "@/infrastructure/db/client";
-import { eventAccessibilityFeatures, events } from "@/infrastructure/db/schema";
+import { eventAccessibilityFeatures, events, eventStores } from "@/infrastructure/db/schema";
 import type { ValidEventInput } from "./event-input";
 
 export class EventRuleError extends Error {}
@@ -45,6 +45,12 @@ async function replaceFeatures(db: Database, eventId: string, featureIds: number
   }
 }
 
+async function replaceStores(db: Database, eventId: string, storeIds: string[]) {
+  await db.delete(eventStores).where(eq(eventStores.eventId, eventId));
+  const unique = [...new Set(storeIds)];
+  if (unique.length > 0) await db.insert(eventStores).values(unique.map((storeId) => ({ eventId, storeId })));
+}
+
 export async function createEvent(
   db: Database,
   userId: string | null,
@@ -65,6 +71,7 @@ export async function createEvent(
     .returning({ id: events.id });
   const eventId = created!.id;
   await replaceFeatures(db, eventId, input.featureIds);
+  await replaceStores(db, eventId, input.storeIds);
   await recordAudit(db, { userId, action: "event.created", entity: "event", entityId: eventId });
   return eventId;
 }
@@ -91,6 +98,7 @@ export async function updateEvent(
     })
     .where(eq(events.id, eventId));
   await replaceFeatures(db, eventId, input.featureIds);
+  await replaceStores(db, eventId, input.storeIds);
   await recordAudit(db, { userId, action: "event.updated", entity: "event", entityId: eventId });
   const replaced = banner && current.bannerPath && current.bannerPath !== banner.path;
   return { replacedBannerPath: replaced ? current.bannerPath : null };

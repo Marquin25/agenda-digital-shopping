@@ -8,7 +8,13 @@ export const ADMIN_ROLE_LABELS: Record<AdminRole, string> = {
 };
 
 export type Permission =
-  "dashboard:view" | "events:manage" | "venues:manage" | "promo-links:manage" | "users:manage" | "audit:view";
+  | "dashboard:view"
+  | "events:manage"
+  | "venues:manage"
+  | "stores:manage"
+  | "promo-links:manage"
+  | "users:manage"
+  | "audit:view";
 
 /** Phase 1 permission matrix (docs/spec/01 §7, provisional roles confirmed by the product owner). */
 const MATRIX: Record<AdminRole, ReadonlySet<Permission>> = {
@@ -16,11 +22,18 @@ const MATRIX: Record<AdminRole, ReadonlySet<Permission>> = {
     "dashboard:view",
     "events:manage",
     "venues:manage",
+    "stores:manage",
     "promo-links:manage",
     "users:manage",
     "audit:view",
   ]),
-  editor: new Set<Permission>(["dashboard:view", "events:manage", "venues:manage", "promo-links:manage"]),
+  editor: new Set<Permission>([
+    "dashboard:view",
+    "events:manage",
+    "venues:manage",
+    "stores:manage",
+    "promo-links:manage",
+  ]),
   analyst: new Set<Permission>(["dashboard:view"]),
 };
 
