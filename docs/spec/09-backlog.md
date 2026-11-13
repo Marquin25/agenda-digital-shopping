@@ -1,6 +1,6 @@
 # 09 — Backlog ordenado por fase
 
-> Papel: **PO** · Revisão 2 · 2026-11-13 · **Fonte local** do backlog. Depois da aprovação do plano **e** da confirmação do acesso ao GitHub, cada item vira uma issue em `Marquin25/agenda-digital-shopping`, e este arquivo passa a apontar para os números. **Nenhuma issue ou board foi criado.**
+> Papel: **PO** · Revisão 3 · 2026-11-13 · **Fonte local** do backlog. Depois da aprovação do plano **e** da confirmação do acesso ao GitHub, cada item vira uma issue em `Marquin25/agenda-digital-shopping`, e este arquivo passa a apontar para os números. **Nenhuma issue ou board foi criado.**
 >
 > Origem: **[C]** confirmado · **[PDF]** · **[R]** recomendação · **[P]** pendente (não implementar).
 > Tamanho: **P** ≈ até 1 dia · **M** ≈ 2–3 dias. Todos os itens herdam a Definição de pronto (`08-testes-e-dod.md` §4), que inclui acessibilidade, segurança, privacidade e testes.
@@ -32,6 +32,33 @@ Colunas: `Backlog` → `Pronto para fazer` → `Em andamento` → `Em revisão` 
 ---
 
 # Fase 1 — Plataforma essencial
+
+### Status da implementação (2026-11-13, branch `feat/phase-1-platform`)
+
+O status vale para o código local, verificado com `npm test` (67 testes de unidade e integração), `npm run test:e2e` (10 cenários com axe), `typecheck`, `lint` e `build`. **Nada foi publicado.**
+
+| Item | Status | Observações |
+| --- | --- | --- |
+| B-01 | Parcial | Falta o **CI** (GitHub Actions com gitleaks); enviar um workflow pode exigir o escopo `workflow` no `gh` |
+| B-02 | Parcial | Migração e sementes funcionam; a migração **não tem reversão** (o Drizzle gera só a ida) |
+| B-03 | Feito | |
+| B-04, B-05, B-06 | Feito | Publicação aparece na hora (página dinâmica, sem cache) |
+| B-07 | **Não feito** | Precisa de aparelhos reais com Instagram e o portal Wi-Fi |
+| B-08 | Feito | |
+| B-09 | Feito | Sem TOTP (previsto como opcional) |
+| B-10, B-11, B-12, B-13 | Feito | |
+| B-14 | Parcial | Tipo real verificado, EXIF removido, WebP 1200×675 com alt obrigatório; **falta gerar tamanhos responsivos** |
+| B-15, B-16 | Feito | |
+| B-17 | Feito | |
+| B-18 | Parcial | Visualizações (únicas e brutas), origem e leituras de link/QR estão prontas; **compartilhamentos e cliques em "adicionar à agenda" ainda não são registrados** |
+| B-19 | Feito | Sem gráficos: só tabelas (atende ao requisito de equivalente textual) |
+| B-20 | **Bloqueado** | P-FASE-1; nada foi implementado |
+| B-21 | Feito | Texto marcado como pendente de validação do shopping |
+| B-22 | **Não feito** | Tarefa de retenção e agregação |
+| B-23 | Parcial | CSP sem *nonce* (usa `'unsafe-inline'` em scripts); limitador de requisições em memória (não serve para várias instâncias); o IP é o **último** valor de `X-Forwarded-For`, o que pressupõe **exatamente um** proxy confiável na frente (revisar quando a hospedagem for definida); falta `npm audit`/gitleaks no CI |
+| B-24 | **Não feito** | Dockerfile e guia de implantação |
+| B-25 | **Bloqueado** | P-INF-1, P-INF-2, P-ORC-1, P-LGPD-* |
+
 
 ### E-FUND
 

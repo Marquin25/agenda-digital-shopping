@@ -56,4 +56,54 @@ Uma primeira versão pode incluir a agenda pública, páginas de detalhes dos ev
 
 ## Situação do projeto
 
-Este repositório apresenta a proposta e seu escopo inicial. A implementação de autenticação, armazenamento compartilhado, inscrições e relatórios dependerá das decisões técnicas e operacionais da equipe responsável.
+A **Fase 1 (Plataforma essencial)** está implementada na branch `feat/phase-1-platform`. Ela ainda não foi publicada em nenhum ambiente. A especificação fica em [`docs/spec/`](docs/spec/README.md), e o status de cada item está em [`docs/spec/09-backlog.md`](docs/spec/09-backlog.md).
+
+**O que existe:** agenda pública com busca e filtros, página de detalhes (Open Graph, JSON-LD, `.ics` e Google Agenda), compartilhamento, página de privacidade com "apagar dados deste dispositivo", área administrativa com login, papéis, usuários, espaços, eventos (rascunho, publicação, cancelamento e encerramento), upload de banner, links e QR de divulgação e painel básico de métricas.
+
+**O que não existe, de propósito:** "Tenho interesse" (fase pendente, P-FASE-1), reservas, check-in, avaliações, sugestões, módulo de inteligência e integrações. As decisões abertas estão em [`docs/spec/07-mvp-e-riscos.md`](docs/spec/07-mvp-e-riscos.md) §4.
+
+## Como rodar localmente
+
+Requisitos: Node.js 22.12 ou mais recente. O PostgreSQL é opcional, porque a aplicação também roda com o banco embutido **PGlite**, que guarda os dados numa pasta local.
+
+1. Instale as dependências:
+
+   ```sh
+   npm install
+   ```
+
+2. Copie `.env.example` para `.env.local` e preencha. O arquivo `.env.local` está no `.gitignore` e **nunca** deve ser versionado.
+   - `DATABASE_URL`: use `pglite:./storage/pglite` (sem Docker) ou `postgres://conecta:conecta_local_only@localhost:5432/conecta` depois de `docker compose up -d`. A senha do Compose serve só para uso local.
+   - `DEVICE_ID_PEPPER`: gere com `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"`. Em desenvolvimento, se ficar vazio, a aplicação usa um valor temporário. Em produção, ele é obrigatório.
+
+3. Prepare o banco e, se quiser, os dados de demonstração:
+
+   ```sh
+   npm run db:migrate
+   npm run db:seed        # categorias, recursos de acessibilidade, um espaço e eventos de exemplo
+   ```
+
+4. Crie a primeira conta da equipe. A senha é pedida no terminal e precisa ser trocada no primeiro acesso:
+
+   ```sh
+   npm run admin:create -- --name "Seu nome" --email voce@example.com --role administrator
+   ```
+
+5. Suba a aplicação com `npm run dev` e abra <http://localhost:3000>. A área da equipe fica em `/admin`.
+
+## Verificações
+
+| Comando | O que faz |
+| --- | --- |
+| `npm test` | Testes de unidade e de integração (Vitest; o banco é PGlite em memória) |
+| `npm run test:e2e` | Compila a aplicação e roda os testes ponta a ponta (Playwright + axe). Usa um banco descartável em `storage/e2e-db` e a porta 3200 |
+| `npm run typecheck` | TypeScript em modo estrito |
+| `npm run lint` | ESLint |
+| `npm run format:check` | Prettier |
+| `npm run build` | Build de produção do Next.js |
+
+Para o primeiro `test:e2e`, instale o navegador com `npx playwright install chromium`.
+
+## Convenções
+
+A documentação e a interface ficam em português do Brasil, e o código em inglês. Veja [`CLAUDE.md`](CLAUDE.md), [`GLOSSARY.md`](GLOSSARY.md) e [`docs/spec/05-arquitetura.md`](docs/spec/05-arquitetura.md) §6.
