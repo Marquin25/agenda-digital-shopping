@@ -95,8 +95,8 @@ Painel com análises descritivas e o n sempre visível:
 
 | ID | Decisão |
 | --- | --- |
-| P-INT-IA-1 | Quem cria e mantém o catálogo de modelos e os pesos iniciais |
+| P-INT-IA-1 | Quem cria e mantém o catálogo de modelos e os pesos iniciais (provisório no código: só o Administrador; semente com 10 modelos em "rascunho para revisão") |
 | P-INT-IA-2 | Quais papéis criam planejamentos e geram recomendações (Editor?) |
-| P-INT-IA-3 | Faixas etárias e perfis usados no "público desejado" |
+| P-INT-IA-3 | Faixas etárias e perfis usados no "público desejado" (provisório no código: até 12, 13–17, 18–24, 25–40, 41–59, 60+, famílias com crianças, pessoas com deficiência) |
 | P-INT-IA-4 | Limiar de histórico mínimo para ajuste (proposta: 3 eventos e 30 dispositivos) |
 | P-INT-IA-5 | Uso futuro de IA/modelos (Fase 3) e seus critérios de aceitação |

@@ -12,17 +12,22 @@ export type Permission =
   | "events:manage"
   | "venues:manage"
   | "stores:manage"
+  | "catalog:manage"
   | "promo-links:manage"
   | "users:manage"
   | "audit:view";
 
-/** Phase 1 permission matrix (docs/spec/01 §7, provisional roles confirmed by the product owner). */
+/**
+ * Permission matrix (docs/spec/01 §7, provisional roles confirmed by the product owner).
+ * `catalog:manage` is administrator-only until P-INT-IA-1 says who maintains the catalog.
+ */
 const MATRIX: Record<AdminRole, ReadonlySet<Permission>> = {
   administrator: new Set<Permission>([
     "dashboard:view",
     "events:manage",
     "venues:manage",
     "stores:manage",
+    "catalog:manage",
     "promo-links:manage",
     "users:manage",
     "audit:view",

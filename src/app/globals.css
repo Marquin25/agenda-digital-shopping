@@ -989,6 +989,36 @@ legend {
   background: var(--color-primary-soft);
 }
 
+.status--reviewed {
+  color: var(--color-success);
+  background: var(--color-success-soft);
+}
+.status--review-draft {
+  color: var(--color-text);
+  background: var(--color-warning-bg);
+}
+
+.weight-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: 0 var(--space-4);
+}
+
+.template-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+  gap: var(--space-3);
+  margin: 0 0 var(--space-4);
+}
+.template-facts dt {
+  font-size: 0.8rem;
+  color: var(--color-muted);
+}
+.template-facts dd {
+  margin: 0;
+  font-weight: 650;
+}
+
 .empty-state {
   text-align: center;
   padding: var(--space-8) var(--space-4);

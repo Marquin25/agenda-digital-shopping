@@ -210,7 +210,8 @@ Tabelas do núcleo (`04-dados-e-integracoes.md` §Núcleo), migrações e sement
 - [ ] Objetivo, público desejado (faixas e perfis fixos), segmentos, lojas, faixa de orçamento, período e espaços; validações; ajuda explicando que o público é uma descrição de alvo.
 
 **[B-39](https://github.com/Marquin25/agenda-digital-shopping/issues/39) Catálogo de modelos de experiência** · P1 · M · depende de B-37, B-12 · [R] · conteúdo [P]
-- [ ] CRUD com pesos de objetivo e público, segmentos, faixa de custo, estrutura, duração e indicadores sugeridos; data de atualização visível; semente com modelos de exemplo marcados "rascunho para revisão".
+- [x] CRUD com pesos de objetivo e público, segmentos, faixa de custo, estrutura, duração e indicadores sugeridos; data de atualização visível; semente com modelos de exemplo marcados "rascunho para revisão".
+  - Provisório até P-INT-IA-1 e P-INT-IA-3: só o Administrador mantém o catálogo; a lista de públicos fica em `src/domain/intelligence/experience-catalog.ts`.
 
 **[B-40](https://github.com/Marquin25/agenda-digital-shopping/issues/40) Motor de recomendações por regras (domínio)** · P1 · M · depende de B-39 · TDD · [C][PDF]
 - [ ] Filtros eliminatórios explicados, pontuação ponderada configurável, justificativa e premissas por item, nível de confiança, ajuste histórico só acima do limiar; resultados determinísticos (mesmas entradas e regras → mesma saída).
