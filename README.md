@@ -1,19 +1,21 @@
-# Conecta Shopping: agenda digital de eventos do shopping
+# 🛍️ Conecta Shopping: Plataforma Inteligente de Eventos e Experiências
+
+> **Tema:** 10. Eventos, entretenimento e experiências (shopping center)
+> **Equipe:** 48 - Poliwhirl
+> **Integrantes:** Ana Carolina Guedes Santos, Marcus Antônio Rodrigues Monteiro Rios de Pina e Arthur Salomão Negreiros
 
 > **Pitch:** o shopping promove shows, oficinas e experiências, mas o visitante não fica sabendo, e a equipe não sabe o que funcionou. O **Conecta Shopping** reúne a programação num site para celular que abre pelo Instagram, pelo Wi-Fi ou por um QR Code, **sem aplicativo e sem cadastro**. Para a equipe, mostra de onde veio cada acesso, com números honestos que dizem o que é medido, o que é estimado e o que ainda não dá para medir.
 
-Nome provisório. Situação: **Fase 1 implementada** e rodando localmente, ainda não publicada (veja [Situação e próximos passos](#situação-e-próximos-passos)).
+Situação: **Fase 1 implementada** e rodando localmente, ainda não publicada (veja [Situação e próximos passos](#situação-e-próximos-passos)).
 
 ---
 
 ## Equipe
 
-> **⚠️ A preencher pelo grupo.**
-
 | | |
 | --- | --- |
-| **Nome do grupo** | _a preencher_ |
-| **Integrantes** | _a preencher (nome e papel de cada pessoa)_ |
+| **Nome do grupo** | Equipe 48 - Poliwhirl |
+| **Integrantes** | Ana Carolina Guedes Santos · Marcus Antônio Rodrigues Monteiro Rios de Pina · Arthur Salomão Negreiros |
 
 ---
 
@@ -39,7 +41,7 @@ Hoje essa programação tem três problemas:
 
 ### Objetivo geral
 
-Centralizar a programação de eventos do shopping num canal digital simples, acessível e sem cadastro, e dar à equipe dados confiáveis de divulgação e alcance para planejar melhor os próximos eventos.
+Desenvolver uma plataforma web integrada e _mobile-first_ que melhore o planejamento, a divulgação, a participação e a avaliação dos eventos e experiências de um shopping center, transformando dados e referências de mercado em decisões estratégicas.
 
 ### Objetivos específicos
 
@@ -53,7 +55,9 @@ Centralizar a programação de eventos do shopping num canal digital simples, ac
 | 6 | Respeitar a **privacidade**: dados mínimos, retenção de 30 dias e botão "apagar meus dados" | ✅ Fase 1 |
 | 7 | Coletar **avaliações** e **sugestões** e gerar **relatórios pós-evento** e comparações | Fase 2 |
 | 8 | Recomendar experiências a partir de objetivos, público, orçamento e histórico, com **regras transparentes** | Fase 2 |
-| 9 | Integrar portal Wi-Fi, painéis digitais, fluxo de pessoas e vendas, se houver autorização | Fase 3 |
+| 9 | Usar **benchmarking**: comparar cada evento com o histórico do shopping e com referências de mercado | Fase 2 |
+| 10 | Oferecer **calendário** semanal/mensal, **favoritos** guardados no aparelho e **check-in** opcional por QR Code | Fase 2 (check-in aguarda decisão) |
+| 11 | Integrar portal Wi-Fi, painéis digitais, fluxo de pessoas e vendas, se houver autorização | Fase 3 |
 
 ---
 
@@ -73,14 +77,14 @@ Centralizar a programação de eventos do shopping num canal digital simples, ac
 
 ### Tecnologia ou prática da roleta
 
-> **⚠️ A preencher pelo grupo:** escreva qual tecnologia ou prática foi sorteada e como ela entra no projeto.
+**Benchmarking**, usado em dois momentos: na concepção do produto e como recurso analítico dentro da plataforma.
 
-Modelo sugerido:
+1. **Análise de mercado:** comparação entre sites e apps de shoppings, plataformas de eventos (ex.: Sympla, Eventbrite) e ferramentas de _analytics_.
+2. **Critérios avaliados:** acesso sem cadastro ou app, filtros e busca, calendário, compartilhamento, painel administrativo, relatórios automáticos, recomendação baseada em dados, acessibilidade e desempenho no celular.
+3. **Diferencial:** as soluções tradicionais focam só na divulgação da agenda ou na venda de ingressos. O **Conecta Shopping** junta isso ao planejamento estratégico, orientado por objetivos comerciais e pelo histórico interno.
+4. **Comparação interna (Fase 2):** nos relatórios administrativos, cada evento será comparado com o histórico do próprio shopping e com _benchmarks_ de referência cadastrados pela gestão. Cada comparação mostra a fonte e a qualidade do dado (medido, estimado ou indisponível).
 
-- **Sorteada:** _nome da tecnologia ou prática_
-- **Onde entra:** _parte do sistema (ex.: agenda pública, painel, CI, testes)_
-- **Como será usada:** _o que muda na solução e por quê_
-- **Como vamos demonstrar:** _tela, teste ou métrica que comprova o uso_
+Na Fase 1 já entram os indicadores que alimentam essa comparação: visualizações, origem por canal, compartilhamentos e adições à agenda.
 
 ---
 
@@ -154,6 +158,30 @@ As imagens abaixo são **capturas do sistema funcionando** (Fase 1), geradas aut
 - **Eventos:** rascunho, publicação, cancelamento (com confirmação) e encerramento, com banner e texto alternativo obrigatório.
 - **Divulgação:** um link curto e um QR Code (PNG ou SVG) para cada canal: Instagram, Wi-Fi, cartaz, totem.
 
+### Funcionalidades planejadas (próximas fases)
+
+- **Visitante:**
+  - calendário com visão semanal e mensal;
+  - favoritos e lembretes guardados só no aparelho, sem conta;
+  - check-in opcional por QR Code;
+  - entrada pelo portal Wi-Fi cativo, se houver integração.
+- **Administração:**
+  - formulário de planejamento (objetivo comercial, faixa etária, interesses, segmentos, orçamento e período), ligado a um **motor de recomendação** com regras explicáveis: _score_ de aderência, justificativa, lojas sugeridas e indicadores recomendados;
+  - relatórios pós-evento automáticos, com comparação por _benchmarking_;
+  - evolução temporal e distribuição por segmento no painel.
+
+---
+
+## 7. Privacidade (_Privacy by Design_)
+
+O projeto segue os princípios da LGPD desde o desenho. A conformidade formal depende de validação jurídica do shopping, que ainda não foi feita.
+
+- **Minimização:** só o necessário para operar e gerar métricas. O visitante não informa nome nem e-mail, e o IP não é gravado.
+- **Acesso livre:** navegar, filtrar e salvar eventos não exige cadastro.
+- **Dados agregados e com prazo:** o identificador do dispositivo é cifrado (HMAC) e apagado depois de 30 dias. Ficam só os totais. O visitante pode apagar os próprios dados na página de privacidade.
+- **Sem dados sensíveis:** nada é inferido sobre a pessoa. Os recursos de acessibilidade descrevem o evento, não quem o visita.
+- **Arquivos limpos:** os metadados (EXIF) das imagens enviadas pela administração são removidos com `sharp`.
+
 ---
 
 ## Situação e próximos passos
@@ -169,7 +197,7 @@ As imagens abaixo são **capturas do sistema funcionando** (Fase 1), geradas aut
 - retenção automática de 30 dias;
 - CSP com nonce.
 
-**Fora de propósito, porque aguarda decisão** ([`docs/spec/07-mvp-e-riscos.md`](docs/spec/07-mvp-e-riscos.md) §4):
+**Fora do escopo atual, porque aguarda decisão** ([`docs/spec/07-mvp-e-riscos.md`](docs/spec/07-mvp-e-riscos.md) §4):
 - "Tenho interesse" (P-FASE-1);
 - reservas e check-in;
 - avaliações e sugestões (Fase 2);
