@@ -56,8 +56,9 @@ Desenvolver uma plataforma web integrada e _mobile-first_ que melhore o planejam
 | 7 | Coletar **avaliações** e **sugestões** e gerar **relatórios pós-evento** e comparações | Fase 2 |
 | 8 | Recomendar experiências a partir de objetivos, público, orçamento e histórico, com **regras transparentes** | Fase 2 |
 | 9 | Usar **benchmarking**: comparar cada evento com o histórico do shopping e com referências de mercado | Fase 2 |
-| 10 | Oferecer **calendário** semanal/mensal, **favoritos** guardados no aparelho e **check-in** opcional por QR Code | Fase 2 (check-in aguarda decisão) |
-| 11 | Integrar portal Wi-Fi, painéis digitais, fluxo de pessoas e vendas, se houver autorização | Fase 3 |
+| 10 | **Salvar eventos** no aparelho, sem conta ("Salvos") | ✅ Fase 1 |
+| 11 | Oferecer **calendário** semanal/mensal, lembretes e **check-in** opcional por QR Code | Fase 2 (check-in aguarda decisão) |
+| 12 | Integrar portal Wi-Fi, painéis digitais, fluxo de pessoas e vendas, se houver autorização | Fase 3 |
 
 ---
 
@@ -133,6 +134,8 @@ Mais detalhes estão em [`docs/spec/05-arquitetura.md`](docs/spec/05-arquitetura
 
 As imagens abaixo são **capturas do sistema funcionando** (Fase 1), geradas automaticamente com `npm run screens`. Os wireframes das telas planejadas para a Fase 2 (avaliação, planejamento e relatório pós-evento) estão em [`docs/spec/02-jornadas-e-telas.md`](docs/spec/02-jornadas-e-telas.md) §3. As telas podem mudar ao longo do hackathon.
 
+O visual segue as referências da equipe: paleta terracota e creme, fonte Plus Jakarta Sans (hospedada no próprio projeto), ícones Lucide, cartões com capa e barra de navegação inferior no celular. Os textos foram conferidos para contraste mínimo de 4,5:1 (WCAG AA).
+
 ### Visitante (celular)
 
 | Agenda | Filtros | Detalhes do evento | Privacidade |
@@ -141,7 +144,8 @@ As imagens abaixo são **capturas do sistema funcionando** (Fase 1), geradas aut
 
 - **Agenda:** eventos agrupados por dia, com categoria, horário, local e recursos de acessibilidade.
 - **Filtros:** busca por texto, "hoje", "fim de semana", datas, categorias e acessibilidade. Ficam na URL, então dá para compartilhar uma busca.
-- **Detalhes:** informações completas, "Adicionar à agenda" (`.ics` e Google), "Compartilhar" e recursos de acessibilidade.
+- **Detalhes:** capa, ficha com data, horário e local, "Adicionar à agenda" (`.ics` e Google) e "Compartilhar" numa barra fixa, e recursos de acessibilidade.
+- **Salvos:** o coração guarda o evento só neste aparelho (nada vai para o servidor).
 - **Privacidade:** explica o que é guardado e tem o botão "Apagar meus dados deste dispositivo".
 
 ### Equipe do shopping (computador)
@@ -162,7 +166,7 @@ As imagens abaixo são **capturas do sistema funcionando** (Fase 1), geradas aut
 
 - **Visitante:**
   - calendário com visão semanal e mensal;
-  - favoritos e lembretes guardados só no aparelho, sem conta;
+  - lembretes de eventos salvos;
   - check-in opcional por QR Code;
   - entrada pelo portal Wi-Fi cativo, se houver integração.
 - **Administração:**

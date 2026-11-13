@@ -1,5 +1,6 @@
 "use client";
 
+import { CalendarPlus } from "lucide-react";
 import { reportEngagement } from "./report-engagement";
 
 /** "Add to calendar" links; they work without JavaScript, the click report is a bonus. */
@@ -14,8 +15,13 @@ export function CalendarLinks({
 }) {
   return (
     <>
-      <a className="button" href={icsUrl} onClick={() => reportEngagement(eventId, "calendar_ics")}>
-        Adicionar à agenda (.ics)
+      <a
+        className="button button--lg button--primary-action"
+        href={icsUrl}
+        onClick={() => reportEngagement(eventId, "calendar_ics")}
+      >
+        <CalendarPlus size={20} aria-hidden="true" />
+        Adicionar à agenda<span className="visually-hidden"> (.ics)</span>
       </a>
       <a
         className="button button--secondary"

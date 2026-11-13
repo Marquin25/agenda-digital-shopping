@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { METRIC_QUALITY_LABELS, type Metric } from "@/domain/metrics/metric-quality";
 import { formatNumber } from "@/ui/format";
 
@@ -10,6 +11,7 @@ export function MetricCard({
   metric,
   unit,
   note,
+  icon,
 }: {
   label: string;
   metric: Metric;
@@ -17,10 +19,19 @@ export function MetricCard({
   unit?: string;
   /** Caveat on how to read the number. */
   note?: string;
+  /** Decorative icon shown next to the label. */
+  icon?: ReactNode;
 }) {
   return (
     <div className="metric">
-      <p className="metric__label">{label}</p>
+      <div className="metric__top">
+        <p className="metric__label">{label}</p>
+        {icon && (
+          <span className="metric__icon" aria-hidden="true">
+            {icon}
+          </span>
+        )}
+      </div>
       {metric.quality === "unavailable" ? (
         <>
           <p className="metric__value" aria-label="Indisponível">

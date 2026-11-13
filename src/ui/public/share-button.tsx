@@ -1,5 +1,6 @@
 "use client";
 
+import { Share2 } from "lucide-react";
 import { useState } from "react";
 import { reportEngagement } from "./report-engagement";
 
@@ -25,9 +26,10 @@ export function ShareButton({ eventId, title, url }: { eventId: string; title: s
   return (
     <>
       <button type="button" className="button button--secondary" onClick={share}>
+        <Share2 size={18} aria-hidden="true" />
         Compartilhar
       </button>
-      <span role="status" aria-live="polite" className="hint">
+      <span role="status" aria-live="polite" className="hint event-actions__status">
         {message}
       </span>
     </>

@@ -7,7 +7,10 @@ export default async function PrivacyPage({ searchParams }: { searchParams: Prom
   const deleted = (await searchParams).apagado === "1";
   return (
     <>
-      <h1>Privacidade</h1>
+      <div className="page-intro">
+        <h1>Privacidade</h1>
+        <p>O que guardamos, por quanto tempo e como apagar.</p>
+      </div>
       <div className="notice notice--warning" role="note">
         <strong>Texto provisório.</strong> Este aviso ainda será validado pelo shopping (controlador dos
         dados) e pelo seu encarregado de proteção de dados. Ele não é uma declaração de conformidade legal.
@@ -19,7 +22,10 @@ export default async function PrivacyPage({ searchParams }: { searchParams: Prom
       )}
 
       <h2>O que você pode fazer sem cadastro</h2>
-      <p>Consultar a agenda, ver detalhes dos eventos, salvar na sua agenda pessoal e compartilhar.</p>
+      <p>
+        Consultar a agenda, ver detalhes dos eventos, salvar eventos, adicionar à sua agenda pessoal e
+        compartilhar.
+      </p>
 
       <h2>O que guardamos</h2>
       <ul>
@@ -33,6 +39,11 @@ export default async function PrivacyPage({ searchParams }: { searchParams: Prom
           chegou (Instagram, Wi-Fi, cartaz com QR Code…).
         </li>
         <li>
+          <strong>Eventos salvos</strong> (botão de coração): a lista fica só no armazenamento deste navegador
+          e nunca é enviada para nós. Para apagá-la, desmarque os eventos ou limpe os dados do site no
+          navegador.
+        </li>
+        <li>
           <strong>Endereço IP</strong>: usado só em memória, por alguns minutos, para evitar abuso. Não é
           gravado no banco de dados.
         </li>
@@ -44,9 +55,9 @@ export default async function PrivacyPage({ searchParams }: { searchParams: Prom
 
       <h2>Por quanto tempo</h2>
       <p>
-        Prazo proposto: os registros por dispositivo serão agregados e apagados após 30 dias. Esse prazo ainda
-        depende de validação pelo shopping, e a rotina automática de exclusão ainda não foi implementada. Até
-        lá, use o botão abaixo para apagar seus dados quando quiser.
+        Prazo proposto: uma rotina de retenção agrega e apaga os registros por dispositivo com mais de 30
+        dias; ficam só os totais, sem identificador. Esse prazo ainda depende de validação pelo shopping. Você
+        também pode usar o botão abaixo para apagar seus dados quando quiser.
       </p>
 
       <h2>Apagar meus dados deste dispositivo</h2>

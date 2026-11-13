@@ -166,6 +166,26 @@ test.describe.serial("Phase 1 — admin publishes, visitor discovers", () => {
     await visitor.context().close();
   });
 
+  test("visitor saves an event on this device and finds it in Salvos", async ({ browser }) => {
+    const visitor = await visitorPage(browser);
+    await visitor.goto("/salvos");
+    await expect(visitor.getByRole("status")).toHaveText("Nenhum evento salvo.");
+
+    await visitor.goto("/");
+    const save = visitor.getByRole("button", { name: "Salvar “Show Acústico E2E” neste aparelho" });
+    await save.click();
+    await expect(save).toHaveAttribute("aria-pressed", "true");
+
+    await visitor.getByRole("navigation", { name: "Atalhos" }).getByRole("link", { name: "Salvos" }).click();
+    await expect(visitor.getByRole("status")).toHaveText("1 evento salvo.");
+    await expect(visitor.getByRole("heading", { name: "Show Acústico E2E", level: 2 })).toBeVisible();
+    await expectNoSeriousA11yViolations(visitor);
+
+    await visitor.getByRole("button", { name: "Salvar “Show Acústico E2E” neste aparelho" }).click();
+    await expect(visitor.getByRole("status")).toHaveText("Nenhum evento salvo.");
+    await visitor.context().close();
+  });
+
   test("promo link and QR code redirect with origin and are counted as measured hits", async ({
     browser,
   }) => {

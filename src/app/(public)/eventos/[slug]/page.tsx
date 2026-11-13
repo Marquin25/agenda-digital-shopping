@@ -1,3 +1,4 @@
+import { Accessibility, ArrowLeft, CalendarDays, Clock, MapPin, Ticket, Users } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { headers } from "next/headers";
@@ -8,9 +9,11 @@ import { buildGoogleCalendarUrl } from "@/domain/calendar/ics";
 import { getConfig } from "@/infrastructure/config";
 import { getDb } from "@/infrastructure/db";
 import { NONCE_HEADER } from "@/infrastructure/web/content-security-policy";
-import { formatEventWhen, formatVenue } from "@/ui/format";
+import { CategoryIcon } from "@/ui/category-icon";
+import { formatEventDate, formatEventTime, formatVenue } from "@/ui/format";
 import { BannerImage, bannerUrl } from "@/ui/banner-image";
 import { CalendarLinks } from "@/ui/public/calendar-links";
+import { SaveButton } from "@/ui/public/save-button";
 import { ShareButton } from "@/ui/public/share-button";
 import { ViewBeacon } from "@/ui/public/view-beacon";
 import { StatusBadge } from "@/ui/status-badge";
@@ -102,9 +105,6 @@ export default async function EventPage({ params }: { params: Params }) {
           __html: JSON.stringify(structuredData(event, url, publicBaseUrl)).replace(/</g, "\\u003c"),
         }}
       />
-      <p>
-        <Link href="/">← Voltar para a agenda</Link>
-      </p>
       {event.status === "cancelled" && (
         <div className="notice notice--danger" role="note">
           <strong>Evento cancelado.</strong> Este evento não vai mais acontecer.
@@ -115,83 +115,129 @@ export default async function EventPage({ params }: { params: Params }) {
           Este evento já foi encerrado.
         </div>
       )}
-      <div className="event-detail">
+      <div className="event-page">
         <div>
-          {event.bannerPath && (
-            <BannerImage
-              className="event-detail__banner"
-              fileName={event.bannerPath}
-              alt={event.bannerAlt ?? ""}
-              sizes="(min-width: 64rem) 40rem, 100vw"
-            />
-          )}
-          <p className="category">{event.category.name}</p>
-          <h1>{event.title}</h1>
-          <StatusBadge status={event.status} />
-          <h2 className="visually-hidden">Informações</h2>
-          <dl className="facts">
-            <div>
-              <dt>Quando</dt>
-              <dd>
+          <div className="event-hero">
+            {event.bannerPath ? (
+              <BannerImage
+                className="event-hero__image"
+                fileName={event.bannerPath}
+                alt={event.bannerAlt ?? ""}
+                sizes="(min-width: 64rem) 44rem, 100vw"
+              />
+            ) : (
+              <div className="event-hero__placeholder" data-category={event.category.slug} aria-hidden="true">
+                <CategoryIcon slug={event.category.slug} size={88} />
+              </div>
+            )}
+            <div className="event-hero__bar">
+              <Link href="/" className="icon-button icon-button--overlay" aria-label="Voltar para a agenda">
+                <ArrowLeft size={20} aria-hidden="true" />
+              </Link>
+              <SaveButton slug={event.slug} title={event.title} className="icon-button--overlay" />
+            </div>
+          </div>
+
+          <div className="event-sheet">
+            <div className="event-sheet__pills">
+              <span className="pill">
+                <CategoryIcon slug={event.category.slug} size={14} />
+                {event.category.name}
+              </span>
+              <StatusBadge status={event.status} />
+            </div>
+            <h1>{event.title}</h1>
+
+            <h2 className="visually-hidden">Informações</h2>
+            <dl className="facts">
+              <Fact icon={<CalendarDays size={20} />} label="Data">
                 <time dateTime={event.startsAt.toISOString()}>
-                  {formatEventWhen(event.startsAt, event.endsAt)}
+                  {formatEventDate(event.startsAt, event.endsAt)}
                 </time>
-              </dd>
-            </div>
-            <div>
-              <dt>Onde</dt>
-              <dd>
+              </Fact>
+              <Fact icon={<Clock size={20} />} label="Horário">
+                {formatEventTime(event.startsAt, event.endsAt)}
+              </Fact>
+              <Fact icon={<MapPin size={20} />} label="Local">
                 {location}
-                {event.venue.reference && <> — {event.venue.reference}</>}
-              </dd>
-            </div>
-            {event.admissionInfo && (
-              <div>
-                <dt>Entrada</dt>
-                <dd>{event.admissionInfo}</dd>
-              </div>
-            )}
-            {capacity && (
-              <div>
-                <dt>Vagas</dt>
-                <dd>{capacity}</dd>
-              </div>
-            )}
-          </dl>
-          <section className="prose" aria-labelledby="sobre">
-            <h2 id="sobre">Sobre o evento</h2>
-            <p>{event.description}</p>
-          </section>
+                {event.venue.reference && <small>{event.venue.reference}</small>}
+              </Fact>
+              {event.admissionInfo && (
+                <Fact icon={<Ticket size={20} />} label="Entrada">
+                  {event.admissionInfo}
+                </Fact>
+              )}
+              {capacity && (
+                <Fact icon={<Users size={20} />} label="Vagas">
+                  {capacity}
+                </Fact>
+              )}
+            </dl>
+
+            <section className="prose" aria-labelledby="sobre">
+              <h2 id="sobre">Sobre o evento</h2>
+              <p>{event.description}</p>
+            </section>
+
+            <section aria-labelledby="acessibilidade">
+              <h2 id="acessibilidade">Acessibilidade</h2>
+              {event.features.length === 0 ? (
+                <p>Nenhum recurso de acessibilidade informado para este evento.</p>
+              ) : (
+                <ul className="feature-list">
+                  {event.features.map((f) => (
+                    <li key={f.slug} className="feature">
+                      <span className="feature__icon" aria-hidden="true">
+                        <Accessibility size={20} />
+                      </span>
+                      <div>
+                        <strong>{f.name}</strong>
+                        {f.description && <span>{f.description}</span>}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          </div>
         </div>
-        <aside className="panel" aria-label="Ações e acessibilidade">
-          {isOpen && (
-            <>
-              <h2>Salvar e compartilhar</h2>
-              <div className="actions">
-                <CalendarLinks
-                  eventId={event.id}
-                  icsUrl={`/eventos/${event.slug}/calendario.ics`}
-                  googleUrl={googleUrl}
-                />
-                <ShareButton eventId={event.id} title={event.title} url={url} />
-              </div>
-            </>
-          )}
-          <h2>Acessibilidade</h2>
-          {event.features.length === 0 ? (
-            <p>Nenhum recurso de acessibilidade informado para este evento.</p>
-          ) : (
-            <ul>
-              {event.features.map((f) => (
-                <li key={f.slug}>
-                  <strong>{f.name}</strong>
-                  {f.description && <> — {f.description}</>}
-                </li>
-              ))}
-            </ul>
-          )}
-        </aside>
+
+        {isOpen && (
+          <section className="event-actions" aria-labelledby="acoes">
+            <h2 id="acoes" className="visually-hidden">
+              Salvar e compartilhar
+            </h2>
+            <CalendarLinks
+              eventId={event.id}
+              icsUrl={`/eventos/${event.slug}/calendario.ics`}
+              googleUrl={googleUrl}
+            />
+            <ShareButton eventId={event.id} title={event.title} url={url} />
+          </section>
+        )}
       </div>
     </>
+  );
+}
+
+function Fact({
+  icon,
+  label,
+  children,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="fact">
+      <dt>
+        <span className="fact__icon" aria-hidden="true">
+          {icon}
+        </span>
+        {label}
+      </dt>
+      <dd>{children}</dd>
+    </div>
   );
 }

@@ -12,6 +12,16 @@ const shortDate = new Intl.DateTimeFormat("pt-BR", {
   day: "numeric",
   month: "short",
 });
+const longDate = new Intl.DateTimeFormat("pt-BR", {
+  timeZone: MALL_TIME_ZONE,
+  day: "numeric",
+  month: "long",
+});
+const dayMonth = new Intl.DateTimeFormat("pt-BR", {
+  timeZone: MALL_TIME_ZONE,
+  day: "2-digit",
+  month: "2-digit",
+});
 const time = new Intl.DateTimeFormat("pt-BR", {
   timeZone: MALL_TIME_ZONE,
   hour: "2-digit",
@@ -45,4 +55,18 @@ export function formatEventWhen(startsAt: Date, endsAt: Date): string {
 
 export function formatVenue(venue: { name: string; floor: string }, detail: string): string {
   return [venue.floor, venue.name, detail].filter(Boolean).join(" · ");
+}
+
+const sameLocalDay = (a: Date, b: Date) => toLocalDateKey(a) === toLocalDateKey(b);
+
+/** Date line of the event page: "Sexta-feira, 13 de novembro" or "13 de novembro a 15 de novembro". */
+export function formatEventDate(startsAt: Date, endsAt: Date): string {
+  if (sameLocalDay(startsAt, endsAt)) return formatDayHeading(startsAt);
+  return `${longDate.format(startsAt)} a ${longDate.format(endsAt)}`;
+}
+
+/** Time line of the event page: "19:00 às 21:00", with the dates when the event spans days. */
+export function formatEventTime(startsAt: Date, endsAt: Date): string {
+  if (sameLocalDay(startsAt, endsAt)) return `${formatTime(startsAt)} às ${formatTime(endsAt)}`;
+  return `Das ${formatTime(startsAt)} de ${dayMonth.format(startsAt)} às ${formatTime(endsAt)} de ${dayMonth.format(endsAt)}`;
 }

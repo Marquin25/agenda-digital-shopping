@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import type { ReactNode } from "react";
 
 export interface NavItem {
   href: string;
   label: string;
+  icon: ReactNode;
 }
 
 export function AdminNav({ items }: { items: NavItem[] }) {
@@ -18,6 +20,7 @@ export function AdminNav({ items }: { items: NavItem[] }) {
           return (
             <li key={item.href}>
               <Link href={item.href} aria-current={current ? "page" : undefined}>
+                {item.icon}
                 {item.label}
               </Link>
             </li>

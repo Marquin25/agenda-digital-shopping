@@ -1,3 +1,4 @@
+import { CalendarDays, SearchX, ShieldCheck, Sparkles } from "lucide-react";
 import { listAccessibilityFeatures, listCategories } from "@/application/catalog/catalog";
 import { listPublicAgenda, type EventView } from "@/application/events/event-queries";
 import { countActiveFilters, parseAgendaFilters } from "@/domain/agenda/agenda-filters";
@@ -46,10 +47,22 @@ export default async function AgendaPage({ searchParams }: { searchParams: Searc
   return (
     <>
       <ViewBeacon target="agenda" />
-      <h1>Agenda de eventos</h1>
-      <p>Programação de eventos e experiências do shopping. Consulte sem cadastro.</p>
+      <div className="page-intro">
+        <h1>Agenda de eventos</h1>
+        <p>Shows, oficinas e experiências do shopping, num só lugar.</p>
+      </div>
 
       <AgendaFiltersForm filters={filters} categories={categories} features={features} />
+
+      {!filtered && (
+        <div className="callout">
+          <ShieldCheck size={22} aria-hidden="true" />
+          <p>
+            <strong>Sem burocracia:</strong> consulte toda a programação sem baixar aplicativo e sem criar
+            cadastro.
+          </p>
+        </div>
+      )}
 
       <p className="result-summary" role="status">
         {events.length === 0
@@ -58,7 +71,8 @@ export default async function AgendaPage({ searchParams }: { searchParams: Searc
       </p>
 
       {events.length === 0 ? (
-        <div className="notice">
+        <div className="empty-state">
+          <SearchX size={40} aria-hidden="true" />
           {filtered ? (
             <p>Nenhum evento corresponde aos filtros. Tente remover algum filtro.</p>
           ) : (
@@ -66,21 +80,33 @@ export default async function AgendaPage({ searchParams }: { searchParams: Searc
           )}
         </div>
       ) : (
-        groupByDay(events, now).map(([dayKey, dayEvents]) => (
-          <section className="day-group" key={dayKey} aria-labelledby={`dia-${dayKey}`}>
-            <h2 id={`dia-${dayKey}`}>
-              {dayKey === todayKey ? "Hoje · " : ""}
-              {formatDayHeading(dayEvents[0]!.startsAt < now ? now : dayEvents[0]!.startsAt)}
-            </h2>
-            <ul className="event-list">
-              {dayEvents.map((event) => (
-                <li key={event.id}>
-                  <EventCard event={event} />
-                </li>
-              ))}
-            </ul>
-          </section>
-        ))
+        groupByDay(events, now).map(([dayKey, dayEvents]) => {
+          const isToday = dayKey === todayKey;
+          const featureToday = isToday && !filtered;
+          return (
+            <section className="day-group" key={dayKey} aria-labelledby={`dia-${dayKey}`}>
+              <h2 id={`dia-${dayKey}`} className="section-heading">
+                {featureToday ? (
+                  <Sparkles size={22} aria-hidden="true" />
+                ) : (
+                  <CalendarDays size={22} aria-hidden="true" />
+                )}
+                <span>
+                  {featureToday && <span className="section-heading__eyebrow">Acontecendo hoje</span>}
+                  {isToday ? "Hoje · " : ""}
+                  {formatDayHeading(dayEvents[0]!.startsAt < now ? now : dayEvents[0]!.startsAt)}
+                </span>
+              </h2>
+              <ul className={`event-list${featureToday ? " event-list--featured" : ""}`}>
+                {dayEvents.map((event, index) => (
+                  <li key={event.id}>
+                    <EventCard event={event} featured={featureToday && index === 0} />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          );
+        })
       )}
     </>
   );

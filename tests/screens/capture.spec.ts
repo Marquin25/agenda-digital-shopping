@@ -13,6 +13,15 @@ const MOBILE = {
 
 async function shot(page: Page, name: string, fullPage = true) {
   await page.waitForLoadState("networkidle");
+  if (fullPage) {
+    // A full-page capture freezes fixed/sticky bars wherever the viewport was; put them in the flow so
+    // the image shows them once, at their natural place.
+    await page.evaluate(() => {
+      for (const el of document.querySelectorAll<HTMLElement>(".public-nav--bottom, .event-actions")) {
+        el.style.position = "static";
+      }
+    });
+  }
   await page.screenshot({ path: `${OUT}/${name}.png`, fullPage, animations: "disabled" });
 }
 
