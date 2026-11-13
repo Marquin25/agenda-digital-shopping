@@ -17,27 +17,31 @@ export function listVenues(db: Database, options: { includeInactive?: boolean } 
   return options.includeInactive ? query : query.where(eq(venues.active, true));
 }
 
-const optionalInt = z
+/** Optional non-negative integer from a form field: empty means null. */
+export const optionalIntSchema = z
   .union([z.literal(""), z.null(), z.coerce.number().int().min(0).max(1_000_000)])
   .optional()
   .transform((v) => (v === "" || v == null ? null : v));
+
+/** "energia, som, palco" → ["energia", "som", "palco"] (at most 20 items). */
+export const commaListSchema = z
+  .string()
+  .default("")
+  .transform((v) =>
+    v
+      .split(",")
+      .map((f) => f.trim())
+      .filter(Boolean)
+      .slice(0, 20),
+  );
 
 export const venueInputSchema = z.object({
   name: z.string().trim().min(2, "Informe o nome do espaço.").max(120),
   floor: z.string().trim().max(40).default(""),
   reference: z.string().trim().max(200).default(""),
-  areaSquareMeters: optionalInt,
-  capacity: optionalInt,
-  facilities: z
-    .string()
-    .default("")
-    .transform((v) =>
-      v
-        .split(",")
-        .map((f) => f.trim())
-        .filter(Boolean)
-        .slice(0, 20),
-    ),
+  areaSquareMeters: optionalIntSchema,
+  capacity: optionalIntSchema,
+  facilities: commaListSchema,
 });
 export type VenueInput = z.input<typeof venueInputSchema>;
 export type ValidVenueInput = z.output<typeof venueInputSchema>;

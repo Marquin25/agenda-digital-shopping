@@ -168,6 +168,49 @@ export const eventStores = pgTable(
   (t) => [primaryKey({ columns: [t.eventId, t.storeId] }), index("event_stores_store_idx").on(t.storeId)],
 );
 
+/** Catalog of event ideas used by the rules-based recommendations (docs/spec/10 §2.2). */
+export const experienceTemplates = pgTable("experience_templates", {
+  id: id(),
+  name: text("name").notNull(),
+  description: text("description").notNull().default(""),
+  /** Objective key → weight 1–3; zero weights are not stored. */
+  objectiveWeights: jsonb("objective_weights").$type<Record<string, number>>().notNull().default({}),
+  /** Target audience key → weight 1–3; zero weights are not stored. */
+  audienceWeights: jsonb("audience_weights").$type<Record<string, number>>().notNull().default({}),
+  /** Cost range informed by staff, in whole reais. */
+  costMin: integer("cost_min").notNull(),
+  costMax: integer("cost_max").notNull(),
+  minAreaSquareMeters: integer("min_area_square_meters"),
+  minCapacity: integer("min_capacity"),
+  facilities: text("facilities").array().notNull().default([]),
+  durationMinutes: integer("duration_minutes").notNull(),
+  categoryId: integer("category_id").references(() => categories.id),
+  indicators: text("indicators").array().notNull().default([]),
+  /** "draft" = draft for review; "reviewed" = checked by the mall. */
+  reviewStatus: text("review_status", { enum: ["draft", "reviewed"] })
+    .notNull()
+    .default("draft"),
+  active: boolean("active").notNull().default(true),
+  createdAt: createdAt(),
+  updatedAt: updatedAt(),
+});
+
+export const experienceTemplateSegments = pgTable(
+  "experience_template_segments",
+  {
+    templateId: uuid("template_id")
+      .notNull()
+      .references(() => experienceTemplates.id, { onDelete: "cascade" }),
+    segmentId: integer("segment_id")
+      .notNull()
+      .references(() => segments.id, { onDelete: "cascade" }),
+  },
+  (t) => [
+    primaryKey({ columns: [t.templateId, t.segmentId] }),
+    index("experience_template_segments_segment_idx").on(t.segmentId),
+  ],
+);
+
 export const promoLinks = pgTable("promo_links", {
   id: id(),
   code: text("code").notNull().unique(),

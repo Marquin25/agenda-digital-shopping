@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { formatDayHeading, formatEventDate, formatEventTime } from "@/ui/format";
+import {
+  formatCostRange,
+  formatDayHeading,
+  formatDuration,
+  formatEventDate,
+  formatEventTime,
+} from "@/ui/format";
 
 describe("formatDayHeading", () => {
   it("capitalises only the first letter, as in Portuguese", () => {
@@ -21,5 +27,25 @@ describe("event date and time, shown separately on the event page", () => {
     const later = new Date("2026-11-15T23:00:00Z");
     expect(formatEventDate(start, later)).toBe("13 de novembro a 15 de novembro");
     expect(formatEventTime(start, later)).toBe("Das 19:00 de 13/11 às 20:00 de 15/11");
+  });
+});
+
+describe("formatCostRange", () => {
+  it("shows the informed range in reais without cents", () => {
+    expect(formatCostRange(3000, 8000).replace(/\s/g, " ")).toBe("R$ 3.000 a R$ 8.000");
+  });
+
+  it("shows a single value when minimum and maximum match", () => {
+    expect(formatCostRange(1500, 1500).replace(/\s/g, " ")).toBe("R$ 1.500");
+  });
+});
+
+describe("formatDuration", () => {
+  it.each([
+    [45, "45 min"],
+    [120, "2 h"],
+    [90, "1 h 30 min"],
+  ])("%i minutes → %s", (minutes, text) => {
+    expect(formatDuration(minutes)).toBe(text);
   });
 });

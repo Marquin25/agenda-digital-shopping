@@ -1,5 +1,6 @@
 "use client";
 
+import { ActionForm } from "@/ui/admin/action-form";
 import { useActionState } from "react";
 import { ADMIN_ROLE_LABELS, ADMIN_ROLES, type AdminRole } from "@/domain/auth/permissions";
 import { FieldError, FormMessage, invalidProps, SubmitButton } from "@/ui/admin/form-controls";
@@ -23,7 +24,7 @@ export function NewUserForm() {
   const [state, action] = useActionState<FormState, FormData>(createUserAction, {});
   const e = state.fieldErrors ?? {};
   return (
-    <form action={action}>
+    <ActionForm action={action} state={state} resetOnSuccess>
       <FormMessage
         state={state}
         labels={{ name: "Nome", email: "E-mail", role: "Perfil", temporaryPassword: "Senha temporária" }}
@@ -65,7 +66,7 @@ export function NewUserForm() {
         </div>
       </div>
       <SubmitButton>Criar usuário</SubmitButton>
-    </form>
+    </ActionForm>
   );
 }
 
@@ -73,7 +74,7 @@ export function EditUserForm({ user }: { user: { id: string; role: AdminRole; ac
   const [state, action] = useActionState<FormState, FormData>(updateUserAction.bind(null, user.id), {});
   const prefix = `u-${user.id.slice(0, 8)}`;
   return (
-    <form action={action}>
+    <ActionForm action={action} state={state}>
       <FormMessage state={state} />
       <div className="form-grid">
         <div className="field">
@@ -96,6 +97,6 @@ export function EditUserForm({ user }: { user: { id: string; role: AdminRole; ac
         <label htmlFor={`${prefix}-active`}>Acesso ativo</label>
       </div>
       <SubmitButton className="button button--secondary">Salvar usuário</SubmitButton>
-    </form>
+    </ActionForm>
   );
 }

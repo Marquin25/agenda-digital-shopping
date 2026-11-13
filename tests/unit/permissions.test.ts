@@ -21,6 +21,12 @@ describe("permissions matrix (docs/spec/01 §7)", () => {
     expect(can("analyst", "stores:manage")).toBe(false);
   });
 
+  it("lets only administrators maintain the experience catalog until P-INT-IA-1 is decided", () => {
+    expect(can("administrator", "catalog:manage")).toBe(true);
+    expect(can("editor", "catalog:manage")).toBe(false);
+    expect(can("analyst", "catalog:manage")).toBe(false);
+  });
+
   it("keeps analysts read-only", () => {
     expect(can("analyst", "events:manage")).toBe(false);
     expect(can("analyst", "promo-links:manage")).toBe(false);

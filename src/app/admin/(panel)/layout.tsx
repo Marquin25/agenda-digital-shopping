@@ -3,6 +3,7 @@ import {
   CalendarRange,
   ExternalLink,
   KeyRound,
+  Lightbulb,
   LayoutDashboard,
   LogOut,
   Plus,
@@ -42,6 +43,9 @@ export default async function AdminPanelLayout({ children }: { children: React.R
       : []),
     ...(can(admin.role, "stores:manage")
       ? [{ href: "/admin/estabelecimentos", label: "Lojas", icon: icon(ShoppingBag) }]
+      : []),
+    ...(can(admin.role, "catalog:manage")
+      ? [{ href: "/admin/catalogo", label: "Catálogo", icon: icon(Lightbulb) }]
       : []),
     { href: "/admin/divulgacao", label: "Divulgação", icon: icon(QrCode) },
     ...(can(admin.role, "users:manage")

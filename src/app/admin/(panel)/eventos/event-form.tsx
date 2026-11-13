@@ -1,5 +1,6 @@
 "use client";
 
+import { ActionForm } from "@/ui/admin/action-form";
 import { useActionState } from "react";
 import { FieldError, FormMessage, invalidProps, SubmitButton } from "@/ui/admin/form-controls";
 import type { FormState } from "@/ui/admin/form-state";
@@ -59,7 +60,7 @@ export function EventForm({
   const [state, action] = useActionState<FormState, FormData>(saveEventAction.bind(null, eventId), {});
   const e = state.fieldErrors ?? {};
   return (
-    <form action={action} className="panel" noValidate>
+    <ActionForm action={action} state={state} className="panel" noValidate>
       <FormMessage state={state} labels={LABELS} />
       <div className="form-grid">
         <div className="field full">
@@ -296,6 +297,6 @@ export function EventForm({
         </div>
       </div>
       <SubmitButton>{eventId ? "Salvar alterações" : "Salvar rascunho"}</SubmitButton>
-    </form>
+    </ActionForm>
   );
 }

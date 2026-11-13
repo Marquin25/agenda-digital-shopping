@@ -1,5 +1,6 @@
 "use client";
 
+import { ActionForm } from "@/ui/admin/action-form";
 import { useActionState } from "react";
 import { FieldError, FormMessage, invalidProps, SubmitButton } from "@/ui/admin/form-controls";
 import type { FormState } from "@/ui/admin/form-state";
@@ -17,7 +18,7 @@ export function SegmentForm({
   const [state, action] = useActionState<FormState, FormData>(saveSegmentAction.bind(null, segmentId), {});
   const id = `${idPrefix}-name`;
   return (
-    <form action={action}>
+    <ActionForm action={action} state={state} resetOnSuccess={segmentId === null}>
       <FormMessage state={state} />
       <div className="field">
         <label htmlFor={id}>Nome do segmento *</label>
@@ -33,7 +34,7 @@ export function SegmentForm({
         <FieldError id={id} message={state.fieldErrors?.name} />
       </div>
       <SubmitButton>{segmentId ? "Salvar segmento" : "Cadastrar segmento"}</SubmitButton>
-    </form>
+    </ActionForm>
   );
 }
 
@@ -58,7 +59,7 @@ export function StoreForm({
   const e = state.fieldErrors ?? {};
   const id = (name: string) => `${idPrefix}-${name}`;
   return (
-    <form action={action}>
+    <ActionForm action={action} state={state} resetOnSuccess={storeId === null}>
       <FormMessage state={state} labels={{ name: "Nome", segmentId: "Segmento" }} />
       <div className="form-grid">
         <div className="field">
@@ -105,6 +106,6 @@ export function StoreForm({
         </div>
       </div>
       <SubmitButton>{storeId ? "Salvar loja" : "Cadastrar loja"}</SubmitButton>
-    </form>
+    </ActionForm>
   );
 }

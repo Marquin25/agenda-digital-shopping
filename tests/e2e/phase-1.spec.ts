@@ -100,10 +100,47 @@ test.describe.serial("Phase 1 — admin publishes, visitor discovers", () => {
     await admin.locator("#nova-loja-floor").fill("L2");
     await admin.getByRole("button", { name: "Cadastrar loja" }).click();
     await expect(admin.getByRole("status").filter({ hasText: "Loja cadastrada." })).toBeVisible();
+    await expect(admin.locator("#nova-loja-name")).toHaveValue("");
 
     await admin.locator("#novo-segmento-name").fill("lazer");
     await admin.getByRole("button", { name: "Cadastrar segmento" }).click();
     await expect(admin.getByText("Já existe um segmento com esse nome.")).toBeVisible();
+    // What was typed survives a rejected submission.
+    await expect(admin.locator("#novo-segmento-name")).toHaveValue("lazer");
+    await expectNoSeriousA11yViolations(admin);
+  });
+
+  test("administrator maintains the experience catalog with weights and an update date", async () => {
+    await admin.goto("/admin/catalogo/novo");
+    await admin.getByLabel("Nome *").fill("Consultoria de estilo E2E");
+    await admin.getByLabel("Custo mínimo (R$) *").fill("8000");
+    await admin.getByLabel("Custo máximo (R$) *").fill("3000");
+    await admin.getByLabel("Duração típica (minutos) *").fill("240");
+    await admin.getByRole("button", { name: "Cadastrar modelo" }).click();
+    const alert = admin.locator(ALERT);
+    await expect(alert.getByRole("link", { name: /Objetivos: Indique ao menos um objetivo/ })).toBeVisible();
+    await expect(alert.getByRole("link", { name: /Custo máximo: O custo máximo não pode/ })).toBeVisible();
+    await expectNoSeriousA11yViolations(admin);
+
+    await admin.getByLabel("Aumentar vendas").selectOption("3");
+    await admin.getByLabel("Adultos (25–40)").selectOption("3");
+    await admin.getByRole("checkbox", { name: "Moda" }).check();
+    await admin.getByLabel("Custo mínimo (R$) *").fill("3000");
+    await admin.getByLabel("Custo máximo (R$) *").fill("8000");
+    await admin.getByRole("checkbox", { name: "Satisfação (CSAT) (ainda não medido)" }).check();
+    await admin.getByRole("button", { name: "Cadastrar modelo" }).click();
+    await expect(admin.getByRole("status").filter({ hasText: "Alterações salvas." })).toBeVisible();
+    await expect(admin.getByText("Rascunho para revisão").first()).toBeVisible();
+    await expect(admin.getByText("Atualizado em")).toBeVisible();
+    await expect(admin.getByLabel("Aumentar vendas")).toHaveValue("3");
+
+    await admin.getByLabel("Revisado pelo shopping").check();
+    await admin.getByRole("button", { name: "Salvar modelo" }).click();
+    await admin.goto("/admin/catalogo");
+    const row = admin.getByRole("row", { name: /Consultoria de estilo E2E/ });
+    await expect(row).toContainText("Aumentar vendas");
+    await expect(row).toContainText("4 h");
+    await expect(row).toContainText("Revisado");
     await expectNoSeriousA11yViolations(admin);
   });
 
@@ -257,6 +294,8 @@ test.describe.serial("Phase 1 — admin publishes, visitor discovers", () => {
     await expect(analyst.getByRole("heading", { name: "Painel" })).toBeVisible();
     await expect(analyst.getByRole("link", { name: "Usuários" })).toHaveCount(0);
     await analyst.goto("/admin/eventos/novo");
+    await expect(analyst.getByRole("heading", { name: "Acesso negado" })).toBeVisible();
+    await analyst.goto("/admin/catalogo");
     await expect(analyst.getByRole("heading", { name: "Acesso negado" })).toBeVisible();
     await analyst.goto("/admin/usuarios");
     await expect(analyst.getByRole("heading", { name: "Acesso negado" })).toBeVisible();
