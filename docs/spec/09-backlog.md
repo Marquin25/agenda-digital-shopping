@@ -40,7 +40,7 @@ O status vale para a `main` depois do merge do PR #51, verificado com `npm test`
 | Item | Status | Observações |
 | --- | --- | --- |
 | B-01 | Feito | CI no GitHub Actions: lint, tipos, testes, build, E2E, `npm audit` (produção) e gitleaks |
-| B-02 | Parcial | Migração e sementes funcionam; a migração **não tem reversão** (o Drizzle gera só a ida) |
+| B-02 | Feito | Migrações com script de volta em `drizzle/rollback/` (`npm run db:rollback -- --yes`), testadas num banco limpo; restrições `UNIQUE` testadas; semente com eventos em todos os status |
 | B-03 | Feito | |
 | B-04, B-05, B-06 | Feito | Publicação aparece na hora (página dinâmica, sem cache) |
 | B-07 | **Não feito** | Precisa de aparelhos reais com Instagram e o portal Wi-Fi |

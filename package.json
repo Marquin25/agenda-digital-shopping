@@ -21,6 +21,7 @@
     "screens": "next build && playwright test --config playwright.screens.config.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx scripts/migrate.ts",
+    "db:rollback": "tsx scripts/rollback.ts",
     "db:seed": "tsx scripts/seed.ts",
     "retention:run": "tsx scripts/retention.ts",
     "admin:create": "tsx scripts/create-admin.ts"
