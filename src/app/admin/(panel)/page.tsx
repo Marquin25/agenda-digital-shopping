@@ -76,14 +76,16 @@ export default async function DashboardPage({
           <MetricCard
             label="Compartilhamentos"
             metric={summary.shares}
-            unit="intenção de compartilhar, não envio"
+            unit="dispositivos estimados"
+            note="Intenção de compartilhar; não confirma o envio."
           />
         </li>
         <li>
           <MetricCard
             label="Adições à agenda"
             metric={summary.calendarAdds}
-            unit="cliques em .ics ou Google, não garante que salvou"
+            unit="dispositivos estimados"
+            note="Cliques em .ics ou Google; não garante que salvou."
           />
         </li>
         <li>

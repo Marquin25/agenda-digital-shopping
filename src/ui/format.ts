@@ -28,7 +28,11 @@ const dateTime = new Intl.DateTimeFormat("pt-BR", {
 
 export const formatTime = (d: Date) => time.format(d);
 export const formatDateTime = (d: Date) => dateTime.format(d);
-export const formatDayHeading = (d: Date) => dayHeading.format(d);
+/** "Sexta-feira, 13 de novembro": only the first letter is capitalised, as in Portuguese. */
+export const formatDayHeading = (d: Date) => {
+  const text = dayHeading.format(d);
+  return text.charAt(0).toLocaleUpperCase("pt-BR") + text.slice(1);
+};
 export const formatNumber = (n: number) => new Intl.NumberFormat("pt-BR").format(n);
 
 /** "sáb., 22 de nov. · 19:00–21:00", or two dates when the event spans days. */

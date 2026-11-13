@@ -5,7 +5,19 @@ export function QualityBadge({ quality }: { quality: Metric["quality"] }) {
   return <span className={`quality quality--${quality}`}>{METRIC_QUALITY_LABELS[quality]}</span>;
 }
 
-export function MetricCard({ label, metric, unit }: { label: string; metric: Metric; unit?: string }) {
+export function MetricCard({
+  label,
+  metric,
+  unit,
+  note,
+}: {
+  label: string;
+  metric: Metric;
+  /** Short unit shown under the number, e.g. "dispositivos estimados". */
+  unit?: string;
+  /** Caveat on how to read the number. */
+  note?: string;
+}) {
   return (
     <div className="metric">
       <p className="metric__label">{label}</p>
@@ -17,10 +29,13 @@ export function MetricCard({ label, metric, unit }: { label: string; metric: Met
           <p className="hint">{metric.reason}</p>
         </>
       ) : (
-        <p className="metric__value">
-          {formatNumber(metric.value)}
-          {unit && <span className="hint"> {unit}</span>}
-        </p>
+        <>
+          <p className="metric__value">
+            {formatNumber(metric.value)}
+            {unit && <span className="metric__unit"> {unit}</span>}
+          </p>
+          {note && <p className="hint">{note}</p>}
+        </>
       )}
       <QualityBadge quality={metric.quality} />
     </div>

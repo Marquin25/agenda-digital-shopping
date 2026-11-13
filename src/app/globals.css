@@ -334,6 +334,28 @@ legend {
   min-height: var(--tap);
   display: flex;
   align-items: center;
+  gap: var(--space-2);
+}
+/* display:flex hides the native disclosure marker, so draw one that shows the open/closed state. */
+.filters summary::-webkit-details-marker {
+  display: none;
+}
+.filters summary::before {
+  content: "";
+  width: 0.5em;
+  height: 0.5em;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 0.15s ease;
+}
+.filters details[open] > summary::before {
+  transform: rotate(45deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .filters summary::before {
+    transition: none;
+  }
 }
 .filters__actions {
   display: flex;
@@ -347,9 +369,6 @@ legend {
 }
 .day-group {
   margin-bottom: var(--space-8);
-}
-.day-group > h2 {
-  text-transform: capitalize;
 }
 .event-list {
   list-style: none;
@@ -549,6 +568,11 @@ legend {
 .admin-header button {
   color: inherit;
 }
+/* Light-on-dark variant: the generic white secondary button would hide its white text here. */
+.admin-header .button--secondary {
+  background: transparent;
+  border-color: currentColor;
+}
 .admin-nav ul {
   list-style: none;
   display: flex;
@@ -624,6 +648,12 @@ th.number {
   font-weight: 700;
   margin: var(--space-1) 0;
   font-variant-numeric: tabular-nums;
+}
+.metric__unit {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: var(--color-muted);
 }
 .quality {
   display: inline-block;
