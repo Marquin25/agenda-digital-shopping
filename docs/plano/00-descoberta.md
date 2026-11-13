@@ -1,6 +1,6 @@
 # Etapa 1 — Descoberta e inspeção
 
-> Projeto: **Conecta Shopping** (nome provisório) · Data: 2026-11-13 · Status: aguardando respostas às perguntas da seção 4.
+> Projeto: **Conecta Shopping** (nome provisório) · Data: 2026-11-13 · Status: perguntas respondidas em 2026-11-13; plano em `docs/spec/`.
 
 ## 1. Estado do repositório
 
@@ -45,7 +45,16 @@ Os agentes de implementação e QA só serão criados na Etapa 3, quando houver 
 
 ## 4. Perguntas em aberto
 
-Veja a resposta no chat para a lista priorizada. Respostas serão registradas aqui e em ADRs.
+Respostas do responsável (2026-11-13):
+
+1. **Backlog:** no GitHub (`Marquin25/agenda-digital-shopping`). `gh` ainda não instalado → criação de issues e board pendente.
+2. **Vagas e preço:** não definidos. No MVP só divulgação e interesse; o administrador pode informar vagas limitadas como informação, sem dados pessoais. Reserva ou cobrança exigem parar e apresentar as implicações.
+3. **Check-in:** propor QR no local; detalhar validação, fraude e duplicidade antes de implementar; interesse ≠ presença.
+4. **Avaliação:** aberta após o encerramento, sem exigir check-in; período configurável; antispam; sinalizar que não comprova participação.
+5. **Hospedagem:** não definida; comparar opções; não criar contas nem publicar.
+6. **Equipe:** Administrador, Editor e Analista (provisório); provedor de login pendente.
+7. **Privacidade:** controlador, encarregado e política a confirmar; não declarar conformidade.
+8. **Abrangência:** um shopping, com expansão futura; nome provisório "Conecta Shopping"; mural de sugestões só para a administração.
 
 ## 5. Recomendações preliminares (hipóteses — validar na Etapa 2)
 

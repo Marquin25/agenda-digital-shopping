@@ -2,7 +2,7 @@
 
 ### Issue tracker
 
-Issues e specs ficam como arquivos markdown locais em `.scratch/<feature>/`. See `docs/agents/issue-tracker.md`.
+Issues ficam no GitHub Issues de `Marquin25/agenda-digital-shopping` (via `gh` CLI); a especificação fica em `docs/spec/`. See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 
