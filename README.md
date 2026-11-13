@@ -202,7 +202,7 @@ O projeto segue os princípios da LGPD desde o desenho. A conformidade formal de
 - CSP com nonce;
 - "Salvos" no aparelho e visual novo (terracota/creme).
 
-**Fase 1, ainda aberto:** [#2](https://github.com/Marquin25/agenda-digital-shopping/issues/2) reversão das migrações e semente com todos os status; [#7](https://github.com/Marquin25/agenda-digital-shopping/issues/7) teste em celulares reais (Instagram e Wi-Fi); [#23](https://github.com/Marquin25/agenda-digital-shopping/issues/23) limitador compartilhado e checklist ASVS; [#24](https://github.com/Marquin25/agenda-digital-shopping/issues/24) Dockerfile, backup e restauração.
+**Fase 1, ainda aberto:** [#7](https://github.com/Marquin25/agenda-digital-shopping/issues/7) teste em celulares reais (Instagram e Wi-Fi); [#23](https://github.com/Marquin25/agenda-digital-shopping/issues/23) limitador compartilhado e checklist ASVS; [#24](https://github.com/Marquin25/agenda-digital-shopping/issues/24) Dockerfile, backup e restauração.
 
 **Fora do escopo atual, porque aguarda decisão** ([`docs/spec/07-mvp-e-riscos.md`](docs/spec/07-mvp-e-riscos.md) §4):
 - "Tenho interesse" (P-FASE-1);
@@ -236,7 +236,7 @@ O arquivo `.env.local` está no `.gitignore` e **nunca** deve ser versionado. As
 
 ```sh
 npm run db:migrate     # cria as tabelas
-npm run db:seed        # categorias, recursos de acessibilidade, um espaço e 4 eventos de exemplo
+npm run db:seed        # categorias, recursos de acessibilidade, 2 espaços e 7 eventos de exemplo (todos os status)
 npm run admin:create -- --name "Seu nome" --email voce@example.com --role administrator
 npm run dev
 ```
@@ -246,6 +246,17 @@ Abra <http://localhost:3000>. A área da equipe fica em <http://localhost:3000/a
 **Opcional:**
 - Use PostgreSQL em vez do PGlite: rode `docker compose up -d` e troque o `DATABASE_URL` por `postgres://conecta:conecta_local_only@localhost:5432/conecta`. Essa senha serve só para uso local.
 - Rode a retenção de dados (apaga identificadores com mais de 30 dias e mantém os totais) com `npm run retention:run`.
+
+### Desfazer uma migração
+
+O Drizzle gera só a ida das migrações. Por isso cada migração `drizzle/<nome>.sql` tem um script de volta escrito à mão em `drizzle/rollback/<nome>.sql`, e um teste falha se algum estiver faltando.
+
+```sh
+npm run db:rollback -- --yes   # desfaz a última migração aplicada (repita para voltar mais)
+npm run db:migrate             # aplica de novo
+```
+
+Desfazer uma migração **apaga as tabelas dela e os dados que estão nelas**. Por isso o comando só roda com `--yes`. Antes, faça uma cópia do banco: no PGlite, copie a pasta `storage/pglite` com o servidor parado; no PostgreSQL, use `pg_dump`.
 
 ## Verificações
 
