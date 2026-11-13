@@ -1,114 +1,235 @@
-# Agenda Digital do Shopping
+# Conecta Shopping: agenda digital de eventos do shopping
 
-Proposta de uma agenda digital para ajudar visitantes a descobrir eventos do shopping e apoiar a equipe na divulgação, no planejamento e na avaliação das experiências realizadas.
+> **Pitch:** o shopping promove shows, oficinas e experiências, mas o visitante não fica sabendo, e a equipe não sabe o que funcionou. O **Conecta Shopping** reúne a programação num site para celular que abre pelo Instagram, pelo Wi-Fi ou por um QR Code, **sem aplicativo e sem cadastro**. Para a equipe, mostra de onde veio cada acesso, com números honestos que dizem o que é medido, o que é estimado e o que ainda não dá para medir.
 
-## Contexto
+Nome provisório. Situação: **Fase 1 implementada** e rodando localmente, ainda não publicada (veja [Situação e próximos passos](#situação-e-próximos-passos)).
 
-Shoppings também são espaços de convivência, lazer, entretenimento e realização de eventos. Para planejar experiências que interessem a diferentes públicos, é importante facilitar o acesso à programação e aprender com a participação e as opiniões dos visitantes.
+---
 
-## Objetivo
+## Equipe
 
-Melhorar o planejamento, a participação e a avaliação dos eventos realizados no shopping, reunindo a programação em um canal simples e acessível.
+> **⚠️ A preencher pelo grupo.**
 
-## Proposta
+| | |
+| --- | --- |
+| **Nome do grupo** | _a preencher_ |
+| **Integrantes** | _a preencher (nome e papel de cada pessoa)_ |
 
-A Agenda Digital do Shopping terá uma página pública para visitantes e uma área administrativa para a equipe responsável pelos eventos.
+---
 
-### Para visitantes
+## 1. Contexto e problemática
 
-- Consultar os próximos eventos sem precisar criar uma conta.
-- Encontrar informações como data, horário, local, público indicado, preço, vagas e acessibilidade.
-- Filtrar a programação por data e tipo de atividade.
-- Acessar a agenda pelo link na bio do Instagram, pelas publicações dos eventos e por um destaque na entrada do Wi-Fi gratuito.
-- Enviar uma avaliação breve e sugerir atividades futuras.
+Shoppings deixaram de ser só lugar de compras: são espaços de convivência, lazer e cultura, com uma programação de eventos que precisa atrair e fidelizar públicos diferentes, como famílias, jovens e pessoas com deficiência.
 
-### Para administradores
+Hoje essa programação tem três problemas:
 
-- Cadastrar e atualizar eventos em um único lugar.
-- Organizar a programação e divulgar informações atualizadas.
-- Consultar inscrições, presença e avaliações, quando esses recursos estiverem disponíveis.
-- Usar os resultados para orientar os próximos eventos.
+1. **Está espalhada.** Os eventos aparecem em posts do Instagram, cartazes e avisos soltos. O visitante não tem um lugar único e acessível para saber o que acontece, quando e onde, nem se o evento oferece intérprete de Libras ou espaço sensorial.
+2. **A divulgação não é medida.** A equipe não sabe se o público chegou pelo Instagram, pelo Wi-Fi do shopping ou pelo cartaz da entrada. Sem isso, não dá para saber onde vale a pena investir.
+3. **A decisão sobre o próximo evento é intuitiva.** Faltam dados organizados sobre o que atraiu interesse, e é comum confundir indicadores diferentes (visualização não é presença, e interesse não é reserva).
 
-## Fluxo da experiência
+## 2. Justificativa
 
-1. A equipe planeja e cadastra um evento.
-2. A agenda publica a programação.
-3. O visitante descobre o evento pelo Instagram ou pelo Wi-Fi do shopping.
-4. O visitante consulta os detalhes e participa.
-5. Depois do evento, pode enviar uma avaliação.
-6. A equipe analisa os resultados e aprimora a próxima programação.
+- **O visitante já está no celular.** Ele chega pelo Instagram, pelo portal do Wi-Fi ou pela câmera apontada para um QR Code. Exigir aplicativo ou cadastro afasta justamente quem só queria consultar a programação. Uma página web leve e sem login remove essa barreira.
+- **Acessibilidade é público, não detalhe.** Filtrar por Libras, audiodescrição ou espaço sensorial permite que pessoas com deficiência e famílias neurodivergentes planejem a visita. Isso só acontece se o próprio site for acessível (WCAG 2.2 AA).
+- **Medir a origem é barato e muda decisões.** Um link curto e um QR por canal (`/r/{código}`) já dizem qual divulgação trouxe gente, sem ferramenta paga e sem rastrear pessoas.
+- **Números precisam ser honestos para serem úteis.** Cada indicador vem marcado como **Medido**, **Estimado** ou **Indisponível**. Uma métrica sem fonte aparece como "—", nunca como zero, o que evita decisões baseadas em números inflados.
+- **Privacidade por padrão (LGPD).** O sistema guarda o mínimo: um identificador aleatório do dispositivo, cifrado (HMAC), apagado depois de 30 dias e removível pelo próprio visitante. Não há nome, e-mail, IP gravado nem rastreadores de terceiros.
 
-## Indicadores sugeridos
+## 3. Objetivos
 
-- Visualizações e inscrições por evento.
-- Participantes presentes e desistências.
-- Satisfação dos visitantes.
-- Interesses e sugestões mais frequentes.
-- Intenção de participar de eventos futuros.
+### Objetivo geral
 
-## Cuidados de experiência e privacidade
+Centralizar a programação de eventos do shopping num canal digital simples, acessível e sem cadastro, e dar à equipe dados confiáveis de divulgação e alcance para planejar melhor os próximos eventos.
 
-A consulta à programação deve ser simples e aberta, sem exigir cadastro. O uso do Wi-Fi não deve depender de inscrição em eventos ou de envio de avaliações. Caso sejam coletadas informações pessoais ou preferências, o sistema deverá explicar de forma clara a finalidade da coleta e oferecer escolha ao visitante.
+### Objetivos específicos
 
-## Escopo inicial sugerido
+| # | Objetivo | Situação |
+| --- | --- | --- |
+| 1 | Publicar uma **agenda pública** mobile-first com busca, filtros (data, categoria, acessibilidade) e página de detalhes | ✅ Fase 1 |
+| 2 | Permitir **salvar na agenda pessoal** (`.ics` e Google Agenda) e **compartilhar** | ✅ Fase 1 |
+| 3 | Dar à equipe uma **área administrativa** com login, papéis (Administrador, Editor, Analista), espaços, eventos e banners | ✅ Fase 1 |
+| 4 | Criar **links e QR Codes de divulgação** por canal e medir de onde veio cada acesso | ✅ Fase 1 |
+| 5 | Mostrar um **painel de métricas** com selo de qualidade em cada número (medido, estimado ou indisponível) | ✅ Fase 1 |
+| 6 | Respeitar a **privacidade**: dados mínimos, retenção de 30 dias e botão "apagar meus dados" | ✅ Fase 1 |
+| 7 | Coletar **avaliações** e **sugestões** e gerar **relatórios pós-evento** e comparações | Fase 2 |
+| 8 | Recomendar experiências a partir de objetivos, público, orçamento e histórico, com **regras transparentes** | Fase 2 |
+| 9 | Integrar portal Wi-Fi, painéis digitais, fluxo de pessoas e vendas, se houver autorização | Fase 3 |
 
-Uma primeira versão pode incluir a agenda pública, páginas de detalhes dos eventos, cadastro administrativo e avaliação breve após cada atividade. Inscrições, lembretes e relatórios podem ser acrescentados em etapas posteriores.
+---
 
-## Situação do projeto
+## 4. Ferramentas e tecnologias
 
-A **Fase 1 (Plataforma essencial)** está implementada na branch `feat/phase-1-platform`. Ela ainda não foi publicada em nenhum ambiente. A especificação fica em [`docs/spec/`](docs/spec/README.md), e o status de cada item está em [`docs/spec/09-backlog.md`](docs/spec/09-backlog.md).
+| Camada | Escolha | Por quê |
+| --- | --- | --- |
+| Linguagem | **TypeScript** (modo estrito) sobre **Node.js 22+** | Uma só linguagem no front-end e no back-end, com tipos que evitam erros cedo |
+| Plataforma web | **Next.js 16** (App Router) e **React 19** | Páginas geradas no servidor: rápidas no 4G, boas para prévias de link e SEO. Front-end e API no mesmo projeto |
+| Banco de dados | **PostgreSQL**, ou **PGlite** (PostgreSQL embutido) para rodar sem instalar nada | Restrições `UNIQUE` garantem a deduplicação das métricas. O mesmo SQL roda local e em produção |
+| Acesso a dados | **Drizzle ORM**, com migrações versionadas | SQL tipado e leve |
+| Validação | **Zod** | Valida toda entrada na borda (formulários e APIs) |
+| Segurança | **Argon2id** (senhas), sessões no banco, **CSP com nonce**, cookies `HttpOnly`, limites de requisição | Login próprio, sem depender de terceiros |
+| Imagens e QR | **sharp** (banners em WebP, sem metadados) e **qrcode** (QR gerado no servidor) | Nenhum serviço externo |
+| Testes | **Vitest** (unidade e integração), **Playwright** e **axe-core** (ponta a ponta e acessibilidade) | Cada regra de negócio e cada fluxo principal tem teste automático |
+| Qualidade e CI | **ESLint**, **Prettier**, **GitHub Actions** (lint, tipos, testes, build, E2E, auditoria de dependências, varredura de segredos com gitleaks) | Todo pull request é verificado automaticamente |
 
-**O que existe:** agenda pública com busca e filtros, página de detalhes (Open Graph, JSON-LD, `.ics` e Google Agenda), compartilhamento, página de privacidade com "apagar dados deste dispositivo", área administrativa com login, papéis, usuários, espaços, eventos (rascunho, publicação, cancelamento e encerramento), upload de banner, links e QR de divulgação e painel básico de métricas.
+### Tecnologia ou prática da roleta
 
-**O que não existe, de propósito:** "Tenho interesse" (fase pendente, P-FASE-1), reservas, check-in, avaliações, sugestões, módulo de inteligência e integrações. As decisões abertas estão em [`docs/spec/07-mvp-e-riscos.md`](docs/spec/07-mvp-e-riscos.md) §4.
+> **⚠️ A preencher pelo grupo:** escreva qual tecnologia ou prática foi sorteada e como ela entra no projeto.
+
+Modelo sugerido:
+
+- **Sorteada:** _nome da tecnologia ou prática_
+- **Onde entra:** _parte do sistema (ex.: agenda pública, painel, CI, testes)_
+- **Como será usada:** _o que muda na solução e por quê_
+- **Como vamos demonstrar:** _tela, teste ou métrica que comprova o uso_
+
+---
+
+## 5. Arquitetura proposta
+
+Uma única aplicação **Next.js**, organizada em camadas no estilo de uma **arquitetura hexagonal leve**. As regras de negócio ficam isoladas do framework, o que facilita testar e trocar peças (por exemplo, o banco local pelo PostgreSQL gerenciado, ou o disco local por armazenamento em nuvem).
+
+```mermaid
+flowchart LR
+    V["Visitante<br/>(celular)"] -->|"Instagram, Wi-Fi,<br/>QR Code, link"| R["/r/{código}<br/>link de divulgação"]
+    R --> P
+    V --> P["Páginas públicas<br/>agenda · detalhes · privacidade"]
+    E["Equipe do shopping<br/>(computador)"] --> A["Área /admin<br/>eventos · espaços · divulgação · painel"]
+
+    subgraph App["Aplicação Next.js (TypeScript)"]
+        P --> UC
+        A --> UC
+        B["APIs de métricas<br/>visualização · engajamento"] --> UC
+        UC["application/<br/>casos de uso"] --> D["domain/<br/>regras puras"]
+        UC --> I["infrastructure/<br/>banco · arquivos · segurança"]
+    end
+
+    P -. beacon .-> B
+    I --> DB[("PostgreSQL / PGlite")]
+    I --> FS[("Imagens<br/>(disco local)")]
+```
+
+| Pasta | Responsabilidade | Exemplos |
+| --- | --- | --- |
+| `src/domain/` | Regras puras, sem framework, testadas primeiro (TDD) | status do evento, fuso de São Paulo, filtros da agenda, origem do acesso, `.ics`, política de retenção |
+| `src/application/` | Casos de uso que orquestram as regras e o banco | publicar evento, registrar visualização, painel, retenção diária |
+| `src/infrastructure/` | Adaptadores técnicos | Drizzle e PostgreSQL, armazenamento de arquivos, Argon2id, cookies, limites, CSP |
+| `src/ui/` | Componentes acessíveis reutilizáveis | cartão de evento, filtros, banner responsivo, cartões de métrica |
+| `src/app/` | Rotas (páginas e APIs) | `/`, `/eventos/[slug]`, `/admin/**`, `/r/[código]`, `/api/metrics/*` |
+
+**Princípios aplicados:**
+- **SOLID**, com padrões de projeto só onde resolvem um problema concreto: *Adapter* para armazenamento e banco, *Repository* via casos de uso, resultado "indisponível" no lugar de números inventados.
+- **Validação na borda** com Zod.
+- **Status do evento derivado das datas.** Ninguém precisa lembrar de mudar para "encerrado".
+
+Mais detalhes estão em [`docs/spec/05-arquitetura.md`](docs/spec/05-arquitetura.md).
+
+---
+
+## 6. Telas
+
+As imagens abaixo são **capturas do sistema funcionando** (Fase 1), geradas automaticamente com `npm run screens`. Os wireframes das telas planejadas para a Fase 2 (avaliação, planejamento e relatório pós-evento) estão em [`docs/spec/02-jornadas-e-telas.md`](docs/spec/02-jornadas-e-telas.md) §3. As telas podem mudar ao longo do hackathon.
+
+### Visitante (celular)
+
+| Agenda | Filtros | Detalhes do evento | Privacidade |
+| :-: | :-: | :-: | :-: |
+| <img src="docs/telas/01-agenda-celular.png" alt="Agenda pública no celular, com eventos agrupados por dia" width="200"> | <img src="docs/telas/02-filtros-celular.png" alt="Filtros por data, categoria e recurso de acessibilidade" width="200"> | <img src="docs/telas/03-detalhes-do-evento-celular.png" alt="Página do evento com data, local, vagas, acessibilidade e botões de agenda e compartilhamento" width="200"> | <img src="docs/telas/04-privacidade-celular.png" alt="Página de privacidade com o botão para apagar os dados do dispositivo" width="200"> |
+
+- **Agenda:** eventos agrupados por dia, com categoria, horário, local e recursos de acessibilidade.
+- **Filtros:** busca por texto, "hoje", "fim de semana", datas, categorias e acessibilidade. Ficam na URL, então dá para compartilhar uma busca.
+- **Detalhes:** informações completas, "Adicionar à agenda" (`.ics` e Google), "Compartilhar" e recursos de acessibilidade.
+- **Privacidade:** explica o que é guardado e tem o botão "Apagar meus dados deste dispositivo".
+
+### Equipe do shopping (computador)
+
+| Login | Painel de métricas |
+| :-: | :-: |
+| <img src="docs/telas/05-login-equipe.png" alt="Tela de login da equipe" width="420"> | <img src="docs/telas/06-painel-de-metricas.png" alt="Painel com acessos, origem por canal, visualizações por evento e acessos por link e QR" width="420"> |
+
+| Eventos | Cadastro de evento | Links e QR de divulgação |
+| :-: | :-: | :-: |
+| <img src="docs/telas/07-lista-de-eventos.png" alt="Lista de eventos com status" width="280"> | <img src="docs/telas/08-cadastro-de-evento.png" alt="Formulário de cadastro de evento" width="280"> | <img src="docs/telas/09-links-e-qr-de-divulgacao.png" alt="Criação de links de divulgação com QR Code para baixar" width="280"> |
+
+- **Painel:** acessos, origem por canal, visualizações, compartilhamentos e adições à agenda por evento. Cada número tem um selo (Medido, Estimado ou Indisponível) e há aviso de amostra pequena.
+- **Eventos:** rascunho, publicação, cancelamento (com confirmação) e encerramento, com banner e texto alternativo obrigatório.
+- **Divulgação:** um link curto e um QR Code (PNG ou SVG) para cada canal: Instagram, Wi-Fi, cartaz, totem.
+
+---
+
+## Situação e próximos passos
+
+**Fase 1, pronto e testado:**
+- agenda, filtros e detalhes;
+- `.ics` e Google Agenda, compartilhamento;
+- área administrativa com papéis;
+- espaços, eventos e banners responsivos;
+- links e QR de divulgação;
+- painel de métricas (inclusive compartilhamentos e adições à agenda);
+- privacidade e "apagar meus dados";
+- retenção automática de 30 dias;
+- CSP com nonce.
+
+**Fora de propósito, porque aguarda decisão** ([`docs/spec/07-mvp-e-riscos.md`](docs/spec/07-mvp-e-riscos.md) §4):
+- "Tenho interesse" (P-FASE-1);
+- reservas e check-in;
+- avaliações e sugestões (Fase 2);
+- integrações (Fase 3);
+- hospedagem e domínio.
+
+**Backlog:** cada item é uma issue no GitHub, com o mesmo número do backlog (`B-01` = [#1](https://github.com/Marquin25/agenda-digital-shopping/issues/1)). Veja [`docs/spec/09-backlog.md`](docs/spec/09-backlog.md).
+
+---
 
 ## Como rodar localmente
 
-Requisitos: Node.js 22.12 ou mais recente. O PostgreSQL é opcional, porque a aplicação também roda com o banco embutido **PGlite**, que guarda os dados numa pasta local.
+**Requisitos:** [Git](https://git-scm.com) e [Node.js](https://nodejs.org) 22.12 ou mais recente. **Não precisa** de Docker nem de banco instalado: o sistema usa o **PGlite**, que guarda os dados numa pasta local.
 
-1. Instale as dependências:
+```sh
+git clone https://github.com/Marquin25/agenda-digital-shopping.git
+cd agenda-digital-shopping
+npm install
+cp .env.example .env.local        # no Windows: copy .env.example .env.local
+```
 
-   ```sh
-   npm install
-   ```
+Abra o `.env.local` e defina o banco local:
 
-2. Copie `.env.example` para `.env.local` e preencha. O arquivo `.env.local` está no `.gitignore` e **nunca** deve ser versionado.
-   - `DATABASE_URL`: use `pglite:./storage/pglite` (sem Docker) ou `postgres://conecta:conecta_local_only@localhost:5432/conecta` depois de `docker compose up -d`. A senha do Compose serve só para uso local.
-   - `DEVICE_ID_PEPPER`: gere com `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"`. Em desenvolvimento, se ficar vazio, a aplicação usa um valor temporário. Em produção, ele é obrigatório.
+```
+DATABASE_URL=pglite:./storage/pglite
+```
 
-3. Prepare o banco e, se quiser, os dados de demonstração:
+O arquivo `.env.local` está no `.gitignore` e **nunca** deve ser versionado. As outras variáveis são opcionais em desenvolvimento.
 
-   ```sh
-   npm run db:migrate
-   npm run db:seed        # categorias, recursos de acessibilidade, um espaço e eventos de exemplo
-   ```
+```sh
+npm run db:migrate     # cria as tabelas
+npm run db:seed        # categorias, recursos de acessibilidade, um espaço e 4 eventos de exemplo
+npm run admin:create -- --name "Seu nome" --email voce@example.com --role administrator
+npm run dev
+```
 
-4. Crie a primeira conta da equipe. A senha é pedida no terminal e precisa ser trocada no primeiro acesso:
+Abra <http://localhost:3000>. A área da equipe fica em <http://localhost:3000/admin>; a senha é pedida no terminal e deve ser trocada no primeiro acesso. Para parar o servidor, use `Ctrl + C`.
 
-   ```sh
-   npm run admin:create -- --name "Seu nome" --email voce@example.com --role administrator
-   ```
-
-5. Suba a aplicação com `npm run dev` e abra <http://localhost:3000>. A área da equipe fica em `/admin`.
+**Opcional:**
+- Use PostgreSQL em vez do PGlite: rode `docker compose up -d` e troque o `DATABASE_URL` por `postgres://conecta:conecta_local_only@localhost:5432/conecta`. Essa senha serve só para uso local.
+- Rode a retenção de dados (apaga identificadores com mais de 30 dias e mantém os totais) com `npm run retention:run`.
 
 ## Verificações
 
 | Comando | O que faz |
 | --- | --- |
-| `npm test` | Testes de unidade e de integração (Vitest; o banco é PGlite em memória) |
-| `npm run test:e2e` | Compila a aplicação e roda os testes ponta a ponta (Playwright + axe). Usa um banco descartável em `storage/e2e-db` e a porta 3200 |
-| `npm run typecheck` | TypeScript em modo estrito |
-| `npm run lint` | ESLint |
-| `npm run format:check` | Prettier |
-| `npm run build` | Build de produção do Next.js |
+| `npm test` | Testes de unidade e de integração (Vitest, com PGlite em memória) |
+| `npm run test:e2e` | Compila e roda os testes ponta a ponta com axe (Playwright). Banco descartável e porta 3200 |
+| `npm run typecheck` · `npm run lint` · `npm run format:check` | Tipos, ESLint e Prettier |
+| `npm run build` | Build de produção |
+| `npm run screens` | Regera as capturas de tela em `docs/telas/` |
 
-Para o primeiro `test:e2e`, instale o navegador com `npx playwright install chromium`.
+Antes do primeiro `test:e2e` ou `screens`, instale o navegador com `npx playwright install chromium`. O mesmo conjunto roda no GitHub Actions a cada pull request (`.github/workflows/ci.yml`).
 
-## Integração contínua e implantação
+## Documentação
 
-- **CI:** o workflow `.github/workflows/ci.yml` roda lint, tipos, formatação, testes, build e E2E em cada pull request e em cada push na `main`.
-- **Vercel:** está preparada, mas não vinculada. Veja [`docs/implantacao-vercel.md`](docs/implantacao-vercel.md) para as variáveis, os serviços pendentes e os passos que dependem do responsável.
-
-## Convenções
-
-A documentação e a interface ficam em português do Brasil, e o código em inglês. Veja [`CLAUDE.md`](CLAUDE.md), [`GLOSSARY.md`](GLOSSARY.md) e [`docs/spec/05-arquitetura.md`](docs/spec/05-arquitetura.md) §6.
+| Documento | Conteúdo |
+| --- | --- |
+| [`docs/spec/`](docs/spec/README.md) | Especificação completa: produto, jornadas e wireframes, métricas, dados, arquitetura, qualidade, riscos, testes, backlog e inteligência |
+| [`GLOSSARY.md`](GLOSSARY.md) | Termos do domínio e seus nomes no código |
+| [`docs/research/referencias.md`](docs/research/referencias.md) | Pesquisa: WCAG, LGPD, iCalendar, métricas e antiabuso |
+| [`docs/implantacao-vercel.md`](docs/implantacao-vercel.md) | Preparação para publicar na Vercel, quando a hospedagem for decidida |
+| [`CLAUDE.md`](CLAUDE.md) | Convenções: documentação e interface em pt-BR, código em inglês, SOLID |

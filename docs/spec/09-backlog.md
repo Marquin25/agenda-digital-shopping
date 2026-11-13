@@ -35,11 +35,11 @@ Colunas: `Backlog` → `Pronto para fazer` → `Em andamento` → `Em revisão` 
 
 ### Status da implementação (2026-11-13, branch `feat/phase-1-platform`)
 
-O status vale para o código local, verificado com `npm test` (67 testes de unidade e integração), `npm run test:e2e` (10 cenários com axe), `typecheck`, `lint` e `build`. **Nada foi publicado.**
+O status vale para o código local, verificado com `npm test` (83 testes de unidade e integração), `npm run test:e2e` (11 cenários com axe), `typecheck`, `lint` e `build`. **Nada foi publicado.**
 
 | Item | Status | Observações |
 | --- | --- | --- |
-| B-01 | Parcial | Falta o **CI** (GitHub Actions com gitleaks); enviar um workflow pode exigir o escopo `workflow` no `gh` |
+| B-01 | Feito | CI no GitHub Actions: lint, tipos, testes, build, E2E, `npm audit` (produção) e gitleaks |
 | B-02 | Parcial | Migração e sementes funcionam; a migração **não tem reversão** (o Drizzle gera só a ida) |
 | B-03 | Feito | |
 | B-04, B-05, B-06 | Feito | Publicação aparece na hora (página dinâmica, sem cache) |
@@ -47,16 +47,16 @@ O status vale para o código local, verificado com `npm test` (67 testes de unid
 | B-08 | Feito | |
 | B-09 | Feito | Sem TOTP (previsto como opcional) |
 | B-10, B-11, B-12, B-13 | Feito | |
-| B-14 | Parcial | Tipo real verificado, EXIF removido, WebP 1200×675 com alt obrigatório; **falta gerar tamanhos responsivos** |
+| B-14 | Feito | Tipo real verificado, EXIF removido, WebP em 1200 e 600 px com `srcset` e alt obrigatório |
 | B-15, B-16 | Feito | |
 | B-17 | Feito | |
-| B-18 | Parcial | Visualizações (únicas e brutas), origem e leituras de link/QR estão prontas; **compartilhamentos e cliques em "adicionar à agenda" ainda não são registrados** |
+| B-18 | Feito | Visualizações (únicas e brutas), origem, leituras de link/QR, compartilhamentos e cliques em "adicionar à agenda" (`.ics` e Google) |
 | B-19 | Feito | Sem gráficos: só tabelas (atende ao requisito de equivalente textual) |
 | B-20 | **Bloqueado** | P-FASE-1; nada foi implementado |
 | B-21 | Feito | Texto marcado como pendente de validação do shopping |
-| B-22 | **Não feito** | Tarefa de retenção e agregação |
-| B-23 | Parcial | CSP sem *nonce* (usa `'unsafe-inline'` em scripts); limitador de requisições em memória (não serve para várias instâncias); o IP é o **último** valor de `X-Forwarded-For`, o que pressupõe **exatamente um** proxy confiável na frente (revisar quando a hospedagem for definida); falta `npm audit`/gitleaks no CI |
-| B-24 | **Não feito** | Dockerfile e guia de implantação |
+| B-22 | Feito | `npm run retention:run` ou `/api/cron/retention` (com `CRON_SECRET`): agrega e apaga identificadores com mais de 30 dias, sessões vencidas e auditoria com mais de 365 dias. **Falta agendar** quando a hospedagem for definida |
+| B-23 | Parcial | CSP com *nonce* e `npm audit`/gitleaks no CI estão prontos. Pendências: limitador de requisições em memória (não serve para várias instâncias); o IP é o **último** valor de `X-Forwarded-For`, o que pressupõe **exatamente um** proxy confiável na frente (revisar quando a hospedagem for definida) |
+| B-24 | Parcial | Guia de preparação para a Vercel em `docs/implantacao-vercel.md`; sem Dockerfile, porque por enquanto o uso é só local |
 | B-25 | **Bloqueado** | P-INF-1, P-INF-2, P-ORC-1, P-LGPD-* |
 
 
