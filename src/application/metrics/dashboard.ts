@@ -2,7 +2,13 @@ import { and, asc, desc, eq, gt, gte, isNotNull, lte, ne, sql } from "drizzle-or
 import type { Metric } from "@/domain/metrics/metric-quality";
 import type { TrafficChannel } from "@/domain/metrics/traffic-source";
 import type { Database } from "@/infrastructure/db/client";
-import { events, pageViewsDaily, pageViewsRawDaily, promoLinkHitsDaily, promoLinks } from "@/infrastructure/db/schema";
+import {
+  events,
+  pageViewsDaily,
+  pageViewsRawDaily,
+  promoLinkHitsDaily,
+  promoLinks,
+} from "@/infrastructure/db/schema";
 import { AGENDA_TARGET } from "./record-metrics";
 
 export interface DashboardPeriod {
@@ -24,10 +30,16 @@ export interface DashboardSummary {
   promoLinks: { id: string; code: string; channel: string; description: string; hits: number }[];
 }
 
-const inPeriod = (column: typeof pageViewsDaily.day | typeof pageViewsRawDaily.day | typeof promoLinkHitsDaily.day, p: DashboardPeriod) =>
-  and(gte(column, p.from), lte(column, p.to));
+const inPeriod = (
+  column: typeof pageViewsDaily.day | typeof pageViewsRawDaily.day | typeof promoLinkHitsDaily.day,
+  p: DashboardPeriod,
+) => and(gte(column, p.from), lte(column, p.to));
 
-export async function getDashboardSummary(db: Database, period: DashboardPeriod, now = new Date()): Promise<DashboardSummary> {
+export async function getDashboardSummary(
+  db: Database,
+  period: DashboardPeriod,
+  now = new Date(),
+): Promise<DashboardSummary> {
   const [agendaUnique] = await db
     .select({ n: sql<number>`count(*)::int` })
     .from(pageViewsDaily)
@@ -62,7 +74,10 @@ export async function getDashboardSummary(db: Database, period: DashboardPeriod,
     .groupBy(pageViewsDaily.eventId)
     .as("unique_by_event");
   const rawByEvent = db
-    .select({ eventId: pageViewsRawDaily.eventId, pageLoads: sql<number>`sum(${pageViewsRawDaily.views})::int`.as("page_loads") })
+    .select({
+      eventId: pageViewsRawDaily.eventId,
+      pageLoads: sql<number>`sum(${pageViewsRawDaily.views})::int`.as("page_loads"),
+    })
     .from(pageViewsRawDaily)
     .where(and(isNotNull(pageViewsRawDaily.eventId), inPeriod(pageViewsRawDaily.day, period)))
     .groupBy(pageViewsRawDaily.eventId)
@@ -104,7 +119,10 @@ export async function getDashboardSummary(db: Database, period: DashboardPeriod,
     agendaPageLoads: { quality: "measured", value: agendaRaw?.n ?? 0 },
     activeEvents: { quality: "measured", value: active?.n ?? 0 },
     interested: { quality: "unavailable", reason: "“Tenho interesse” aguarda decisão de fase (P-FASE-1)." },
-    checkIns: { quality: "unavailable", reason: "Check-in não habilitado: desenho antifraude pendente (P-PROD-1)." },
+    checkIns: {
+      quality: "unavailable",
+      reason: "Check-in não habilitado: desenho antifraude pendente (P-PROD-1).",
+    },
     ratings: { quality: "unavailable", reason: "Avaliações previstas para a Fase 2." },
     footfall: { quality: "unavailable", reason: "Sem integração com sensores de fluxo (Fase 3)." },
     sales: { quality: "unavailable", reason: "Sem integração com dados de vendas (Fase 3)." },

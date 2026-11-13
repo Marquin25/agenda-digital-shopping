@@ -40,14 +40,28 @@ function toIdentity(user: typeof adminUsers.$inferSelect): AdminIdentity {
 
 export type LoginResult = { ok: true; token: string; user: AdminIdentity } | { ok: false };
 
-export async function login(db: Database, email: string, password: string, now = new Date()): Promise<LoginResult> {
-  const [user] = await db.select().from(adminUsers).where(eq(adminUsers.email, normalizeEmail(email))).limit(1);
+export async function login(
+  db: Database,
+  email: string,
+  password: string,
+  now = new Date(),
+): Promise<LoginResult> {
+  const [user] = await db
+    .select()
+    .from(adminUsers)
+    .where(eq(adminUsers.email, normalizeEmail(email)))
+    .limit(1);
   if (!user || !user.active) {
     await verifyPassword(await getDummyHash(), password);
     return { ok: false };
   }
   if (user.lockedUntil && user.lockedUntil > now) {
-    await recordAudit(db, { userId: user.id, action: "auth.login_locked", entity: "admin_user", entityId: user.id });
+    await recordAudit(db, {
+      userId: user.id,
+      action: "auth.login_locked",
+      entity: "admin_user",
+      entityId: user.id,
+    });
     return { ok: false };
   }
   const valid = await verifyPassword(user.passwordHash, password);
@@ -83,7 +97,11 @@ export async function login(db: Database, email: string, password: string, now =
 }
 
 /** Validates a session token (idle and absolute expiry) and refreshes its idle timer. */
-export async function getSessionUser(db: Database, token: string, now = new Date()): Promise<AdminIdentity | null> {
+export async function getSessionUser(
+  db: Database,
+  token: string,
+  now = new Date(),
+): Promise<AdminIdentity | null> {
   const id = hashToken(token);
   const [row] = await db
     .select({ session: adminSessions, user: adminUsers })
@@ -119,13 +137,16 @@ export async function changeOwnPassword(
   }
   const problem = validateNewPassword(newPassword);
   if (problem) throw new AuthError(problem);
-  if (await verifyPassword(user.passwordHash, newPassword)) throw new AuthError("A nova senha precisa ser diferente da atual.");
+  if (await verifyPassword(user.passwordHash, newPassword))
+    throw new AuthError("A nova senha precisa ser diferente da atual.");
   await db
     .update(adminUsers)
     .set({ passwordHash: await hashPassword(newPassword), mustChangePassword: false, updatedAt: new Date() })
     .where(eq(adminUsers.id, userId));
   // Sign out every other session.
-  await db.delete(adminSessions).where(and(eq(adminSessions.userId, userId), ne(adminSessions.id, hashToken(keepSessionToken))));
+  await db
+    .delete(adminSessions)
+    .where(and(eq(adminSessions.userId, userId), ne(adminSessions.id, hashToken(keepSessionToken))));
   await recordAudit(db, { userId, action: "auth.password_changed", entity: "admin_user", entityId: userId });
 }
 
@@ -153,7 +174,11 @@ export async function createAdminUser(
   const problem = validateNewPassword(input.temporaryPassword);
   if (problem) throw new AuthError(problem);
   const email = normalizeEmail(input.email);
-  const [existing] = await db.select({ id: adminUsers.id }).from(adminUsers).where(eq(adminUsers.email, email)).limit(1);
+  const [existing] = await db
+    .select({ id: adminUsers.id })
+    .from(adminUsers)
+    .where(eq(adminUsers.email, email))
+    .limit(1);
   if (existing) throw new AuthError("Já existe um usuário com esse e-mail.");
   const [created] = await db
     .insert(adminUsers)
@@ -203,10 +228,21 @@ export async function updateAdminUser(
     .set({ ...changes, updatedAt: new Date() })
     .where(eq(adminUsers.id, userId));
   if (changes.active === false) await db.delete(adminSessions).where(eq(adminSessions.userId, userId));
-  await recordAudit(db, { userId: actorId, action: "admin_user.updated", entity: "admin_user", entityId: userId, details: changes });
+  await recordAudit(db, {
+    userId: actorId,
+    action: "admin_user.updated",
+    entity: "admin_user",
+    entityId: userId,
+    details: changes,
+  });
 }
 
-export async function resetAdminPassword(db: Database, actorId: string, userId: string, temporaryPassword: string) {
+export async function resetAdminPassword(
+  db: Database,
+  actorId: string,
+  userId: string,
+  temporaryPassword: string,
+) {
   const problem = validateNewPassword(temporaryPassword);
   if (problem) throw new AuthError(problem);
   await db
@@ -220,5 +256,10 @@ export async function resetAdminPassword(db: Database, actorId: string, userId: 
     })
     .where(eq(adminUsers.id, userId));
   await db.delete(adminSessions).where(eq(adminSessions.userId, userId));
-  await recordAudit(db, { userId: actorId, action: "admin_user.password_reset", entity: "admin_user", entityId: userId });
+  await recordAudit(db, {
+    userId: actorId,
+    action: "admin_user.password_reset",
+    entity: "admin_user",
+    entityId: userId,
+  });
 }

@@ -1,5 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { listCategories, listAccessibilityFeatures, saveVenue } from "@/application/catalog/catalog";
+import {
+  listCategories,
+  listAccessibilityFeatures,
+  saveVenue,
+  venueInputSchema,
+} from "@/application/catalog/catalog";
 import { createAdminUser } from "@/application/auth/admin-auth";
 import {
   cancelEvent,
@@ -8,6 +13,7 @@ import {
   endEventNow,
   EventRuleError,
   publishEvent,
+  updateEvent,
 } from "@/application/events/event-commands";
 import { eventInputSchema } from "@/application/events/event-input";
 import { getPublicEventBySlug, listPublicAgenda } from "@/application/events/event-queries";
@@ -24,7 +30,12 @@ describe("public agenda", async () => {
   let venueId: string;
   let ids: Record<string, string>;
 
-  async function newEvent(title: string, startsAt: string, endsAt: string, extra: Record<string, unknown> = {}) {
+  async function newEvent(
+    title: string,
+    startsAt: string,
+    endsAt: string,
+    extra: Record<string, unknown> = {},
+  ) {
     const [music, kids] = [
       (await listCategories(db)).find((c) => c.slug === "musica")!,
       (await listCategories(db)).find((c) => c.slug === "infantil")!,
@@ -49,11 +60,15 @@ describe("public agenda", async () => {
       role: "editor",
       temporaryPassword: "uma-senha-longa-de-teste",
     });
-    venueId = await saveVenue(db, userId, { name: "Praça Central", floor: "L1" });
+    venueId = await saveVenue(db, userId, venueInputSchema.parse({ name: "Praça Central", floor: "L1" }));
     const libras = (await listAccessibilityFeatures(db)).find((f) => f.slug === "libras")!;
     ids = {
-      todayShow: await newEvent("Show Acústico", "2026-11-18T19:00", "2026-11-18T21:00", { featureIds: [libras.id] }),
-      weekendKids: await newEvent("Oficina de Pintura", "2026-11-21T15:00", "2026-11-21T17:00", { kids: true }),
+      todayShow: await newEvent("Show Acústico", "2026-11-18T19:00", "2026-11-18T21:00", {
+        featureIds: [libras.id],
+      }),
+      weekendKids: await newEvent("Oficina de Pintura", "2026-11-21T15:00", "2026-11-21T17:00", {
+        kids: true,
+      }),
       past: await newEvent("Evento Passado", "2026-11-10T10:00", "2026-11-10T12:00"),
       draft: await newEvent("Rascunho Secreto", "2026-11-19T10:00", "2026-11-19T12:00"),
     };
@@ -69,24 +84,36 @@ describe("public agenda", async () => {
   });
 
   it("filters by accessibility feature", async () => {
-    const agenda = await listPublicAgenda(db, parseAgendaFilters(new URLSearchParams("acessibilidade=libras")), NOW);
+    const agenda = await listPublicAgenda(
+      db,
+      parseAgendaFilters(new URLSearchParams("acessibilidade=libras")),
+      NOW,
+    );
     expect(agenda.map((e) => e.title)).toEqual(["Show Acústico"]);
     expect(agenda[0]!.features.map((f) => f.slug)).toEqual(["libras"]);
   });
 
   it("filters by category and by accent-insensitive text", async () => {
-    expect((await listPublicAgenda(db, parseAgendaFilters(new URLSearchParams("categoria=infantil")), NOW)).map((e) => e.title)).toEqual([
-      "Oficina de Pintura",
-    ]);
-    expect((await listPublicAgenda(db, parseAgendaFilters(new URLSearchParams("q=ACUSTICO")), NOW)).map((e) => e.title)).toEqual([
-      "Show Acústico",
-    ]);
+    expect(
+      (await listPublicAgenda(db, parseAgendaFilters(new URLSearchParams("categoria=infantil")), NOW)).map(
+        (e) => e.title,
+      ),
+    ).toEqual(["Oficina de Pintura"]);
+    expect(
+      (await listPublicAgenda(db, parseAgendaFilters(new URLSearchParams("q=ACUSTICO")), NOW)).map(
+        (e) => e.title,
+      ),
+    ).toEqual(["Show Acústico"]);
   });
 
   it("filters by date window in mall time", async () => {
     const today = await listPublicAgenda(db, parseAgendaFilters(new URLSearchParams("data=hoje")), NOW);
     expect(today.map((e) => e.title)).toEqual(["Show Acústico"]);
-    const weekend = await listPublicAgenda(db, parseAgendaFilters(new URLSearchParams("data=fim-de-semana")), NOW);
+    const weekend = await listPublicAgenda(
+      db,
+      parseAgendaFilters(new URLSearchParams("data=fim-de-semana")),
+      NOW,
+    );
     expect(weekend.map((e) => e.title)).toEqual(["Oficina de Pintura"]);
   });
 
@@ -120,5 +147,23 @@ describe("public agenda", async () => {
       capacityMode: "unlimited",
     });
     expect(result.success).toBe(false);
+  });
+
+  it("reports the banner a new upload replaced, so its file can be removed", async () => {
+    const input = eventInputSchema.parse({
+      title: "Evento com Banner",
+      description: "Evento usado para testar a troca de banner",
+      startsAt: "2026-11-25T10:00",
+      endsAt: "2026-11-25T12:00",
+      venueId,
+      categoryId: (await listCategories(db))[0]!.id,
+      capacityMode: "unlimited",
+      bannerAlt: "Palco iluminado",
+    });
+    const id = await createEvent(db, userId, input, { path: "first.webp" });
+    expect(await updateEvent(db, userId, id, input, null)).toEqual({ replacedBannerPath: null });
+    expect(await updateEvent(db, userId, id, input, { path: "second.webp" })).toEqual({
+      replacedBannerPath: "first.webp",
+    });
   });
 });

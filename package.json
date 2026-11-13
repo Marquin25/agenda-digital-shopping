@@ -2,6 +2,7 @@
   "name": "conecta-shopping",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "description": "Mobile-first events agenda and management platform for a shopping mall (Conecta Shopping, provisional name).",
   "engines": {
     "node": ">=22.12.0"
@@ -16,7 +17,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test",
+    "test:e2e": "next build && playwright test",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx scripts/migrate.ts",
     "db:seed": "tsx scripts/seed.ts",
@@ -31,6 +32,7 @@
     "qrcode": "1.5.4",
     "react": "19.3.1",
     "react-dom": "19.3.1",
+    "server-only": "0.0.1",
     "sharp": "0.35.5",
     "zod": "4.6.7"
   },

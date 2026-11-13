@@ -28,7 +28,8 @@ const COMMON_PASSWORDS = new Set([
 
 /** Returns a pt-BR error message, or null when acceptable. */
 export function validateNewPassword(password: string): string | null {
-  if (password.length < MIN_PASSWORD_LENGTH) return `A senha precisa ter pelo menos ${MIN_PASSWORD_LENGTH} caracteres.`;
+  if (password.length < MIN_PASSWORD_LENGTH)
+    return `A senha precisa ter pelo menos ${MIN_PASSWORD_LENGTH} caracteres.`;
   if (password.length > 256) return "A senha é longa demais.";
   if (COMMON_PASSWORDS.has(password.toLowerCase())) return "Essa senha é muito comum. Escolha outra.";
   return null;

@@ -40,9 +40,14 @@ export const venueInputSchema = z.object({
     ),
 });
 export type VenueInput = z.input<typeof venueInputSchema>;
+export type ValidVenueInput = z.output<typeof venueInputSchema>;
 
-export async function saveVenue(db: Database, userId: string, input: VenueInput, venueId?: string) {
-  const data = venueInputSchema.parse(input);
+export async function saveVenue(
+  db: Database,
+  userId: string | null,
+  data: ValidVenueInput,
+  venueId?: string,
+) {
   if (venueId) {
     await db
       .update(venues)
@@ -56,7 +61,7 @@ export async function saveVenue(db: Database, userId: string, input: VenueInput,
   return created!.id;
 }
 
-export async function setVenueActive(db: Database, userId: string, venueId: string, active: boolean) {
+export async function setVenueActive(db: Database, userId: string | null, venueId: string, active: boolean) {
   await db.update(venues).set({ active, updatedAt: new Date() }).where(eq(venues.id, venueId));
   await recordAudit(db, {
     userId,

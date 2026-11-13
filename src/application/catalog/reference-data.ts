@@ -10,10 +10,22 @@ export const INITIAL_CATEGORIES = [
 ];
 
 export const INITIAL_ACCESSIBILITY_FEATURES = [
-  { slug: "libras", name: "Intérprete de Libras", description: "Tradução para a Língua Brasileira de Sinais." },
-  { slug: "espaco-sensorial", name: "Espaço sensorial", description: "Área com estímulos reduzidos para descanso." },
+  {
+    slug: "libras",
+    name: "Intérprete de Libras",
+    description: "Tradução para a Língua Brasileira de Sinais.",
+  },
+  {
+    slug: "espaco-sensorial",
+    name: "Espaço sensorial",
+    description: "Área com estímulos reduzidos para descanso.",
+  },
   { slug: "pet-friendly", name: "Pet friendly", description: "Animais de estimação são bem-vindos." },
-  { slug: "cadeira-de-rodas", name: "Acessível para cadeira de rodas", description: "Acesso e espaço para cadeiras de rodas." },
+  {
+    slug: "cadeira-de-rodas",
+    name: "Acessível para cadeira de rodas",
+    description: "Acesso e espaço para cadeiras de rodas.",
+  },
   { slug: "audiodescricao", name: "Audiodescrição", description: "Descrição em áudio do conteúdo visual." },
 ];
 

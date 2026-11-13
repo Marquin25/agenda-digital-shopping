@@ -32,7 +32,7 @@ describe("buildIcs (RFC 5545)", () => {
   });
 
   it("escapes commas, semicolons and newlines in text", () => {
-    expect(unfolded).toContain("SUMMARY:Show\; Acústico\\, de Sábado\r\n");
+    expect(unfolded).toContain("SUMMARY:Show\\; Acústico\\, de Sábado\r\n");
     expect(unfolded).toContain("DESCRIPTION:Linha 1\\nLinha 2\r\n");
   });
 

@@ -1,10 +1,7 @@
 import { addDaysToDateKey, isDateKey, weekdayOf } from "@/domain/time/time-zone";
 
 export type DateFilter =
-  | { kind: "all" }
-  | { kind: "today" }
-  | { kind: "weekend" }
-  | { kind: "range"; from: string; to: string };
+  { kind: "all" } | { kind: "today" } | { kind: "weekend" } | { kind: "range"; from: string; to: string };
 
 export interface AgendaFilters {
   query: string;

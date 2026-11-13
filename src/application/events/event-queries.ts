@@ -64,10 +64,7 @@ async function loadFeatures(db: Database, eventIds: string[]) {
   return map;
 }
 
-type Row = { event: typeof events.$inferSelect } & Omit<
-  { [K in keyof typeof baseSelect]: string },
-  "event"
->;
+type Row = { event: typeof events.$inferSelect } & Omit<{ [K in keyof typeof baseSelect]: string }, "event">;
 
 function toView(row: Row, features: EventView["features"], now: Date): EventView {
   const e = row.event;
@@ -109,7 +106,9 @@ export async function listPublicAgenda(db: Database, filters: AgendaFilters, now
   const conditions: SQL[] = [ne(events.publicationStatus, "draft"), gt(effectiveEnd, now)];
 
   if (filters.query) {
-    conditions.push(like(events.searchText, `%${normalizeSearchText(filters.query).replace(/[%_\\]/g, "\\$&")}%`));
+    conditions.push(
+      like(events.searchText, `%${normalizeSearchText(filters.query).replace(/[%_\\]/g, "\\$&")}%`),
+    );
   }
   if (filters.categories.length > 0) conditions.push(inArray(categories.slug, filters.categories));
   for (const featureSlug of filters.features) {
@@ -118,8 +117,16 @@ export async function listPublicAgenda(db: Database, filters: AgendaFilters, now
         db
           .select({ one: sql`1` })
           .from(eventAccessibilityFeatures)
-          .innerJoin(accessibilityFeatures, eq(accessibilityFeatures.id, eventAccessibilityFeatures.featureId))
-          .where(and(eq(eventAccessibilityFeatures.eventId, events.id), eq(accessibilityFeatures.slug, featureSlug))),
+          .innerJoin(
+            accessibilityFeatures,
+            eq(accessibilityFeatures.id, eventAccessibilityFeatures.featureId),
+          )
+          .where(
+            and(
+              eq(eventAccessibilityFeatures.eventId, events.id),
+              eq(accessibilityFeatures.slug, featureSlug),
+            ),
+          ),
       ),
     );
   }

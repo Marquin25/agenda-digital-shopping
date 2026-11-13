@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { addDaysToDateKey, localDateTimeToUtc, toLocalDateKey, toLocalDateTimeInput, weekdayOf } from "@/domain/time/time-zone";
+import {
+  addDaysToDateKey,
+  localDateTimeToUtc,
+  toLocalDateKey,
+  toLocalDateTimeInput,
+  weekdayOf,
+} from "@/domain/time/time-zone";
 
 describe("localDateTimeToUtc (America/Sao_Paulo)", () => {
   it("converts a current (UTC-3) local time", () => {

@@ -1,6 +1,8 @@
 import { createHmac, randomUUID } from "node:crypto";
 
 export const DEVICE_COOKIE = "cs_device";
+/** Session cookie holding the origin (channel/campaign) of the current visit; deleted with the device data. */
+export const VISIT_COOKIE = "cs_visit";
 export const DEVICE_COOKIE_MAX_AGE_SECONDS = 180 * 24 * 60 * 60;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 

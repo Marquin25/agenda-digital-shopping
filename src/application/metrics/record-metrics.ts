@@ -21,10 +21,18 @@ export async function recordPageView(db: Database, view: PageView): Promise<void
   await db
     .insert(pageViewsDaily)
     .values(view)
-    .onConflictDoNothing({ target: [pageViewsDaily.targetKey, pageViewsDaily.day, pageViewsDaily.deviceHash] });
+    .onConflictDoNothing({
+      target: [pageViewsDaily.targetKey, pageViewsDaily.day, pageViewsDaily.deviceHash],
+    });
   await db
     .insert(pageViewsRawDaily)
-    .values({ targetKey: view.targetKey, eventId: view.eventId, day: view.day, channel: view.channel, views: 1 })
+    .values({
+      targetKey: view.targetKey,
+      eventId: view.eventId,
+      day: view.day,
+      channel: view.channel,
+      views: 1,
+    })
     .onConflictDoUpdate({
       target: [pageViewsRawDaily.targetKey, pageViewsRawDaily.day, pageViewsRawDaily.channel],
       set: { views: sql`${pageViewsRawDaily.views} + 1` },

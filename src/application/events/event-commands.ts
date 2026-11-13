@@ -11,7 +11,11 @@ async function uniqueSlug(db: Database, title: string): Promise<string> {
   const base = slugify(title) || "evento";
   for (let attempt = 0; attempt < 50; attempt++) {
     const candidate = attempt === 0 ? base : `${base}-${attempt + 1}`;
-    const existing = await db.select({ id: events.id }).from(events).where(eq(events.slug, candidate)).limit(1);
+    const existing = await db
+      .select({ id: events.id })
+      .from(events)
+      .where(eq(events.slug, candidate))
+      .limit(1);
     if (existing.length === 0) return candidate;
   }
   return `${base}-${crypto.randomUUID().slice(0, 8)}`;
@@ -43,7 +47,7 @@ async function replaceFeatures(db: Database, eventId: string, featureIds: number
 
 export async function createEvent(
   db: Database,
-  userId: string,
+  userId: string | null,
   input: ValidEventInput,
   banner: { path: string } | null,
 ): Promise<string> {
@@ -67,11 +71,11 @@ export async function createEvent(
 
 export async function updateEvent(
   db: Database,
-  userId: string,
+  userId: string | null,
   eventId: string,
   input: ValidEventInput,
   banner: { path: string } | null,
-): Promise<void> {
+): Promise<{ replacedBannerPath: string | null }> {
   const [current] = await db.select().from(events).where(eq(events.id, eventId)).limit(1);
   if (!current) throw new EventRuleError("Evento não encontrado.");
   const bannerPath = banner?.path ?? current.bannerPath;
@@ -88,11 +92,13 @@ export async function updateEvent(
     .where(eq(events.id, eventId));
   await replaceFeatures(db, eventId, input.featureIds);
   await recordAudit(db, { userId, action: "event.updated", entity: "event", entityId: eventId });
+  const replaced = banner && current.bannerPath && current.bannerPath !== banner.path;
+  return { replacedBannerPath: replaced ? current.bannerPath : null };
 }
 
 async function transition(
   db: Database,
-  userId: string,
+  userId: string | null,
   eventId: string,
   action: string,
   allowedFrom: ReadonlyArray<"draft" | "published" | "cancelled">,
@@ -111,19 +117,19 @@ async function transition(
   return current;
 }
 
-export async function publishEvent(db: Database, userId: string, eventId: string, now = new Date()) {
+export async function publishEvent(db: Database, userId: string | null, eventId: string, now = new Date()) {
   await transition(db, userId, eventId, "event.published", ["draft"], {
     publicationStatus: "published",
     publishedAt: now,
   });
 }
 
-export async function cancelEvent(db: Database, userId: string, eventId: string) {
+export async function cancelEvent(db: Database, userId: string | null, eventId: string) {
   await transition(db, userId, eventId, "event.cancelled", ["published"], { publicationStatus: "cancelled" });
 }
 
 /** "Encerrar evento": records the real end; status stays derived from dates. */
-export async function endEventNow(db: Database, userId: string, eventId: string, now = new Date()) {
+export async function endEventNow(db: Database, userId: string | null, eventId: string, now = new Date()) {
   const [current] = await db.select().from(events).where(eq(events.id, eventId)).limit(1);
   if (!current) throw new EventRuleError("Evento não encontrado.");
   if (current.startsAt > now) throw new EventRuleError("Só é possível encerrar um evento que já começou.");
@@ -131,7 +137,7 @@ export async function endEventNow(db: Database, userId: string, eventId: string,
 }
 
 /** Only drafts can be deleted; published events must be cancelled instead. */
-export async function deleteDraftEvent(db: Database, userId: string, eventId: string) {
+export async function deleteDraftEvent(db: Database, userId: string | null, eventId: string) {
   const deleted = await db
     .delete(events)
     .where(and(eq(events.id, eventId), eq(events.publicationStatus, "draft")))

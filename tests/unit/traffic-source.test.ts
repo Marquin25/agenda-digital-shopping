@@ -11,7 +11,9 @@ describe("resolveTrafficSource", () => {
   });
 
   it("accepts the Portuguese channel names used in printed links", () => {
-    expect(resolveTrafficSource({ utmSource: "qr-cartaz", utmCampaign: null }, null).channel).toBe("qr_poster");
+    expect(resolveTrafficSource({ utmSource: "qr-cartaz", utmCampaign: null }, null).channel).toBe(
+      "qr_poster",
+    );
   });
 
   it("classifies unknown sources as 'other'", () => {

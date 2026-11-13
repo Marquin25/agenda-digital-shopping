@@ -1,8 +1,21 @@
 import { afterAll, describe, expect, it } from "vitest";
 import { createAdminUser } from "@/application/auth/admin-auth";
+import { listCategories, saveVenue, venueInputSchema } from "@/application/catalog/catalog";
+import { createEvent, publishEvent } from "@/application/events/event-commands";
+import { eventInputSchema } from "@/application/events/event-input";
 import { getDashboardSummary } from "@/application/metrics/dashboard";
-import { AGENDA_TARGET, deleteDeviceData, recordPageView, recordPromoLinkHit } from "@/application/metrics/record-metrics";
-import { createPromoLink, resolvePromoRedirect, setPromoLinkActive } from "@/application/promo/promo-links";
+import {
+  AGENDA_TARGET,
+  deleteDeviceData,
+  recordPageView,
+  recordPromoLinkHit,
+} from "@/application/metrics/record-metrics";
+import {
+  createPromoLink,
+  promoLinkInputSchema,
+  resolvePromoRedirect,
+  setPromoLinkActive,
+} from "@/application/promo/promo-links";
 import { createTestDb } from "./test-db";
 
 describe("metrics and promo links", async () => {
@@ -54,14 +67,20 @@ describe("metrics and promo links", async () => {
   });
 
   it("redirects promo links to the agenda with campaign parameters and counts hits", async () => {
-    const { id, code } = await createPromoLink(db, userId, {
-      channel: "qr_poster",
-      description: "Cartaz entrada A",
-      agendaQuery: "categoria=infantil&evil=<x>",
-    });
+    const { id, code } = await createPromoLink(
+      db,
+      userId,
+      promoLinkInputSchema.parse({
+        channel: "qr_poster",
+        description: "Cartaz entrada A",
+        agendaQuery: "categoria=infantil&evil=<x>",
+      }),
+    );
     expect(code).toMatch(/^[a-z2-9]{6}$/);
     const redirect = await resolvePromoRedirect(db, code);
-    expect(redirect?.location).toBe(`/?categoria=infantil&utm_source=qr_poster&utm_medium=promo_link&utm_campaign=${code}`);
+    expect(redirect?.location).toBe(
+      `/?categoria=infantil&utm_source=qr_poster&utm_medium=promo_link&utm_campaign=${code}`,
+    );
     await recordPromoLinkHit(db, id, "2026-11-18");
     await recordPromoLinkHit(db, id, "2026-11-18");
     const summary = await getDashboardSummary(db, period);
@@ -69,8 +88,45 @@ describe("metrics and promo links", async () => {
   });
 
   it("stops resolving deactivated links", async () => {
-    const { id, code } = await createPromoLink(db, userId, { channel: "instagram", description: "Bio" });
+    const { id, code } = await createPromoLink(
+      db,
+      userId,
+      promoLinkInputSchema.parse({ channel: "instagram", description: "Bio" }),
+    );
     await setPromoLinkActive(db, userId, id, false);
     expect(await resolvePromoRedirect(db, code)).toBeNull();
+  });
+
+  it("sends links of unpublished events to the agenda until the event is published", async () => {
+    const venueId = await saveVenue(db, userId, venueInputSchema.parse({ name: "Praça", floor: "L1" }));
+    const category = (await listCategories(db))[0]!;
+    const eventId = await createEvent(
+      db,
+      userId,
+      eventInputSchema.parse({
+        title: "Oficina de Natal",
+        description: "Oficina para crianças com materiais recicláveis",
+        startsAt: "2026-12-20T15:00",
+        endsAt: "2026-12-20T17:00",
+        venueId,
+        categoryId: category.id,
+        capacityMode: "unlimited",
+      }),
+      null,
+    );
+    const { code } = await createPromoLink(
+      db,
+      userId,
+      promoLinkInputSchema.parse({ channel: "instagram", description: "Post de lançamento", eventId }),
+    );
+    expect((await resolvePromoRedirect(db, code))?.location).toBe(
+      `/?utm_source=instagram&utm_medium=promo_link&utm_campaign=${code}`,
+    );
+    await publishEvent(db, userId, eventId);
+    expect((await resolvePromoRedirect(db, code))?.location).toMatch(
+      new RegExp(
+        `^/eventos/oficina-de-natal[^?]*\\?utm_source=instagram&utm_medium=promo_link&utm_campaign=${code}$`,
+      ),
+    );
   });
 });

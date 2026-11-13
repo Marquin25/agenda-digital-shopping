@@ -1,5 +1,5 @@
 import { randomInt } from "node:crypto";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, ne } from "drizzle-orm";
 import { z } from "zod";
 import { recordAudit } from "@/application/audit";
 import { parseAgendaFilters, toAgendaQueryString } from "@/domain/agenda/agenda-filters";
@@ -25,11 +25,17 @@ export const promoLinkInputSchema = z.object({
   agendaQuery: z.string().max(500).default(""),
 });
 export type PromoLinkInput = z.input<typeof promoLinkInputSchema>;
+export type ValidPromoLinkInput = z.output<typeof promoLinkInputSchema>;
 
-export async function createPromoLink(db: Database, userId: string, input: PromoLinkInput): Promise<{ id: string; code: string }> {
-  const data = promoLinkInputSchema.parse(input);
+export async function createPromoLink(
+  db: Database,
+  userId: string,
+  data: ValidPromoLinkInput,
+): Promise<{ id: string; code: string }> {
   // Agenda filters are re-serialised so only known, safe parameters end up in the redirect.
-  const agendaQuery = data.eventId ? "" : toAgendaQueryString(parseAgendaFilters(new URLSearchParams(data.agendaQuery)));
+  const agendaQuery = data.eventId
+    ? ""
+    : toAgendaQueryString(parseAgendaFilters(new URLSearchParams(data.agendaQuery)));
   for (let attempt = 0; attempt < 5; attempt++) {
     const code = generatePromoCode();
     const inserted = await db
@@ -38,7 +44,12 @@ export async function createPromoLink(db: Database, userId: string, input: Promo
       .onConflictDoNothing({ target: promoLinks.code })
       .returning({ id: promoLinks.id });
     if (inserted[0]) {
-      await recordAudit(db, { userId, action: "promo_link.created", entity: "promo_link", entityId: inserted[0].id });
+      await recordAudit(db, {
+        userId,
+        action: "promo_link.created",
+        entity: "promo_link",
+        entityId: inserted[0].id,
+      });
       return { id: inserted[0].id, code };
     }
   }
@@ -47,7 +58,12 @@ export async function createPromoLink(db: Database, userId: string, input: Promo
 
 export async function setPromoLinkActive(db: Database, userId: string, id: string, active: boolean) {
   await db.update(promoLinks).set({ active }).where(eq(promoLinks.id, id));
-  await recordAudit(db, { userId, action: active ? "promo_link.activated" : "promo_link.deactivated", entity: "promo_link", entityId: id });
+  await recordAudit(db, {
+    userId,
+    action: active ? "promo_link.activated" : "promo_link.deactivated",
+    entity: "promo_link",
+    entityId: id,
+  });
 }
 
 export function listPromoLinks(db: Database) {
@@ -74,12 +90,15 @@ export interface PromoRedirect {
   location: string;
 }
 
-/** Resolves `/r/{code}`. Inactive or unknown codes fall back to the agenda without attribution. */
+/**
+ * Resolves `/r/{code}`. Inactive or unknown codes fall back to the agenda without attribution.
+ * Links to an event that is still a draft (e.g. a QR printed ahead of time) open the agenda until it is published.
+ */
 export async function resolvePromoRedirect(db: Database, code: string): Promise<PromoRedirect | null> {
   const [row] = await db
     .select({ link: promoLinks, eventSlug: events.slug })
     .from(promoLinks)
-    .leftJoin(events, eq(events.id, promoLinks.eventId))
+    .leftJoin(events, and(eq(events.id, promoLinks.eventId), ne(events.publicationStatus, "draft")))
     .where(and(eq(promoLinks.code, code), eq(promoLinks.active, true)))
     .limit(1);
   if (!row) return null;

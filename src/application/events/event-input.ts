@@ -28,7 +28,12 @@ export const eventInputSchema = z
     if (endsAt <= startsAt) {
       ctx.addIssue({ code: "custom", path: ["endsAt"], message: "O término precisa ser depois do início." });
     }
-    return { ...v, startsAt, endsAt, displayedCapacity: v.capacityMode === "unlimited" ? null : v.displayedCapacity };
+    return {
+      ...v,
+      startsAt,
+      endsAt,
+      displayedCapacity: v.capacityMode === "unlimited" ? null : v.displayedCapacity,
+    };
   });
 
 export type EventInput = z.input<typeof eventInputSchema>;

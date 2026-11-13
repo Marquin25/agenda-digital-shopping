@@ -33,15 +33,24 @@ describe("parseAgendaFilters", () => {
 
 describe("getDateWindow", () => {
   it("'today' covers a single local day", () => {
-    expect(getDateWindow({ kind: "today" }, "2026-11-18")).toEqual({ from: "2026-11-18", toExclusive: "2026-11-19" });
+    expect(getDateWindow({ kind: "today" }, "2026-11-18")).toEqual({
+      from: "2026-11-18",
+      toExclusive: "2026-11-19",
+    });
   });
 
   it("'weekend' on a Wednesday covers the coming Saturday and Sunday", () => {
-    expect(getDateWindow({ kind: "weekend" }, "2026-11-18")).toEqual({ from: "2026-11-21", toExclusive: "2026-11-23" });
+    expect(getDateWindow({ kind: "weekend" }, "2026-11-18")).toEqual({
+      from: "2026-11-21",
+      toExclusive: "2026-11-23",
+    });
   });
 
   it("'weekend' on a Sunday covers only the rest of that Sunday", () => {
-    expect(getDateWindow({ kind: "weekend" }, "2026-11-22")).toEqual({ from: "2026-11-22", toExclusive: "2026-11-23" });
+    expect(getDateWindow({ kind: "weekend" }, "2026-11-22")).toEqual({
+      from: "2026-11-22",
+      toExclusive: "2026-11-23",
+    });
   });
 
   it("'range' includes the last day", () => {
