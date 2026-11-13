@@ -53,6 +53,16 @@ describe("metrics and promo links", async () => {
     ]);
   });
 
+  it("lists agenda visitors and page loads per day, with zero on days without data", async () => {
+    const summary = await getDashboardSummary(db, { from: "2026-11-17", to: "2026-11-20" });
+    expect(summary.agendaDaily).toEqual([
+      { day: "2026-11-17", devices: 0, pageLoads: 0 },
+      { day: "2026-11-18", devices: 2, pageLoads: 3 },
+      { day: "2026-11-19", devices: 1, pageLoads: 1 },
+      { day: "2026-11-20", devices: 0, pageLoads: 0 },
+    ]);
+  });
+
   it("reports pending indicators as unavailable instead of zero", async () => {
     const summary = await getDashboardSummary(db, period);
     expect(summary.interested.quality).toBe("unavailable");

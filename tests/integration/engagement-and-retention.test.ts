@@ -72,6 +72,18 @@ describe("engagement metrics and retention", async () => {
     ]);
   });
 
+  it("describes each event row with its category, venue, schedule and status", async () => {
+    const [row] = (await getDashboardSummary(db, PERIOD, NOW)).eventViews;
+    expect(row).toMatchObject({
+      categoryName: (await listCategories(db))[0]!.name,
+      venue: { name: "Praça", floor: "L1" },
+      startsAt: new Date("2026-12-20T22:00:00Z"),
+      endsAt: new Date("2026-12-21T00:00:00Z"),
+      status: "scheduled",
+      bannerPath: null,
+    });
+  });
+
   it("deletes the engagement of a device together with its views", async () => {
     expect(await deleteDeviceData(db, "d2")).toBe(1);
     expect((await getDashboardSummary(db, PERIOD, NOW)).calendarAdds).toEqual({

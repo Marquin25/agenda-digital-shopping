@@ -13,11 +13,14 @@ import {
   type SQLWrapper,
 } from "drizzle-orm";
 import { unionAll } from "drizzle-orm/pg-core";
+import { getEventStatus, type EventStatus } from "@/domain/events/event-status";
 import type { EngagementAction } from "@/domain/metrics/engagement";
 import type { Metric } from "@/domain/metrics/metric-quality";
 import type { TrafficChannel } from "@/domain/metrics/traffic-source";
+import { addDaysToDateKey } from "@/domain/time/time-zone";
 import type { Database } from "@/infrastructure/db/client";
 import {
+  categories,
   engagementDaily,
   engagementDailyTotals,
   events,
@@ -26,6 +29,7 @@ import {
   pageViewsRawDaily,
   promoLinkHitsDaily,
   promoLinks,
+  venues,
 } from "@/infrastructure/db/schema";
 import { AGENDA_TARGET } from "./record-metrics";
 
@@ -43,6 +47,21 @@ export interface EventViewsRow {
   shares: number;
   calendarIcs: number;
   calendarGoogle: number;
+  categoryName: string;
+  venue: { name: string; floor: string };
+  startsAt: Date;
+  endsAt: Date;
+  status: EventStatus;
+  bannerPath: string | null;
+}
+
+export interface DailyAgendaPoint {
+  /** Local calendar date, "YYYY-MM-DD". */
+  day: string;
+  /** Estimated unique devices. */
+  devices: number;
+  /** Measured page loads, reloads included. */
+  pageLoads: number;
 }
 
 export interface DashboardSummary {
@@ -56,6 +75,7 @@ export interface DashboardSummary {
   ratings: Metric;
   footfall: Metric;
   sales: Metric;
+  agendaDaily: DailyAgendaPoint[];
   sources: { channel: TrafficChannel; devices: number }[];
   eventViews: EventViewsRow[];
   promoLinks: { id: string; code: string; channel: string; description: string; hits: number }[];
@@ -77,16 +97,18 @@ function uniqueViews(db: Database, period: DashboardPeriod) {
         targetKey: pageViewsDaily.targetKey,
         eventId: pageViewsDaily.eventId,
         channel: pageViewsDaily.channel,
+        day: pageViewsDaily.day,
         devices: sql<number>`count(*)::int`.as("devices"),
       })
       .from(pageViewsDaily)
       .where(inPeriod(pageViewsDaily.day, period))
-      .groupBy(pageViewsDaily.targetKey, pageViewsDaily.eventId, pageViewsDaily.channel),
+      .groupBy(pageViewsDaily.targetKey, pageViewsDaily.eventId, pageViewsDaily.channel, pageViewsDaily.day),
     db
       .select({
         targetKey: pageViewDailyTotals.targetKey,
         eventId: pageViewDailyTotals.eventId,
         channel: pageViewDailyTotals.channel,
+        day: pageViewDailyTotals.day,
         devices: sql<number>`${pageViewDailyTotals.devices}`.as("devices"),
       })
       .from(pageViewDailyTotals)
@@ -117,6 +139,37 @@ function engagementCounts(db: Database, period: DashboardPeriod) {
   ).as("engagement_counts");
 }
 
+/** Every local date of the period, so days without visits show as zero on the chart. */
+function daysOf(period: DashboardPeriod): string[] {
+  const days: string[] = [];
+  for (let day = period.from; day <= period.to; day = addDaysToDateKey(day, 1)) days.push(day);
+  return days;
+}
+
+async function agendaDailySeries(
+  db: Database,
+  period: DashboardPeriod,
+  views: ReturnType<typeof uniqueViews>,
+): Promise<DailyAgendaPoint[]> {
+  const devices = await db
+    .select({ day: views.day, n: sumInt(views.devices) })
+    .from(views)
+    .where(eq(views.targetKey, AGENDA_TARGET))
+    .groupBy(views.day);
+  const loads = await db
+    .select({ day: pageViewsRawDaily.day, n: sumInt(pageViewsRawDaily.views) })
+    .from(pageViewsRawDaily)
+    .where(and(eq(pageViewsRawDaily.targetKey, AGENDA_TARGET), inPeriod(pageViewsRawDaily.day, period)))
+    .groupBy(pageViewsRawDaily.day);
+  const devicesByDay = new Map(devices.map((r) => [r.day, r.n]));
+  const loadsByDay = new Map(loads.map((r) => [r.day, r.n]));
+  return daysOf(period).map((day) => ({
+    day,
+    devices: devicesByDay.get(day) ?? 0,
+    pageLoads: loadsByDay.get(day) ?? 0,
+  }));
+}
+
 export async function getDashboardSummary(
   db: Database,
   period: DashboardPeriod,
@@ -145,6 +198,8 @@ export async function getDashboardSummary(
         gt(sql`coalesce(${events.endedAt}, ${events.endsAt})`, now),
       ),
     );
+
+  const agendaDaily = await agendaDailySeries(db, period, views);
 
   const sources = await db
     .select({ channel: views.channel, devices: sumInt(views.devices) })
@@ -197,9 +252,19 @@ export async function getDashboardSummary(
       shares: sql<number>`coalesce(${engagementByEvent.shares}, 0)::int`,
       calendarIcs: sql<number>`coalesce(${engagementByEvent.calendarIcs}, 0)::int`,
       calendarGoogle: sql<number>`coalesce(${engagementByEvent.calendarGoogle}, 0)::int`,
+      categoryName: categories.name,
+      venueName: venues.name,
+      venueFloor: venues.floor,
+      startsAt: events.startsAt,
+      endsAt: events.endsAt,
+      endedAt: events.endedAt,
+      publicationStatus: events.publicationStatus,
+      bannerPath: events.bannerPath,
     })
     .from(uniqueByEvent)
     .innerJoin(events, eq(events.id, uniqueByEvent.eventId))
+    .innerJoin(categories, eq(categories.id, events.categoryId))
+    .innerJoin(venues, eq(venues.id, events.venueId))
     .leftJoin(rawByEvent, eq(rawByEvent.eventId, uniqueByEvent.eventId))
     .leftJoin(engagementByEvent, eq(engagementByEvent.eventId, uniqueByEvent.eventId))
     .orderBy(desc(uniqueByEvent.devices), asc(events.title))
@@ -238,7 +303,13 @@ export async function getDashboardSummary(
     footfall: { quality: "unavailable", reason: "Sem integração com sensores de fluxo (Fase 3)." },
     sales: { quality: "unavailable", reason: "Sem integração com dados de vendas (Fase 3)." },
     sources: sources.map((s) => ({ channel: s.channel as TrafficChannel, devices: s.devices })),
-    eventViews: eventViews.map((e) => ({ ...e, devices: Number(e.devices) })),
+    agendaDaily,
+    eventViews: eventViews.map(({ venueName, venueFloor, endedAt, publicationStatus, ...e }) => ({
+      ...e,
+      devices: Number(e.devices),
+      venue: { name: venueName, floor: venueFloor },
+      status: getEventStatus({ publicationStatus, startsAt: e.startsAt, endsAt: e.endsAt, endedAt }, now),
+    })),
     promoLinks: links,
   };
 }
