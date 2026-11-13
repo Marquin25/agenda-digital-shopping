@@ -1,9 +1,14 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Browser, type Page } from "@playwright/test";
-import { E2E_ADMIN_PASSWORD } from "../../playwright.config";
+import { E2E_ADMIN_PASSWORD, E2E_CRON_SECRET } from "../../playwright.config";
 
 /** Next.js route announcer also has role="alert"; exclude it. */
 const ALERT = '[role="alert"]:not(#__next-route-announcer__)';
+/** Valid 1x1 PNG; the server re-encodes it into every banner size. */
+const TINY_PNG = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
+  "base64",
+);
 const NEW_PASSWORD = "e2e-new-password-after-first-login";
 
 async function expectNoSeriousA11yViolations(page: Page) {
@@ -35,9 +40,19 @@ function promoHits(page: Page) {
     .last();
 }
 
+/** Pages created here fail the test if the browser blocks anything by Content-Security-Policy. */
+const cspViolations: string[] = [];
+function watchCsp(page: Page) {
+  page.on("console", (message) => {
+    if (/Content Security Policy|Content-Security-Policy/i.test(message.text()))
+      cspViolations.push(message.text());
+  });
+  return page;
+}
+
 async function visitorPage(browser: Browser) {
   const context = await browser.newContext();
-  return context.newPage();
+  return watchCsp(await context.newPage());
 }
 
 test.describe.serial("Phase 1 — admin publishes, visitor discovers", () => {
@@ -46,7 +61,11 @@ test.describe.serial("Phase 1 — admin publishes, visitor discovers", () => {
   let promoPath = "";
 
   test.beforeAll(async ({ browser }) => {
-    admin = await (await browser.newContext()).newPage();
+    admin = watchCsp(await (await browser.newContext()).newPage());
+  });
+
+  test.afterAll(() => {
+    expect(cspViolations).toEqual([]);
   });
 
   test("login page is accessible and rejects wrong credentials generically", async () => {
@@ -90,6 +109,10 @@ test.describe.serial("Phase 1 — admin publishes, visitor discovers", () => {
     await admin.getByRole("checkbox", { name: "Intérprete de Libras" }).check();
     await admin.getByLabel("Limitadas, por ordem de chegada").check();
     await expect(admin.getByLabel("Com reserva — pendente de aprovação")).toBeDisabled();
+    await admin
+      .getByLabel(/^Banner/)
+      .setInputFiles({ name: "banner.png", mimeType: "image/png", buffer: TINY_PNG });
+    await admin.getByLabel(/^Texto alternativo do banner/).fill("Violão e microfone no palco da praça");
     await admin.getByRole("button", { name: "Salvar rascunho" }).click();
     await expect(admin.getByRole("status").filter({ hasText: "Alterações salvas." })).toBeVisible();
     await expectNoSeriousA11yViolations(admin);
@@ -124,11 +147,22 @@ test.describe.serial("Phase 1 — admin publishes, visitor discovers", () => {
     await expect(visitor.getByRole("heading", { name: "Show Acústico E2E", level: 1 })).toBeVisible();
     await expect(visitor.getByText("Vagas limitadas, por ordem de chegada.")).toBeVisible();
     await expect(visitor.getByText("Tenho interesse")).toHaveCount(0);
+    const banner = visitor.getByRole("img", { name: "Violão e microfone no palco da praça" });
+    const srcset = (await banner.getAttribute("srcset")) ?? "";
+    expect(srcset).toMatch(/\.webp 1200w, .*-600\.webp 600w$/);
+    const small = await visitor.request.get(srcset.split(", ")[1]!.split(" ")[0]!);
+    expect([small.status(), small.headers()["content-type"]]).toEqual([200, "image/webp"]);
     await expectNoSeriousA11yViolations(visitor);
 
     const ics = await visitor.request.get(`${eventUrl}/calendario.ics`);
     expect(ics.headers()["content-type"]).toContain("text/calendar");
     expect(await ics.text()).toContain("SUMMARY:Show Acústico E2E");
+
+    // The click downloads the .ics and is reported as an "add to calendar" (estimated) engagement.
+    const download = visitor.waitForEvent("download");
+    await visitor.getByRole("link", { name: "Adicionar à agenda (.ics)" }).click();
+    expect((await download).suggestedFilename()).toMatch(/\.ics$/);
+    await visitor.waitForLoadState("networkidle");
     await visitor.context().close();
   });
 
@@ -161,6 +195,10 @@ test.describe.serial("Phase 1 — admin publishes, visitor discovers", () => {
     await admin.goto("/admin");
     await expect(promoHits(admin)).toHaveText("1");
     await expect(admin.getByRole("row", { name: /^QR em cartaz 1 / })).toBeVisible();
+    // Columns: devices, page loads, shares, .ics, Google.
+    const eventRow = admin.getByRole("row", { name: /^Show Acústico E2E/ }).getByRole("cell");
+    await expect(eventRow.nth(3)).toHaveText("1");
+    await expect(admin.getByText("Adições à agenda")).toBeVisible();
   });
 
   test("staff browsing is not counted", async () => {
@@ -210,5 +248,21 @@ test.describe.serial("Phase 1 — admin publishes, visitor discovers", () => {
     await visitor.getByRole("button", { name: "Apagar meus dados deste dispositivo" }).click();
     await expect(visitor.getByRole("status")).toContainText("foram apagados");
     await visitor.context().close();
+  });
+
+  test("retention job runs only with the cron secret", async ({ request }) => {
+    expect((await request.get("/api/cron/retention")).status()).toBe(401);
+    const wrong = await request.get("/api/cron/retention", { headers: { authorization: "Bearer nope" } });
+    expect(wrong.status()).toBe(401);
+    const ok = await request.get("/api/cron/retention", {
+      headers: { authorization: `Bearer ${E2E_CRON_SECRET}` },
+    });
+    expect(ok.status()).toBe(200);
+    expect(Object.keys(await ok.json()).sort()).toEqual([
+      "auditEntries",
+      "engagementRows",
+      "expiredSessions",
+      "pageViewRows",
+    ]);
   });
 });

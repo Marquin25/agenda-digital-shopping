@@ -185,3 +185,13 @@ export async function getEventForEdit(db: Database, eventId: string) {
     .where(eq(eventAccessibilityFeatures.eventId, eventId));
   return { event, featureIds: features.map((f) => f.featureId) };
 }
+
+/** True when the event can be seen by visitors (published or cancelled, never a draft). */
+export async function isPublicEventId(db: Database, eventId: string): Promise<boolean> {
+  const [row] = await db
+    .select({ id: events.id })
+    .from(events)
+    .where(and(eq(events.id, eventId), ne(events.publicationStatus, "draft")))
+    .limit(1);
+  return Boolean(row);
+}

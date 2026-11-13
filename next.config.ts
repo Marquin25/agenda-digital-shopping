@@ -2,22 +2,8 @@ import type { NextConfig } from "next";
 
 const isProduction = process.env.NODE_ENV === "production";
 
-// Next.js injects inline scripts, so script-src needs 'unsafe-inline' until nonce-based CSP is adopted (see docs/spec/06-qualidade.md).
-const contentSecurityPolicy = [
-  "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${isProduction ? "" : " 'unsafe-eval'"}`,
-  "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob:",
-  "font-src 'self'",
-  "connect-src 'self'",
-  "frame-ancestors 'none'",
-  "base-uri 'self'",
-  "form-action 'self'",
-  "object-src 'none'",
-].join("; ");
-
 const securityHeaders = [
-  { key: "Content-Security-Policy", value: contentSecurityPolicy },
+  // Content-Security-Policy is set per request with a nonce in src/proxy.ts.
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), interest-cohort=()" },
@@ -29,6 +15,8 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Agent instructions live in CLAUDE.md (project convention); do not let `next dev` write AGENTS.md.
+  agentRules: false,
   serverExternalPackages: ["@electric-sql/pglite", "@node-rs/argon2", "sharp"],
   experimental: {
     serverActions: { bodySizeLimit: "6mb" },

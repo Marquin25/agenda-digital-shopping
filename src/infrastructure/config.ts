@@ -6,6 +6,7 @@ const schema = z.object({
   DEVICE_ID_PEPPER: z.string().optional(),
   PUBLIC_BASE_URL: z.url().default("http://localhost:3000"),
   UPLOAD_DIR: z.string().default("./storage/uploads"),
+  CRON_SECRET: z.string().min(32).optional(),
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
 });
 
@@ -14,6 +15,8 @@ export interface AppConfig {
   deviceIdPepper: string;
   publicBaseUrl: string;
   uploadDir: string;
+  /** Bearer token for scheduled jobs called over HTTP (e.g. Vercel Cron); jobs are disabled when unset. */
+  cronSecret: string | null;
   isProduction: boolean;
 }
 
@@ -35,6 +38,7 @@ export function getConfig(): AppConfig {
     deviceIdPepper: pepper,
     publicBaseUrl: env.PUBLIC_BASE_URL.replace(/\/$/, ""),
     uploadDir: env.UPLOAD_DIR,
+    cronSecret: env.CRON_SECRET ?? null,
     isProduction: env.NODE_ENV === "production",
   };
   return cached;

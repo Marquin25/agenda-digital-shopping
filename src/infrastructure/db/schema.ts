@@ -187,6 +187,51 @@ export const pageViewsRawDaily = pgTable(
   (t) => [primaryKey({ columns: [t.targetKey, t.day, t.channel] })],
 );
 
+/** Long-term estimated unique views per page, day and channel, aggregated from expired `page_views_daily` rows. */
+export const pageViewDailyTotals = pgTable(
+  "page_view_daily_totals",
+  {
+    targetKey: text("target_key").notNull(),
+    eventId: uuid("event_id").references(() => events.id, { onDelete: "cascade" }),
+    day: date("day").notNull(),
+    channel: text("channel").notNull(),
+    devices: integer("devices").notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.targetKey, t.day, t.channel] })],
+);
+
+/** Estimated: one row per device, event, action and local day (share, add to calendar). Pseudonymised. */
+export const engagementDaily = pgTable(
+  "engagement_daily",
+  {
+    eventId: uuid("event_id")
+      .notNull()
+      .references(() => events.id, { onDelete: "cascade" }),
+    deviceHash: text("device_hash").notNull(),
+    action: text("action").notNull(),
+    day: date("day").notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    uniqueIndex("engagement_daily_unique").on(t.eventId, t.deviceHash, t.action, t.day),
+    index("engagement_daily_day_idx").on(t.day),
+  ],
+);
+
+/** Long-term engagement counts aggregated from expired `engagement_daily` rows. No device data. */
+export const engagementDailyTotals = pgTable(
+  "engagement_daily_totals",
+  {
+    eventId: uuid("event_id")
+      .notNull()
+      .references(() => events.id, { onDelete: "cascade" }),
+    action: text("action").notNull(),
+    day: date("day").notNull(),
+    devices: integer("devices").notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.eventId, t.action, t.day] })],
+);
+
 export const auditLog = pgTable(
   "audit_log",
   {

@@ -1,13 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import { getPublicEventBySlug, type EventView } from "@/application/events/event-queries";
 import { buildGoogleCalendarUrl } from "@/domain/calendar/ics";
 import { getConfig } from "@/infrastructure/config";
 import { getDb } from "@/infrastructure/db";
+import { NONCE_HEADER } from "@/infrastructure/web/content-security-policy";
 import { formatEventWhen, formatVenue } from "@/ui/format";
-import { bannerUrl } from "@/ui/public/event-card";
+import { BannerImage, bannerUrl } from "@/ui/banner-image";
+import { CalendarLinks } from "@/ui/public/calendar-links";
 import { ShareButton } from "@/ui/public/share-button";
 import { ViewBeacon } from "@/ui/public/view-beacon";
 import { StatusBadge } from "@/ui/status-badge";
@@ -70,6 +73,7 @@ function capacityText(event: EventView): string | null {
 export default async function EventPage({ params }: { params: Params }) {
   const event = await loadEvent((await params).slug);
   if (!event) notFound();
+  const nonce = (await headers()).get(NONCE_HEADER) ?? undefined;
   const { publicBaseUrl } = getConfig();
   const url = `${publicBaseUrl}/eventos/${event.slug}`;
   const location = formatVenue(event.venue, event.locationDetail);
@@ -92,6 +96,7 @@ export default async function EventPage({ params }: { params: Params }) {
       <ViewBeacon target="event" eventId={event.id} />
       <script
         type="application/ld+json"
+        nonce={nonce}
         // JSON.stringify output with "<" escaped cannot break out of the script element.
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(structuredData(event, url, publicBaseUrl)).replace(/</g, "\\u003c"),
@@ -113,13 +118,11 @@ export default async function EventPage({ params }: { params: Params }) {
       <div className="event-detail">
         <div>
           {event.bannerPath && (
-            // eslint-disable-next-line @next/next/no-img-element -- local, pre-resized WebP
-            <img
+            <BannerImage
               className="event-detail__banner"
-              src={bannerUrl(event.bannerPath)}
+              fileName={event.bannerPath}
               alt={event.bannerAlt ?? ""}
-              width={1200}
-              height={675}
+              sizes="(min-width: 64rem) 40rem, 100vw"
             />
           )}
           <p className="category">{event.category.name}</p>
@@ -165,18 +168,12 @@ export default async function EventPage({ params }: { params: Params }) {
             <>
               <h2>Salvar e compartilhar</h2>
               <div className="actions">
-                <a className="button" href={`/eventos/${event.slug}/calendario.ics`}>
-                  Adicionar à agenda (.ics)
-                </a>
-                <a
-                  className="button button--secondary"
-                  href={googleUrl}
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >
-                  Google Agenda<span className="visually-hidden"> (abre em nova aba)</span>
-                </a>
-                <ShareButton title={event.title} url={url} />
+                <CalendarLinks
+                  eventId={event.id}
+                  icsUrl={`/eventos/${event.slug}/calendario.ics`}
+                  googleUrl={googleUrl}
+                />
+                <ShareButton eventId={event.id} title={event.title} url={url} />
               </div>
             </>
           )}

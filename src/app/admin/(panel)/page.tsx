@@ -73,6 +73,20 @@ export default async function DashboardPage({
           <MetricCard label="Eventos ativos agora" metric={summary.activeEvents} />
         </li>
         <li>
+          <MetricCard
+            label="Compartilhamentos"
+            metric={summary.shares}
+            unit="intenção de compartilhar, não envio"
+          />
+        </li>
+        <li>
+          <MetricCard
+            label="Adições à agenda"
+            metric={summary.calendarAdds}
+            unit="cliques em .ics ou Google, não garante que salvou"
+          />
+        </li>
+        <li>
           <MetricCard label="Interessados" metric={summary.interested} />
         </li>
         <li>
@@ -149,12 +163,21 @@ export default async function DashboardPage({
               <th scope="col" className="number">
                 Carregamentos <QualityBadge quality="measured" />
               </th>
+              <th scope="col" className="number">
+                Compartilhamentos <QualityBadge quality="estimated" />
+              </th>
+              <th scope="col" className="number">
+                Agenda .ics <QualityBadge quality="estimated" />
+              </th>
+              <th scope="col" className="number">
+                Google Agenda <QualityBadge quality="estimated" />
+              </th>
             </tr>
           </thead>
           <tbody>
             {summary.eventViews.length === 0 ? (
               <tr>
-                <td colSpan={3}>Sem dados no período.</td>
+                <td colSpan={6}>Sem dados no período.</td>
               </tr>
             ) : (
               summary.eventViews.map((e) => (
@@ -164,6 +187,9 @@ export default async function DashboardPage({
                   </th>
                   <td className="number">{formatNumber(e.devices)}</td>
                   <td className="number">{formatNumber(e.pageLoads)}</td>
+                  <td className="number">{formatNumber(e.shares)}</td>
+                  <td className="number">{formatNumber(e.calendarIcs)}</td>
+                  <td className="number">{formatNumber(e.calendarGoogle)}</td>
                 </tr>
               ))
             )}

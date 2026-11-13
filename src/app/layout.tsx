@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { connection } from "next/server";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -13,7 +14,9 @@ export const viewport: Viewport = {
   themeColor: "#17304f",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // Render every page per request so Next.js can attach the CSP nonce to its scripts (src/proxy.ts).
+  await connection();
   return (
     <html lang="pt-BR">
       <body>

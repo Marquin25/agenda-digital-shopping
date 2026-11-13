@@ -3,6 +3,7 @@ import { defineConfig, devices } from "@playwright/test";
 const PORT = 3200;
 /** Throwaway credential for the disposable E2E database only. */
 export const E2E_ADMIN_PASSWORD = "e2e-only-temporary-password";
+export const E2E_CRON_SECRET = "e2e-only-cron-secret-not-a-real-secret";
 
 export default defineConfig({
   testDir: "tests/e2e",
@@ -21,6 +22,7 @@ export default defineConfig({
     env: {
       DATABASE_URL: "pglite:./storage/e2e-db",
       E2E_ADMIN_PASSWORD,
+      CRON_SECRET: E2E_CRON_SECRET,
       DEVICE_ID_PEPPER: "e2e-only-pepper-not-a-secret-0123456789abcdef",
       PUBLIC_BASE_URL: `http://localhost:${PORT}`,
       UPLOAD_DIR: "./storage/e2e-uploads",

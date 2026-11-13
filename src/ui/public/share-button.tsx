@@ -1,17 +1,20 @@
 "use client";
 
 import { useState } from "react";
+import { reportEngagement } from "./report-engagement";
 
-export function ShareButton({ title, url }: { title: string; url: string }) {
+export function ShareButton({ eventId, title, url }: { eventId: string; title: string; url: string }) {
   const [message, setMessage] = useState("");
 
   async function share() {
     try {
       if (navigator.share) {
         await navigator.share({ title, url });
+        reportEngagement(eventId, "share");
         return;
       }
       await navigator.clipboard.writeText(url);
+      reportEngagement(eventId, "share");
       setMessage("Link copiado.");
     } catch (error) {
       if ((error as DOMException)?.name !== "AbortError")

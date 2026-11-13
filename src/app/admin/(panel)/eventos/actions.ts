@@ -12,6 +12,7 @@ import {
   updateEvent,
 } from "@/application/events/event-commands";
 import { eventInputSchema } from "@/application/events/event-input";
+import { bannerFileNames } from "@/domain/media/banner-variants";
 import { getConfig } from "@/infrastructure/config";
 import { getDb } from "@/infrastructure/db";
 import { BannerError, processBanner } from "@/infrastructure/storage/banner-image";
@@ -37,11 +38,15 @@ function readEventForm(formData: FormData) {
   };
 }
 
+function deleteBannerFiles(storage: FileStorage, fileName: string) {
+  return Promise.all(bannerFileNames(fileName).map((name) => storage.delete(name)));
+}
+
 async function storeBanner(storage: FileStorage, formData: FormData): Promise<{ path: string } | null> {
   const file = formData.get("banner");
   if (!(file instanceof File) || file.size === 0) return null;
-  const { fileName, content } = await processBanner(Buffer.from(await file.arrayBuffer()));
-  await storage.save(fileName, content);
+  const { fileName, files } = await processBanner(Buffer.from(await file.arrayBuffer()));
+  await Promise.all(files.map((f) => storage.save(f.fileName, f.content)));
   return { path: fileName };
 }
 
@@ -61,13 +66,13 @@ export async function saveEventAction(
     banner = await storeBanner(storage, formData);
     if (id) {
       const { replacedBannerPath } = await updateEvent(db, admin.id, id, parsed.data, banner);
-      if (replacedBannerPath) await storage.delete(replacedBannerPath);
+      if (replacedBannerPath) await deleteBannerFiles(storage, replacedBannerPath);
     } else {
       id = await createEvent(db, admin.id, parsed.data, banner);
     }
   } catch (error) {
     // The new file is only referenced once the event row is saved; drop it on any failure.
-    if (banner) await storage.delete(banner.path);
+    if (banner) await deleteBannerFiles(storage, banner.path);
     if (error instanceof BannerError)
       return { fieldErrors: { banner: error.message }, message: INVALID_FORM_MESSAGE };
     if (error instanceof EventRuleError) return { message: error.message };

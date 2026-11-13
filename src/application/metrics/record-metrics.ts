@@ -1,7 +1,13 @@
 import { eq, sql } from "drizzle-orm";
+import type { EngagementAction } from "@/domain/metrics/engagement";
 import type { TrafficChannel } from "@/domain/metrics/traffic-source";
 import type { Database } from "@/infrastructure/db/client";
-import { pageViewsDaily, pageViewsRawDaily, promoLinkHitsDaily } from "@/infrastructure/db/schema";
+import {
+  engagementDaily,
+  pageViewsDaily,
+  pageViewsRawDaily,
+  promoLinkHitsDaily,
+} from "@/infrastructure/db/schema";
 
 export const AGENDA_TARGET = "agenda";
 export const eventTarget = (eventId: string) => `event:${eventId}`;
@@ -49,11 +55,38 @@ export async function recordPromoLinkHit(db: Database, promoLinkId: string, day:
     });
 }
 
-/** "Apagar meus dados deste dispositivo": removes every pseudonymised row of this device. */
+export interface Engagement {
+  eventId: string;
+  deviceHash: string;
+  action: EngagementAction;
+  /** Local (mall time) calendar date, "YYYY-MM-DD". */
+  day: string;
+}
+
+/** Records a share or "add to calendar" click: at most one row per device, event, action and day (estimated). */
+export async function recordEngagement(db: Database, engagement: Engagement): Promise<void> {
+  await db
+    .insert(engagementDaily)
+    .values(engagement)
+    .onConflictDoNothing({
+      target: [
+        engagementDaily.eventId,
+        engagementDaily.deviceHash,
+        engagementDaily.action,
+        engagementDaily.day,
+      ],
+    });
+}
+
+/** "Apagar meus dados deste dispositivo": removes every pseudonymised row of this device. Returns the row count. */
 export async function deleteDeviceData(db: Database, deviceHash: string): Promise<number> {
-  const deleted = await db
+  const views = await db
     .delete(pageViewsDaily)
     .where(eq(pageViewsDaily.deviceHash, deviceHash))
     .returning({ day: pageViewsDaily.day });
-  return deleted.length;
+  const engagement = await db
+    .delete(engagementDaily)
+    .where(eq(engagementDaily.deviceHash, deviceHash))
+    .returning({ day: engagementDaily.day });
+  return views.length + engagement.length;
 }

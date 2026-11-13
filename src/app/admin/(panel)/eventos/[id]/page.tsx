@@ -7,7 +7,7 @@ import { getEventStatus } from "@/domain/events/event-status";
 import { toLocalDateTimeInput } from "@/domain/time/time-zone";
 import { getDb } from "@/infrastructure/db";
 import { requireAdmin } from "@/infrastructure/web/admin-session";
-import { bannerUrl } from "@/ui/public/event-card";
+import { bannerUrl } from "@/ui/banner-image";
 import { StatusBadge } from "@/ui/status-badge";
 import { EventForm } from "../event-form";
 import { loadEventFormOptions } from "../form-options";
