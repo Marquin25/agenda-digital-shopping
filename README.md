@@ -199,7 +199,10 @@ O projeto segue os princípios da LGPD desde o desenho. A conformidade formal de
 - painel de métricas (inclusive compartilhamentos e adições à agenda);
 - privacidade e "apagar meus dados";
 - retenção automática de 30 dias;
-- CSP com nonce.
+- CSP com nonce;
+- "Salvos" no aparelho e visual novo (terracota/creme).
+
+**Fase 1, ainda aberto:** [#2](https://github.com/Marquin25/agenda-digital-shopping/issues/2) reversão das migrações e semente com todos os status; [#7](https://github.com/Marquin25/agenda-digital-shopping/issues/7) teste em celulares reais (Instagram e Wi-Fi); [#23](https://github.com/Marquin25/agenda-digital-shopping/issues/23) limitador compartilhado e checklist ASVS; [#24](https://github.com/Marquin25/agenda-digital-shopping/issues/24) Dockerfile, backup e restauração.
 
 **Fora do escopo atual, porque aguarda decisão** ([`docs/spec/07-mvp-e-riscos.md`](docs/spec/07-mvp-e-riscos.md) §4):
 - "Tenho interesse" (P-FASE-1);
