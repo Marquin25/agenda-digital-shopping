@@ -1,100 +1,170 @@
-# 01 — Produto e requisitos
+# 01 — Produto, fases e requisitos
 
-> Status: **proposta para revisão** · 2026-11-13 · Fontes: `README.md`, `docs/plano/00-descoberta.md`, `docs/research/referencias.md`
+> Status: **proposta revisada para aprovação** · revisão 2 · 2026-11-13
+> Fontes: `README.md`, respostas do responsável (ver `docs/plano/00-descoberta.md`), proposta em PDF "Plataforma Inteligente de Eventos e Experiências" (referência externa, não versionada), `docs/research/referencias.md`.
 
-## 1. Problema
+## Legenda de origem (usada em toda a especificação)
 
-A programação de eventos do shopping está espalhada entre posts, stories, cartazes e o boca a boca. O visitante não tem um lugar único para saber **o que acontece, quando, onde e se o evento é acessível para ele**. A administração divulga sem saber **quem se interessou, quem compareceu e o que achou**, e planeja o próximo evento sem esses dados.
+| Marca | Significado |
+| --- | --- |
+| **[C]** | **Confirmado** pelo responsável do projeto |
+| **[PDF]** | **Proposta baseada no PDF**, ainda não aprovada item a item |
+| **[R]** | **Recomendação** da equipe de agentes |
+| **[P]** | **Decisão pendente**; não implementar antes de decidir |
 
-## 2. Usuários
+## 1. Visão
 
-| Persona | Contexto | Necessidade principal |
+Plataforma web responsiva e mobile-first que une três pilares [PDF]:
+
+1. **Experiência do visitante:** agenda pública sem aplicativo e sem cadastro para consultar [C].
+2. **Gestão administrativa:** cadastro, publicação e acompanhamento de eventos, com perfis e permissões [C].
+3. **Inteligência estratégica:** apoiar a escolha de experiências a partir de objetivos comerciais, público-alvo, segmentos, orçamento, período e espaços, com recomendações que **explicam suas premissas e não apresentam estimativas como garantias** [C][PDF].
+
+Ciclo do produto: **Descobrir → Participar → Avaliar → Melhorar** [C]. Lema da proposta: "da programação à inteligência" [PDF].
+
+Nome provisório **Conecta Shopping** [C]. Uma instalação atende **um shopping**, com expansão futura possível [C].
+
+## 2. Problema
+
+- A programação fica espalhada entre canais; o visitante não tem um lugar único e acessível para consultá-la [C][PDF].
+- A administração não tem uma visão consolidada de divulgação e resultados; a avaliação depende de tarefas manuais [PDF].
+- A escolha de eventos raramente se apoia numa análise estruturada de objetivos, público, orçamento e resultados anteriores [PDF].
+
+## 3. Usuários
+
+| Persona | Necessidade principal |
+| --- | --- |
+| **Visitante** (celular, via Wi-Fi, Instagram, QR ou link direto) | Descobrir rapidamente eventos de interesse, incluindo recursos de acessibilidade |
+| **Responsável com criança** | Filtrar por "Infantil", data e horário |
+| **Pessoa com deficiência ou neurodivergente** | Filtrar por Libras, espaço sensorial etc.; navegar sem barreiras |
+| **Editor** (marketing/eventos) | Cadastrar, publicar e divulgar eventos |
+| **Analista** (gestão/planejamento) | Acompanhar indicadores, comparar eventos e planejar experiências |
+| **Administrador** | Gerenciar acessos, configurações e catálogos |
+
+## 4. Fases
+
+O PDF organiza o MVP em três etapas. Aqui elas são chamadas de **Fases** (o termo "Etapa" já é usado para as etapas do processo de trabalho).
+
+| Fase | Conteúdo | Origem |
 | --- | --- | --- |
-| **Visitante** (público geral) | Celular, muitas vezes no Wi-Fi do shopping ou vindo do Instagram; sem conta e sem aplicativo | Descobrir rapidamente eventos de interesse e saber como chegar |
-| **Responsável com criança** | Busca atividades infantis no fim de semana | Filtrar por "Infantil", data e horário |
-| **Pessoa com deficiência ou neurodivergente** | Usa leitor de tela, ampliação ou precisa de recursos específicos | Filtrar por Libras, espaço sensorial, acessibilidade física; navegar sem barreiras |
-| **Editor** (marketing/eventos) | Desktop no escritório | Cadastrar e atualizar eventos com rapidez |
-| **Analista** (gestão) | Desktop | Ver interesse, presença e satisfação para planejar a programação |
-| **Administrador** | Responsável pelo sistema | Gerenciar acessos e configurações |
+| **Fase 1 — Plataforma essencial** | Agenda pública, busca e filtros, detalhes, gestão administrativa, links diretos e QR Codes de divulgação, métricas básicas de visualização e origem | [C][PDF] |
+| **Fase 2 — Inteligência e indicadores** | Painel e relatórios automáticos, comparação entre eventos e períodos, cadastro de objetivos, público-alvo, segmentos e orçamento, motor inicial de recomendações por regras transparentes | [C][PDF] |
+| **Fase 3 — Integrações e evolução** | Portal Wi-Fi (integração), dados agregados de fluxo e vendas (se disponíveis e autorizados), painéis digitais, aprimoramento analítico com histórico suficiente | [C][PDF] |
 
-## 3. Proposta de valor
+**Qual é o "MVP"?** [P] O PDF chama as três etapas de "escopo proposto para o MVP". **Recomendação [R]:** tratar a **Fase 1** como a primeira versão publicável e as **Fases 1 + 2** como o MVP completo da proposta. A Fase 3 depende de terceiros.
 
-- **Visitante:** toda a programação num link aberto. Funciona sem aplicativo e sem cadastro, é acessível e permite salvar o evento na própria agenda.
-- **Shopping:** um só lugar para divulgar e medir o ciclo **Descobrir → Participar → Avaliar → Melhorar**, com números honestos (estimativas por dispositivo, com o tamanho da amostra sempre visível).
+### Itens da proposta anterior: fase recomendada
 
-## 4. Requisitos funcionais
+Nenhum item foi removido. A decisão final de fase é sua.
 
-Prioridade: **M** = MVP · **M\*** = MVP depois da aprovação do desenho detalhado · **F** = futuro.
+| Item | Fase recomendada [R] | Status | Justificativa | Depende de |
+| --- | --- | --- | --- | --- |
+| **Tenho interesse** | **Fase 1** | Registrar interesse foi confirmado [C]; a fase está pendente [P] | É barato, alimenta o indicador "Interesse" do PDF (favoritos) e funciona como "favorito sem cadastro" | ID de dispositivo (Fase 1) |
+| **Adicionar à agenda (.ics)** | **Fase 1** | [R] | Atende "lembretes opcionais" do PDF sem coletar contato | Página de detalhes |
+| **Avaliação pós-evento** | **Início da Fase 2** (alternativa: fim da Fase 1) | Regras confirmadas [C]; fase pendente [P] | Os relatórios e a comparação da Fase 2 usam a satisfação. Antecipar para a Fase 1 cria histórico mais cedo, mas atrasa a primeira versão | ID de dispositivo; eventos encerrados |
+| **Mural de sugestões** (só administração) | **Fase 2** | Visibilidade confirmada [C]; fase pendente [P] | Alimenta "identificação de oportunidades" | ID de dispositivo; área administrativa |
+| **Check-in por QR rotativo** | **Fase 2**, depois da aprovação do desenho | [P] | O PDF prevê "check-in opcional por QR Code" como indicador de participação; o desenho antifraude precisa ser aprovado antes | Aprovação do ADR; modo telão |
+| **Reserva de vaga** | **Sem fase**: só análise na Fase 2; implementação no máximo na Fase 3 | [P] (não aprovada) | As regras de duplicidade, lotação, cancelamento e liberação sem dados pessoais ainda estão abertas (`03-metricas.md` §6) | Decisão do responsável; possível análise de LGPD |
+| **Cupom / pagamento** | **Fora** do MVP | [C] fora, salvo justificativa e aprovação | Exigem outro projeto (gateway, CDC, fiscal) | — |
 
-### Visitante (público, sem login)
+## 5. Requisitos funcionais
 
-| ID | Requisito | Prior. |
-| --- | --- | --- |
-| RF01 | Listar eventos publicados que ainda não terminaram, em ordem cronológica, em cards (imagem, título, data, horário, local, categoria, ícones de acessibilidade) | M |
-| RF02 | Buscar por texto (título e descrição) | M |
-| RF03 | Filtrar por categoria, data (hoje / fim de semana / intervalo) e recursos de acessibilidade, com combinação de filtros refletida na URL (link compartilhável) | M |
-| RF04 | Página de detalhes com descrição, data, horário, local (com referência como piso ou loja-âncora), recursos de acessibilidade, informações de entrada e status temporal | M |
-| RF05 | Ação "Tenho interesse", que liga e desliga, uma por dispositivo e por evento | M |
-| RF06 | Baixar arquivo `.ics` (iCalendar) e abrir o link do Google Calendar (este como opção secundária) | M |
-| RF07 | Avaliar o evento depois do encerramento, dentro de um período configurável: nota de 1 a 5, tags opcionais (Organização, Horário, Atração, Conforto) e comentário opcional de até 280 caracteres | M |
-| RF08 | Enviar sugestão de evento (até 500 caracteres), visível apenas para a administração | M |
-| RF09 | Check-in no local do evento por QR code com código rotativo | M\* |
-| RF10 | Página "Privacidade" e opção "Apagar meus dados deste dispositivo" | M |
-| RF11 | Compartilhar o evento (URL própria com prévia Open Graph; botão nativo de compartilhar quando disponível) | M |
-| RF12 | Ver eventos encerrados recentes (para avaliar) | M |
-| RF13 | Cupom promocional | F |
-| RF14 | Inscrição com reserva de vaga ou pagamento | F (exige nova análise) |
-| RF15 | Lembretes e notificações | F |
+Colunas: **Fase** (1, 2, 3 ou —) e **Origem** (legenda acima).
 
-### Administração (login obrigatório)
+### 5.1 Experiência do visitante (público, sem login)
 
-| ID | Requisito | Prior. |
-| --- | --- | --- |
-| RF20 | Login com e-mail e senha; sessão com expiração; logout | M |
-| RF21 | Papéis Administrador, Editor e Analista com as permissões da tabela da seção 6 | M |
-| RF22 | Administrador cria, desativa e redefine o acesso de usuários (sem cadastro aberto) | M |
-| RF23 | CRUD de eventos: título, descrição, início e fim, local, categoria, banner com texto alternativo obrigatório, recursos de acessibilidade, informações de entrada (texto livre: preço, vagas por ordem de chegada etc.), capacidade informativa opcional e status de publicação | M |
-| RF24 | Status temporal automático (Agendado, Em andamento, Encerrado), além de Rascunho e Cancelado, controlados pelo editor | M |
-| RF25 | Dashboard: acessos à agenda, eventos ativos, interessados, check-ins, avaliações, CSAT; filtros por período, evento e categoria | M |
-| RF26 | Gráficos: interesse × check-in por evento; satisfação por evento e por categoria; origem dos acessos (Wi-Fi, Instagram, direto); sempre com tabela de dados equivalente | M |
-| RF27 | Mural de sugestões com status (nova, lida, arquivada) | M |
-| RF28 | Lista de avaliações por evento, com comentários e indicação "com check-in / sem check-in"; ocultar avaliação abusiva | M |
-| RF29 | Modo telão: tela de QR rotativo para check-in de um evento | M\* |
-| RF30 | Registro de auditoria das ações administrativas (quem, o quê, quando) | M |
-| RF31 | Configurações: período de avaliação padrão e tolerâncias do check-in | M |
-| RF32 | Exportar métricas agregadas (CSV) | F |
-| RF33 | Vários shoppings (multi-tenant) | F |
+| ID | Requisito | Fase | Origem |
+| --- | --- | :-: | --- |
+| RF01 | Agenda com eventos publicados e não encerrados, em cards (imagem com alt, título, data, horário, local, categoria, tags de acessibilidade, status) | 1 | [C][PDF] |
+| RF02 | Busca por texto | 1 | [C] |
+| RF03 | Filtros por categoria, data e recursos de acessibilidade, refletidos na URL | 1 | [C][PDF: "tipo de experiência"] |
+| RF04 | Visão de calendário (por dia/semana) além da lista | 2 | [PDF] · [R]: lista com agrupamento por dia na Fase 1 |
+| RF05 | Página de detalhes: descrição, horário, local/espaço, acessibilidade, informações de entrada, status | 1 | [C][PDF] |
+| RF06 | Compartilhamento (API nativa ou copiar link) e URL própria por evento, com prévia Open Graph | 1 | [C][PDF] |
+| RF07 | Links diretos para a programação, para um evento ou para uma categoria/filtro, com parâmetros de origem | 1 | [PDF] |
+| RF08 | "Tenho interesse" (liga e desliga; uma vez por dispositivo e por evento; **não reserva vaga**) | 1 [P] | [C] · fase pendente (P-FASE-1; rec. Fase 1) |
+| RF09 | Adicionar à agenda: `.ics` (principal) e link do Google Calendar (secundário) | 1 | [C] · fase [R] |
+| RF10 | Página Privacidade + "Apagar meus dados deste dispositivo" | 1 | [R] |
+| RF11 | Avaliação pós-evento aberta (sem exigir check-in), período configurável, nota de 1 a 5, tags, comentário ≤ 280 | 2 | Regras [C] · fase [P] |
+| RF12 | Lista de encerrados recentes para avaliar | 2 | [R] |
+| RF13 | Envio de sugestões (visível só para a administração) | 2 | [C] · fase [P] |
+| RF14 | Check-in por QR rotativo no local | 2 | [P] |
+| RF15 | Reserva de vaga em evento com limite | — | [P] |
+| RF16 | Modo painel digital (página pública de destaques para telas e totens) | 3 | [PDF] |
+| RF17 | Cupom, pagamento, login de visitante, notificações | — | Fora [C] |
 
-## 5. Requisitos não funcionais
+### 5.2 Gestão administrativa (login)
+
+| ID | Requisito | Fase | Origem |
+| --- | --- | :-: | --- |
+| RF20 | Login com e-mail e senha, sessões e logout (provedor final pendente) | 1 | [R] · provedor [P] |
+| RF21 | Papéis Administrador, Editor e Analista (§6) | 1 | [C] provisório |
+| RF22 | Gestão de usuários pelo Administrador (sem cadastro aberto) | 1 | [R] |
+| RF23 | CRUD de eventos: título, descrição, início e fim, **espaço**, categoria, banner com alt, recursos de acessibilidade, informações de entrada, capacidade informativa, configuração de vagas, status de publicação | 1 | [C][PDF] |
+| RF24 | Publicar, cancelar e **encerrar antecipadamente** (registra o fim real); status temporal derivado das datas | 1 | [C][PDF] · regra [R] |
+| RF25 | Cadastro de **espaços** do shopping (nome, piso, capacidade, estrutura disponível) | 1 | [PDF] |
+| RF26 | Cadastro de **estabelecimentos participantes** (lojas) e **segmentos comerciais**; vínculo com eventos | 2 | [PDF] · fase [R] |
+| RF27 | Gerador de **links de divulgação e QR Codes** por evento e canal (Instagram, cartaz, totem, Wi-Fi, outro), com download em PNG/SVG | 1 | [PDF] |
+| RF28 | Painel básico: visualizações e origem por evento e período | 1 | [C][PDF] |
+| RF29 | Auditoria das ações administrativas | 1 | [R] |
+| RF30 | Painel completo de indicadores (interesse, avaliações, check-ins, CSAT, origem, compartilhamentos) com marcação **medido / estimado / indisponível** | 2 | [PDF] |
+| RF31 | **Relatório automático pós-evento** consolidando os dados disponíveis | 2 | [PDF] |
+| RF32 | **Comparação** entre eventos e entre períodos | 2 | [PDF] |
+| RF33 | Moderação de avaliações e mural de sugestões | 2 | [C] |
+| RF34 | Modo telão do check-in | 2 | [P] |
+| RF35 | Exportar dados agregados (CSV) | 2 | [R] |
+
+### 5.3 Inteligência estratégica
+
+| ID | Requisito | Fase | Origem |
+| --- | --- | :-: | --- |
+| RF40 | **Planejamento** (briefing): objetivo (aumentar vendas, ampliar fluxo, atrair novos públicos, fortalecer a experiência), público desejado (faixa etária, perfil, interesses, **sempre descritivo e agregado**), segmentos comerciais, orçamento (faixa), período, espaços disponíveis | 2 | [C][PDF] |
+| RF41 | **Catálogo de modelos de experiência** mantido pela administração: objetivos e públicos atendidos, segmentos, faixa de custo, estrutura necessária, duração, indicadores sugeridos | 2 | [R] (necessário para recomendações por regras) |
+| RF42 | **Motor de recomendações por regras transparentes**: filtros eliminatórios + pontuação explicada; mostra ideias, justificativa, premissas, público potencial, lojas possíveis, estrutura, faixa de custo **informada** e indicadores recomendados | 2 | [C][PDF] |
+| RF43 | Ajuste das recomendações pelo histórico de desempenho, só quando houver amostra mínima, com nível de confiança visível | 2 | [R] |
+| RF44 | **Identificação de oportunidades** descritiva: dias e horários de maior procura, categorias com baixo engajamento, melhores eventos por categoria e época (com n mínimo) | 2 | [PDF] |
+| RF45 | Registrar a decisão tomada e ligar planejamento → evento realizado → resultados (aprender com o histórico) | 2 | [R] |
+| RF46 | Recomendações com modelos analíticos ou IA | 3 | [PDF] · só com dados suficientes [P] |
+
+### 5.4 Integrações e pontos de contato
+
+| ID | Requisito | Fase | Origem |
+| --- | --- | :-: | --- |
+| RF50 | Link de divulgação com origem para o portal Wi-Fi (chamada ou link), **se** a Ponto Fibra permitir | 1 (só link) / 3 (integração) | [PDF] · viabilidade [P] |
+| RF51 | Redes sociais: links na bio, posts e stories com origem | 1 | [C][PDF] |
+| RF52 | QR Codes impressos em cartazes e totens | 1 | [PDF] |
+| RF53 | Painéis digitais exibindo destaques (via modo painel/URL) | 3 | [PDF] |
+| RF54 | Fluxo de visitantes agregado (sensores ou sistemas existentes) | 3 | [PDF] · fonte [P] |
+| RF55 | Vendas agregadas por período ou segmento | 3 | [PDF] · fonte e autorização [P] |
+
+**Regra transversal [C][PDF]:** a aplicação **continua funcionando** quando uma integração está indisponível. Indicadores dependentes aparecem como **indisponíveis**, nunca como zero.
+
+## 6. Requisitos não funcionais
 
 | ID | Categoria | Requisito |
 | --- | --- | --- |
-| RNF01 | Acessibilidade | WCAG 2.2 nível AA em todas as telas; alvos de toque ≥ 44×44 px; funciona com teclado, VoiceOver e TalkBack; zoom de 200% sem perder conteúdo (detalhes em `06-qualidade.md`) |
-| RNF02 | Desempenho | Agenda pública em 4G: LCP ≤ 2,5 s e INP ≤ 200 ms no percentil 75; JS inicial da página pública ≤ 150 KB (gzip) |
-| RNF03 | Compatibilidade | Safari iOS e Chrome Android das 2 últimas versões principais, incluindo o **navegador interno do Instagram** e o navegador do portal cativo do Wi-Fi |
-| RNF04 | Privacidade | Sem cadastro do visitante; nenhum dado pessoal direto (nome, e-mail, telefone, CPF); identificador de dispositivo pseudonimizado; sem analytics nem pixels de terceiros no MVP |
-| RNF05 | Segurança | OWASP ASVS nível 1 como base; senhas com Argon2id; cookies `HttpOnly`, `Secure` e `SameSite`; CSP; proteção contra CSRF; limite de requisições; nenhum segredo no repositório |
-| RNF06 | Disponibilidade | Agenda pública tolera falha do banco servindo a última versão em cache (degradação graciosa) |
-| RNF07 | Manutenção | Uma única aplicação TypeScript, implantável em contêiner, sem dependência obrigatória de um fornecedor |
-| RNF08 | Idioma | Interface, código de domínio e documentação em pt-BR; datas no formato brasileiro, fuso `America/Sao_Paulo` |
-| RNF09 | Observabilidade | Logs estruturados sem dados pessoais nem segredos; endpoint de saúde |
-| RNF10 | SEO e compartilhamento | Página de evento gerada no servidor, com `schema.org/Event` e Open Graph |
+| RNF01 | Acessibilidade | WCAG 2.2 AA; alvos ≥ 44 px; teclado, VoiceOver e TalkBack (`06-qualidade.md`) |
+| RNF02 | Desempenho | Agenda em 4G: LCP ≤ 2,5 s, INP ≤ 200 ms (p75); JS público ≤ 150 KB gzip; programação "em tempo real" = publicação refletida em ≤ 60 s |
+| RNF03 | Compatibilidade | Safari iOS, Chrome Android, navegador interno do Instagram e navegador do portal cativo |
+| RNF04 | Privacidade | Sem identificação para consultar; mínimo de dados; indicadores agregados; nenhum dado individual em relatórios; sem analytics de terceiros [C][PDF] |
+| RNF05 | Segurança | OWASP ASVS nível 1; Argon2id; cookies seguros; CSP; CSRF; limites; nenhum segredo versionado [C] |
+| RNF06 | Resiliência | Integrações isoladas: a falha de uma não derruba a agenda nem o painel [C][PDF] |
+| RNF07 | Manutenção | Aplicação única em contêiner; motor de recomendação como módulo isolado que pode evoluir separadamente [PDF][R] |
+| RNF08 | Transparência | Todo número indica se é medido, estimado ou indisponível; toda recomendação lista premissas e regras aplicadas [PDF] |
+| RNF09 | Idioma | **Interface e documentação em pt-BR** [C]; **código em inglês** (identificadores, tabelas, colunas, rotas de API internas, commits técnicos) [C]; fuso `America/Sao_Paulo` |
+| RNF10 | Observabilidade | Logs estruturados sem dados pessoais; endpoint de saúde |
+| RNF11 | Qualidade de código | Princípios **SOLID**, padrões de projeto só quando resolvem uma necessidade concreta, boas práticas e convenções do repositório (`05-arquitetura.md` §6) [C] |
 
-## 6. Papéis e permissões (provisório)
+## 7. Papéis e permissões (provisório [C]; detalhes da Fase 2 [P])
 
 | Ação | Administrador | Editor | Analista |
 | --- | :-: | :-: | :-: |
-| Ver dashboard e métricas | ✅ | ✅ | ✅ |
-| Criar, editar e publicar eventos | ✅ | ✅ | — |
-| Excluir evento (só rascunho; publicado → cancelar) | ✅ | ✅ | — |
-| Abrir modo telão (check-in) | ✅ | ✅ | — |
-| Ler e arquivar sugestões | ✅ | ✅ | ✅ |
-| Ocultar avaliação abusiva | ✅ | ✅ | — |
-| Gerenciar usuários e papéis | ✅ | — | — |
-| Configurações e auditoria | ✅ | — | — |
-
-## 7. Fora do escopo do MVP
-
-Cupom, inscrição com reserva ou pagamento, e-mail ou SMS para visitantes, notificações push, login de visitante, mural público, vários shoppings, integração por API com o Instagram ou com o portal Ponto Fibra (só links com UTM), aplicativo nativo.
-
-> **Inscrição e vagas:** o administrador pode informar no evento "vagas limitadas, por ordem de chegada" e uma capacidade apenas informativa. O sistema **não reserva nem garante vaga**. Antes de qualquer reserva ou cobrança, o trabalho para e as implicações são levadas ao responsável (ver `07-mvp-e-riscos.md`).
+| Ver painéis e relatórios | ✅ | ✅ | ✅ |
+| Criar, editar, publicar, cancelar e encerrar eventos | ✅ | ✅ | — |
+| Gerar links e QR de divulgação | ✅ | ✅ | — |
+| Cadastrar espaços, estabelecimentos e segmentos | ✅ | ✅ | — |
+| Criar planejamentos e gerar recomendações (Fase 2) | ✅ | [P] | ✅ |
+| Manter o catálogo de modelos de experiência (Fase 2) | ✅ | [P] | [P] |
+| Ler e moderar avaliações e sugestões (Fase 2) | ✅ | ✅ | ler |
+| Modo telão (check-in, Fase 2) | ✅ | ✅ | — |
+| Usuários, papéis, configurações, auditoria | ✅ | — | — |

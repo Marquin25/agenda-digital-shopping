@@ -1,14 +1,14 @@
 # 08 — Estratégia de testes e definição de pronto
 
-> Papel: **QA** · O TDD (skill `tdd`) vale para regras de domínio e casos de uso.
+> Papel: **QA** · Revisão 2 · 2026-11-13 · O TDD (skill `tdd`) vale para regras de domínio e casos de uso.
 
 ## 1. Pirâmide de testes
 
 | Nível | Ferramenta (proposta) | O que cobre | Exemplos |
 | --- | --- | --- | --- |
-| Unidade (domínio) | Vitest | Regras puras, escritas primeiro (TDD) | status derivado; janela de avaliação; token de check-in (janela atual/anterior); geração e escaping do `.ics`; fórmulas de CSAT e conversão; validação de entrada |
+| Unidade (domínio) | Vitest | Regras puras, escritas primeiro (TDD) | status derivado; janela de avaliação; token de check-in (janela atual/anterior); geração e escaping do `.ics`; fórmulas de CSAT e conversão; validação de entrada; **motor de recomendação** (filtros eliminatórios, pontuação, justificativa, limiar de histórico, determinismo); classificação medido/estimado/indisponível |
 | Integração | Vitest + PostgreSQL em contêiner | Casos de uso com banco real | unicidade de interesse, avaliação e check-in; limite de requisições; retenção e agregação; autorização por papel |
-| Ponta a ponta | Playwright (Chromium + WebKit, viewport móvel 390×844 e desktop) | Jornadas principais | visitante filtra → abre detalhe → marca interesse → baixa `.ics`; avalia evento encerrado; Editor cria e publica evento; Analista vê o dashboard e não consegue editar |
+| Ponta a ponta | Playwright (Chromium + WebKit, viewport móvel 390×844 e desktop) | Jornadas principais | visitante filtra → abre detalhe → marca interesse → baixa `.ics`; avalia evento encerrado; Editor cria e publica evento; Editor gera link/QR de divulgação → acesso pelo link registra a origem; Analista vê o painel e não consegue editar; (Fase 2) Analista cria planejamento → gera recomendações → cria evento a partir da ideia |
 | Acessibilidade automática | `@axe-core/playwright` em cada página e estado | Violações WCAG detectáveis | zero violações sérias ou críticas |
 | Acessibilidade manual | Checklist por entrega | O que a automação não pega | só teclado; VoiceOver (iOS) e TalkBack (Android) nas jornadas do visitante; zoom de 200% e 320 px; contraste do tema |
 | Segurança | Testes de integração + checagens | Autorização, CSRF, upload, cabeçalhos, segredos | acesso a `/admin` sem sessão → redireciona; Analista fazendo POST de edição → 403; upload de SVG ou arquivo com extensão falsa → rejeitado; gitleaks no CI |
@@ -23,6 +23,10 @@ O detalhamento fica em cada issue de `09-backlog.md`. Regras transversais:
 - **Idempotência:** repetir uma ação pública (interesse, check-in, avaliação) não cria duplicata.
 - **Equipe excluída:** ações com sessão administrativa não alteram métricas.
 - **Sem dado pessoal em log:** teste que verifica que os logs não contêm IP completo, cookie ou comentário.
+- **Relatórios só com agregados:** nenhum relatório ou exportação contém `id_hash`, comentário individual ou linha por dispositivo.
+- **Integração indisponível:** com o adaptador desligado ou falhando, a agenda e o painel funcionam e o indicador aparece como "indisponível" (nunca 0).
+- **Recomendações honestas:** toda recomendação mostra premissas, regras aplicadas e confiança; o aviso "não são garantias" está presente.
+- **Interesse ≠ reserva ≠ check-in:** nenhum rótulo ou texto da interface sugere reserva ou presença a partir do interesse.
 
 ## 3. Registro de resultados e defeitos
 
@@ -40,6 +44,7 @@ Uma issue está **pronta** quando:
 5. Autorização testada para cada papel quando a issue mexe em `/admin`.
 6. Documentação atualizada (`docs/spec/`, `GLOSSARY.md`, ADR se houve decisão).
 7. A revisão com a skill `code-review` foi feita e os apontamentos foram tratados.
+7a. Código em inglês, aderente a SOLID e às convenções de `05-arquitetura.md` §6 (verificado na revisão).
 8. Commits pequenos e claros numa branch da issue; a issue e o board foram atualizados.
 9. A aplicação continua executável localmente (`docker compose up` + `npm run dev`).
 

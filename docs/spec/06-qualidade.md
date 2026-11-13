@@ -44,17 +44,34 @@ Base: OWASP ASVS nível 1, OWASP Top 10 e OWASP API Security Top 10.
 
 ## 3. Privacidade e LGPD
 
-> **Não declaramos conformidade com a LGPD.** As medidas abaixo seguem o princípio da minimização. A validação cabe ao controlador (o shopping) e ao seu encarregado.
+> **Não declaramos conformidade com a LGPD.** As medidas abaixo seguem a minimização e os princípios da proposta [PDF]. A validação cabe ao controlador (o shopping) e ao seu encarregado, ainda não confirmados [C].
 
-### Inventário de dados
+### Princípios adotados [C][PDF]
 
-| Dado | Finalidade | Pessoal? | Base legal (a validar) | Retenção |
-| --- | --- | --- | --- | --- |
-| `id_hash` do dispositivo | Deduplicar interesse, check-in, avaliação e métricas | Provavelmente sim (pseudonimizado) | A definir pelo controlador (ex.: legítimo interesse, com teste de balanceamento) | Ver `04-dados-e-integracoes.md` |
-| IP | Limite de requisições e segurança | Sim | Legítimo interesse / segurança (a validar) | Memória (minutos); logs por 7 dias |
-| Comentário da avaliação e texto da sugestão | Melhorar eventos | Pode conter dado pessoal digitado pelo visitante | A validar | 2 anos; aviso "não escreva dados pessoais" |
-| `utm_source` | Origem agregada | Não | — | Agregado |
-| Dados de usuários administrativos (nome, e-mail) | Acesso e auditoria | Sim | Execução de contrato / legítimo interesse (a validar) | Enquanto ativo + prazo da auditoria |
+1. Privacidade desde a concepção: coletar só o necessário.
+2. Nenhuma identificação para consultar a agenda.
+3. Indicadores **agregados** por padrão; **nenhum relatório expõe registros individuais**. A lista de avaliações para moderação é uma tela operacional de acesso restrito, não um relatório, e nunca mostra o `id_hash`.
+4. Finalidade e base legal definidas **por tratamento** (tabela abaixo; base legal sempre "a validar").
+5. Consentimento quando aplicável, sobretudo para comunicações e funções opcionais. Hoje não há comunicações; se surgirem (ex.: reservas com contato), o consentimento entra na análise.
+6. Controle de acesso por papel, proteção dos dados e política de retenção.
+7. Integrações e responsabilidades documentadas entre shopping, fornecedores (hospedagem, Ponto Fibra, painéis) e parceiros (lojas).
+8. **Não inferir características sensíveis** dos visitantes. O "público desejado" do planejamento é uma descrição de alvo escrita pela equipe, nunca um perfil derivado de pessoas.
+
+### Inventário de tratamentos
+
+| Dado | Fase | Finalidade | Classificação | Base legal (a validar) | Retenção |
+| --- | :-: | --- | --- | --- | --- |
+| Consulta à agenda sem cookie | 1 | Exibir a programação | Não pessoal | — | — |
+| `id_hash` do dispositivo | 1 | Deduplicar métricas, interesse, avaliações e reservas | **Pseudonimizado → provavelmente dado pessoal** | A definir pelo controlador (ex.: legítimo interesse, com teste de balanceamento) | `04-dados-e-integracoes.md` |
+| IP | 1 | Limite de requisições e segurança | **Dado pessoal** | Segurança / legítimo interesse (a validar) | Memória (minutos); logs por 7 dias |
+| Origem (canal, código de link) | 1 | Medir canais | Não pessoal quando agregada | — | Agregada |
+| Usuários administrativos (nome, e-mail) | 1 | Acesso e auditoria | **Dado pessoal** | Execução de contrato / legítimo interesse (a validar) | Enquanto ativo + auditoria |
+| Comentários e sugestões | 2 | Melhorar eventos | Pode conter dado pessoal digitado pelo visitante | A validar | 2 anos; aviso "não escreva dados pessoais"; ocultar |
+| Planejamentos, catálogo, espaços | 2 | Planejamento | Dado empresarial (não pessoal) | — | Enquanto úteis |
+| Estabelecimentos e segmentos | 2 | Relacionar lojas a eventos | Dado empresarial; **não guardar contatos de pessoas** [R] | — | Enquanto ativos |
+| Check-in | 2 [P] | Medir presença | Pseudonimizado | A validar | 90 dias → agregado |
+| Reserva | — [P] | Garantir vaga | Alternativa B: pseudonimizado · **C: dado pessoal (contato)** | **C exige análise e possivelmente consentimento** | A definir |
+| Fluxo e vendas | 3 [P] | Impacto do evento | Só agregados; podem ser confidenciais (dados comerciais) | Contrato / autorização dos titulares dos sistemas | A definir |
 
 ### Medidas
 
@@ -74,6 +91,9 @@ Base: OWASP ASVS nível 1, OWASP Top 10 e OWASP API Security Top 10.
 | P-LGPD-3 | Aprovar os prazos de retenção propostos |
 | P-LGPD-4 | Texto final da página Privacidade e ligação com a política do shopping |
 | P-LGPD-5 | Se a hospedagem ficar fora do Brasil: regras de transferência internacional (art. 33) |
+| P-LGPD-6 | Se reservas forem aprovadas: alternativa escolhida, dados envolvidos e consentimento |
+| P-LGPD-7 | Contratos e responsabilidades com Ponto Fibra, fornecedor de painéis e fontes de fluxo e vendas (papéis de controlador e operador) |
+| P-LGPD-8 | Confidencialidade dos dados de vendas dos lojistas e quem pode vê-los na plataforma |
 
 ## 4. Desempenho
 

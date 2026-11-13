@@ -1,6 +1,6 @@
 # Etapa 1 — Descoberta e inspeção
 
-> Projeto: **Conecta Shopping** (nome provisório) · Data: 2026-11-13 · Status: perguntas respondidas em 2026-11-13; plano em `docs/spec/`.
+> Projeto: **Conecta Shopping** (nome provisório) · Data: 2026-11-13 · Status: perguntas respondidas em 2026-11-13; plano revisado (revisão 2, com a proposta em PDF) em `docs/spec/`, aguardando aprovação.
 
 ## 1. Estado do repositório
 
@@ -11,7 +11,7 @@
 | Conteúdo existente | Apenas `README.md` com a proposta do produto. Nenhum código, stack, CI ou convenção de branch definida. |
 | Branch de trabalho | `docs/etapa-1-descoberta` (local; sem push) |
 | Instruções de agente | `CLAUDE.md` + `docs/agents/*` criados pelo setup das skills (issue tracker atual: **markdown local** em `.scratch/`) |
-| Ferramentas locais | Node 26.8, npm 11.19, Docker 29.5, Python 3.9. **`gh` (GitHub CLI) não instalado** → board e issues no GitHub estão bloqueados. |
+| Ferramentas locais | Node 26.8, npm 11.19, Docker 29.5, Python 3.9. `gh` 2.104.0 instalado via Homebrew em 2026-11-13; **ainda não autenticado** → board e issues no GitHub pendentes. |
 
 ### Diferenças entre o README e o pedido atual
 
@@ -90,3 +90,20 @@ docs/
   agents/                      configuração das skills
 .scratch/conecta-shopping-mvp/ backlog local (spec.md + issues/NN-*.md) até o GitHub ser liberado
 ```
+
+## 7. Revisão 2 — integração da proposta em PDF (2026-11-13)
+
+Fonte: "Plataforma Inteligente de Eventos e Experiências — proposta conceitual" (PDF de 9 páginas, fornecido pelo responsável, não versionado). Usado **só como referência de requisitos**.
+
+Novas instruções do responsável [C]:
+
+- Três pilares: experiência do visitante, gestão administrativa e **inteligência estratégica** (recomendações com premissas explícitas, sem garantias).
+- Fases do PDF: **1** plataforma essencial · **2** inteligência e indicadores · **3** integrações e evolução.
+- Pontos de contato: Wi-Fi Ponto Fibra, redes sociais, links diretos, QR Codes e painéis digitais. As integrações dependem de viabilidade e autorização, e a app funciona sem elas.
+- Interesse, avaliações, check-in e sugestões continuam no plano, com fase recomendada e decisão pendente. Cupom e pagamento ficam fora sem aprovação.
+- Reservas: avaliar a possibilidade **sem dados pessoais**; **não aprovadas**. Interesse, reserva e check-in são separados.
+- Métricas distintas, classificadas como medido, estimado ou indisponível; fluxo e vendas só com fontes adicionais.
+- Privacidade conforme os princípios do PDF; sem declarar conformidade.
+- Backlog no GitHub depois da aprovação **e** da autenticação confirmada; por enquanto, local.
+
+Novas pendências registradas: P-MVP-1, P-FASE-1…3, P-RES-1…9, P-ORC-1, P-EQ-1, P-PAPEL-1, P-INT-2…4, P-INT-IA-1…5, P-LGPD-6…8 (consolidadas em `docs/spec/07-mvp-e-riscos.md` §4).

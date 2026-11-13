@@ -1,3 +1,9 @@
+## Convenções do projeto
+
+- Documentação, issues e interface em **português do Brasil**; **código em inglês** (identificadores, tabelas, arquivos, testes, logs).
+- Aplicar **SOLID** (skill `solid-design-principles`) e padrões de projeto apenas quando resolverem uma necessidade concreta; ver `docs/spec/05-arquitetura.md` §6.
+- Termos do domínio e sua tradução para o código: `GLOSSARY.md`.
+
 ## Agent skills
 
 ### Issue tracker
