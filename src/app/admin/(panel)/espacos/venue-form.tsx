@@ -1,5 +1,6 @@
 "use client";
 
+import { ActionForm } from "@/ui/admin/action-form";
 import { useActionState } from "react";
 import { FieldError, FormMessage, invalidProps, SubmitButton } from "@/ui/admin/form-controls";
 import type { FormState } from "@/ui/admin/form-state";
@@ -27,7 +28,7 @@ export function VenueForm({
   const e = state.fieldErrors ?? {};
   const id = (name: string) => `${idPrefix}-${name}`;
   return (
-    <form action={action}>
+    <ActionForm action={action} state={state} resetOnSuccess={venueId === null}>
       <FormMessage state={state} />
       <div className="form-grid">
         <div className="field">
@@ -98,6 +99,6 @@ export function VenueForm({
         </div>
       </div>
       <SubmitButton>{venueId ? "Salvar espaço" : "Cadastrar espaço"}</SubmitButton>
-    </form>
+    </ActionForm>
   );
 }

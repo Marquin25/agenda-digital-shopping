@@ -1,5 +1,6 @@
 "use client";
 
+import { ActionForm } from "@/ui/admin/action-form";
 import { useActionState, useState } from "react";
 import { PROMO_CHANNELS, TRAFFIC_CHANNEL_LABELS } from "@/domain/metrics/traffic-source";
 import { FieldError, FormMessage, invalidProps, SubmitButton } from "@/ui/admin/form-controls";
@@ -19,7 +20,7 @@ export function PromoLinkForm({
   const [destination, setDestination] = useState(defaultEventId ? "event" : "agenda");
   const e = state.fieldErrors ?? {};
   return (
-    <form action={action}>
+    <ActionForm action={action} state={state} resetOnSuccess>
       <FormMessage state={state} labels={{ channel: "Canal", description: "Descrição", eventId: "Evento" }} />
       <div className="form-grid">
         <div className="field">
@@ -111,6 +112,6 @@ export function PromoLinkForm({
         )}
       </div>
       <SubmitButton>Criar link de divulgação</SubmitButton>
-    </form>
+    </ActionForm>
   );
 }
