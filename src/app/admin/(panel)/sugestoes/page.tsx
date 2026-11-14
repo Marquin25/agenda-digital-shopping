@@ -54,7 +54,7 @@ export default async function SuggestionsPage({
         automática do texto.
       </div>
       <nav aria-label="Situação das sugestões">
-        <ul className="actions">
+        <ul className="actions actions--list">
           {SUGGESTION_STATUSES.map((s) => (
             <li key={s}>
               <Link
