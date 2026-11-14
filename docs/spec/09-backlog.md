@@ -57,7 +57,7 @@ O status vale para a `main` depois do merge do PR #69, verificado com `npm test`
 | B-20 | **Bloqueado** | P-FASE-1; nada foi implementado |
 | B-21 | Feito | Texto marcado como pendente de validação do shopping |
 | B-22 | Feito | `npm run retention:run` ou `/api/cron/retention` (com `CRON_SECRET`): agrega e apaga identificadores com mais de 30 dias, sessões vencidas e auditoria com mais de 365 dias. **Falta agendar** quando a hospedagem for definida |
-| B-23 | Feito | Cabeçalhos num módulo testado (com `Cross-Origin-Opener-Policy` e HSTS em produção), CSP com *nonce*, `npm audit`/gitleaks na CI, `TRUSTED_PROXY_HOPS` para a leitura do IP, limite por IP na contagem de links promocionais e checklist ASVS nível 1 em `docs/seguranca/asvs-nivel-1.md`. Continuam em aberto, registrados no checklist: lista de senhas vazadas, limitador compartilhado (depende de P-LGPD e da hospedagem) e conferência do `X-Forwarded-For` na hospedagem (#25) |
+| B-23 | Feito | Cabeçalhos num módulo testado (com `Cross-Origin-Opener-Policy` e HSTS em produção), CSP com *nonce*, `npm audit`/gitleaks na CI, `TRUSTED_PROXY_HOPS` para a leitura do IP, limite por IP na contagem de links promocionais e checklist ASVS nível 1 em `docs/seguranca/asvs-nivel-1.md`. Continuam em aberto, registrados no checklist: limitador compartilhado (depende de P-LGPD e da hospedagem) e conferência do `X-Forwarded-For` na hospedagem (#25) |
 | B-24 | Parcial | `Dockerfile` em estágios (saída *standalone*, usuário não root, `HEALTHCHECK`), `docker-compose.prod.yml` (app só em `127.0.0.1`, banco sem porta publicada), backup e restauração em `scripts/docker/`; guia em `docs/docker.md`. A saída *standalone* foi testada sem Docker; falta testar a imagem, a pilha e o backup/restauração com o Docker funcionando |
 | B-25 | **Bloqueado** (P0) | P-INF-1, P-INF-2, P-ORC-1, P-LGPD-*. Pré-requisitos técnicos locais: B-57, B-58, B-62 |
 | B-57 | Feito | PR #67: troca de banner grava o evento antes de apagar o antigo; retenção remove banners órfãos com mais de 24 h |
@@ -66,9 +66,11 @@ O status vale para a `main` depois do merge do PR #69, verificado com `npm test`
 | B-60 | Feito | PR #66: consulta própria para `/salvos`, sem o limite da agenda; o servidor não recebe a lista de salvos |
 | B-61, B-62 | Feito | PRs #64 e #65 |
 | B-68 | A fazer | `CRON_SECRET` vazio impede a aplicação de subir (agravado pela validação na subida de B-58) |
-| B-77 | Em revisão | Modo escuro com morcegos: botão da lua no cabeçalho público e na barra do admin (`aria-pressed`); revoada de morcegos em SVG/CSS numa camada `aria-hidden` sem `pointer-events`, desligada com `prefers-reduced-motion`; escolha só no `localStorage`, aplicada antes da pintura; paleta escura conferida para WCAG AA |
+| B-77 | Feito | Modo escuro com morcegos: botão da lua no cabeçalho público e na barra do admin (`aria-pressed`); revoada de morcegos em SVG/CSS numa camada `aria-hidden` sem `pointer-events`, desligada com `prefers-reduced-motion`; escolha só no `localStorage`, aplicada antes da pintura; paleta escura conferida para WCAG AA |
+| B-45 | Feito | `/painel` com destaques em rotação pausável (WCAG 2.2.2), sem links e sem piscar; parâmetros por tela na URL (`tela`, `intervalo`, `limite` e os filtros da agenda); QR gerado no servidor com `utm_source=painel` e `utm_campaign` = tela; a própria tela não conta como visitante. Guia em `docs/painel.md`. O equipamento (P-INT-2) segue pendente: falta testar no player real |
+| B-82 | Feito | Senhas da equipe conferidas contra 46.794 senhas vazadas públicas de 12+ caracteres (SecLists, MIT), embarcadas; script para regerar em `scripts/security/` |
 | Extra | Feito | **Salvos**: eventos guardados só no aparelho (localStorage), sem cadastro. **Visual novo** (terracota/creme) baseado nas telas de referência da equipe |
-| B-76 | Em revisão | Gato preto com lua no rodapé público: a 13ª ativação (clique ou teclado) comemora a sexta-feira 13 numa região `aria-live`; contagem só em memória, nada salvo nem enviado |
+| B-76 | Feito | Gato preto com lua no rodapé público: a 13ª ativação (clique ou teclado) comemora a sexta-feira 13 numa região `aria-live`; contagem só em memória, nada salvo nem enviado |
 
 
 ### E-FUND

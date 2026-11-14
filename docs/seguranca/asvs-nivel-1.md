@@ -1,6 +1,6 @@
 # Checklist de segurança: OWASP ASVS nível 1
 
-> Revisão 1 · 2026-11-13 · Issue [#23](https://github.com/Marquin25/agenda-digital-shopping/issues/23) (B-23).
+> Revisão 2 · 2026-11-14 · Issue [#23](https://github.com/Marquin25/agenda-digital-shopping/issues/23) (B-23).
 >
 > Este documento é uma **autoavaliação da equipe** contra os capítulos do OWASP ASVS 4.0.3, nível 1. **Não é uma auditoria nem uma certificação.** Cada linha aponta onde a evidência está no código ou nos testes. Os itens "Pendente" e "Parcial" precisam de uma decisão ou da hospedagem definida.
 
@@ -20,7 +20,7 @@
 | --- | --- | --- |
 | Senhas guardadas com Argon2id, parâmetros OWASP | ✅ | `src/infrastructure/auth/password.ts` |
 | Mínimo de 12 caracteres, máximo de 256, sem regras de composição | ✅ | `validateNewPassword` |
-| Recusa de senhas vazadas ou comuns | 🟡 | Hoje há só uma lista curta de senhas comuns. Falta uma lista de senhas vazadas (ex.: as 10 mil mais comuns), embarcada, sem chamada externa. |
+| Recusa de senhas vazadas ou comuns | ✅ | `validateNewPassword` recusa, sem diferenciar maiúsculas, as senhas de 12+ caracteres de listas públicas de senhas vazadas (46.794 entradas do SecLists, licença MIT, embarcadas em `src/infrastructure/auth/breached-passwords.json`; nada sai do servidor) e uma lista curta do próprio projeto. Regerar: `scripts/security/build-breached-passwords.sh`. Teste: `tests/unit/password-policy.test.ts` (#82) |
 | Mensagem genérica no login e tempo constante para e-mail inexistente | ✅ | `login` em `src/application/auth/admin-auth.ts` (hash fictício) |
 | Bloqueio por conta (5 falhas → 15 min) e limite por IP (20 tentativas / 15 min) | ✅ | `MAX_FAILED_LOGINS`, `src/app/admin/entrar/actions.ts` |
 | Troca de senha obrigatória no primeiro acesso e exige a senha atual | ✅ | `mustChangePassword`, `changeOwnPassword`; E2E "first sign-in forces a password change" |
@@ -122,6 +122,5 @@
 
 ## Pendências em aberto
 
-1. **Lista de senhas vazadas** (V2): embarcar uma lista maior. É trabalho pequeno e não depende de decisão.
-2. **Limitador compartilhado** (V11): só quando houver mais de uma instância; depende de P-LGPD e da hospedagem.
-3. **Hospedagem** (V7, V9, V14): TLS, retenção de registros e conferência do `X-Forwarded-For` (#25).
+1. **Limitador compartilhado** (V11): só quando houver mais de uma instância; depende de P-LGPD e da hospedagem.
+2. **Hospedagem** (V7, V9, V14): TLS, retenção de registros e conferência do `X-Forwarded-For` (#25).

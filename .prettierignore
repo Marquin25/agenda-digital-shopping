@@ -7,3 +7,4 @@ test-results
 docs
 *.md
 package-lock.json
+src/infrastructure/auth/breached-passwords.json

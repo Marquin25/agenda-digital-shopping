@@ -2070,3 +2070,154 @@ th.number {
     transform: none;
   }
 }
+
+/* Digital signage (/painel, B-45) --------------------------------------- */
+/* Read from a distance: large type, one highlight at a time, no flashing. */
+.signage {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding: clamp(var(--space-4), 3vw, var(--space-8));
+  box-sizing: border-box;
+}
+.signage:focus {
+  outline: none;
+}
+.signage__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+.signage__title {
+  margin: 0;
+  font-size: clamp(1.5rem, 2.6vw, 2.4rem);
+}
+.signage-carousel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.signage-carousel__slides {
+  flex: 1;
+  display: grid;
+}
+.signage-carousel__slide:not([hidden]) {
+  display: grid;
+  animation: signage-fade 400ms ease-out;
+}
+@keyframes signage-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.signage-slide {
+  display: grid;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.signage-slide__image,
+.signage-slide__placeholder {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+}
+.signage-slide__image {
+  display: block;
+  object-fit: cover;
+}
+/* Landscape screens: the picture fills the left of the screen, the text and QR the right. */
+@media (min-width: 60rem) {
+  .signage-slide {
+    grid-template-columns: 3fr 2fr;
+  }
+  .signage-slide__image,
+  .signage-slide__placeholder {
+    height: 100%;
+    aspect-ratio: auto;
+  }
+}
+.signage-slide__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: clamp(var(--space-4), 2.5vw, var(--space-8));
+}
+.signage-slide__category {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-weight: 700;
+  color: var(--color-muted);
+  font-size: clamp(1rem, 1.4vw, 1.3rem);
+}
+.signage-slide__title {
+  margin: 0;
+  font-size: clamp(1.8rem, 3.6vw, 3.4rem);
+  line-height: 1.1;
+}
+.signage-slide__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-size: clamp(1.1rem, 1.8vw, 1.6rem);
+}
+.signage-slide__qr {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  margin-top: auto;
+  padding-top: var(--space-4);
+}
+.signage-slide__qr p {
+  display: flex;
+  gap: var(--space-2);
+  max-width: 22rem;
+  margin: 0;
+  font-size: clamp(1rem, 1.3vw, 1.25rem);
+}
+.signage-qr {
+  width: clamp(8rem, 14vw, 13rem);
+  height: auto;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  background: var(--color-qr-bg); /* QR codes need a light background in both themes */
+}
+.signage-carousel__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+}
+.signage-carousel__position {
+  margin: 0;
+  font-weight: 700;
+  color: var(--color-muted);
+}
+.signage-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-6);
+  text-align: center;
+}
+.signage-empty__text {
+  margin: 0;
+  max-width: 40rem;
+  font-size: clamp(1.3rem, 2.4vw, 2rem);
+  font-weight: 700;
+}
