@@ -67,6 +67,7 @@ O status vale para a `main` depois do merge do PR #69, verificado com `npm test`
 | B-61, B-62 | Feito | PRs #64 e #65 |
 | B-68 | A fazer | `CRON_SECRET` vazio impede a aplicação de subir (agravado pela validação na subida de B-58) |
 | Extra | Feito | **Salvos**: eventos guardados só no aparelho (localStorage), sem cadastro. **Visual novo** (terracota/creme) baseado nas telas de referência da equipe |
+| B-76 | Em revisão | Gato preto com lua no rodapé público: a 13ª ativação (clique ou teclado) comemora a sexta-feira 13 numa região `aria-live`; contagem só em memória, nada salvo nem enviado |
 
 
 ### E-FUND
@@ -105,6 +106,10 @@ Tabelas do núcleo (`04-dados-e-integracoes.md` §Núcleo), migrações e sement
 
 **[B-08](https://github.com/Marquin25/agenda-digital-shopping/issues/8) Adicionar à agenda (.ics + Google)** · P2 · P · depende de B-06 · TDD · [R]
 - [ ] `.ics` conforme a RFC 5545 (UID estável, DTSTAMP, UTC, SEQUENCE, escaping, quebra de linhas); link do Google como secundário; alternativa "copiar link".
+
+**[B-76](https://github.com/Marquin25/agenda-digital-shopping/issues/76) Easter egg: gato preto na agenda pública** · P3 · P · pedido do PO (2026-11-13)
+- [ ] Botão decorativo (gato preto e lua) no rodapé público; cada ativação por clique ou teclado conta uma vez; na 13ª, animação breve e mensagem da sexta-feira 13 anunciada por `aria-live`, sem diálogo.
+- [ ] Contagem só em memória: nada em cookie, `localStorage`, banco ou servidor; animação desligada com `prefers-reduced-motion`.
 
 ### E-ADM
 

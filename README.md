@@ -155,6 +155,7 @@ O visual segue as referências da equipe: paleta terracota e creme, fonte Plus J
 - **Detalhes:** capa, ficha com data, horário e local, "Adicionar à agenda" (`.ics` e Google) e "Compartilhar" numa barra fixa, e recursos de acessibilidade.
 - **Salvos:** o coração guarda o evento só neste aparelho (nada vai para o servidor).
 - **Privacidade:** explica o que é guardado e tem o botão "Apagar meus dados deste dispositivo".
+- **Gato preto:** no rodapé, um gatinho com a lua. Toque nele 13 vezes para uma surpresa de sexta-feira 13 (a contagem fica só na página e nada é enviado).
 
 ### Equipe do shopping (computador)
 
