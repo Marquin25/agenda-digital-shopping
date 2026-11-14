@@ -2300,3 +2300,28 @@ fieldset[aria-invalid="true"] .rating-score {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+
+/* Recently ended events to rate (B-27). */
+.ended-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+.ended-list__item {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+.ended-list__item h2 {
+  font-size: 1.15rem;
+  margin: 0 0 var(--space-1);
+}
+.ended-list__done {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  color: var(--color-success);
+}

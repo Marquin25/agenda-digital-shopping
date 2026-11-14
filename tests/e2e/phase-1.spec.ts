@@ -396,6 +396,15 @@ test.describe.serial("Phase 1 — admin publishes, visitor discovers", () => {
     await visitor.goto(ratedUrl);
     await expect(visitor.getByText("Você já avaliou este evento neste aparelho. Obrigado!")).toBeVisible();
     await expect(visitor.getByRole("link", { name: "Avaliar este evento" })).toHaveCount(0);
+
+    // B-27: the agenda leads to recently ended events, which remember this device's rating.
+    await visitor.goto("/");
+    await visitor.getByRole("link", { name: "Avalie os encerrados recentes" }).click();
+    await expect(visitor.getByRole("heading", { name: "Encerrados recentes", level: 1 })).toBeVisible();
+    const ended = visitor.getByRole("listitem").filter({ hasText: "Oficina Encerrada E2E" });
+    await expect(ended).toContainText("Você já avaliou este evento neste aparelho.");
+    await expect(ended.getByRole("link", { name: /^Avaliar/ })).toHaveCount(0);
+    await expectNoSeriousA11yViolations(visitor);
     await visitor.context().close();
 
     await admin.goto("/admin/eventos");

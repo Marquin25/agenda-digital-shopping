@@ -10,6 +10,7 @@ import {
   getEventRatingReport,
   getRatingContext,
   hasRated,
+  listRateableEvents,
   listRatingsForModeration,
   setRatingHidden,
   submitRating,
@@ -230,5 +231,44 @@ describe("post-event ratings (B-26)", async () => {
     expect(entries.map((e) => e.action)).toEqual(["rating.hide", "rating.show"]);
     expect(entries[0]).toMatchObject({ userId, details: { eventId: event.id } });
     expect(JSON.stringify(entries)).not.toContain("ofensivo");
+  });
+
+  it("lists recently ended events still open for rating, most recently ended first (B-27)", async () => {
+    const early = await newEvent("Encerrado cedo");
+    await db
+      .update(events)
+      .set({ endedAt: new Date("2026-11-10T19:30:00Z") })
+      .where(eq(events.id, early.id));
+    const short = await newEvent("Período de um dia");
+    await db.update(events).set({ ratingPeriodDays: 1 }).where(eq(events.id, short.id));
+    const draft = await newEvent("Rascunho encerrado", false);
+    const cancelled = await newEvent("Cancelado encerrado");
+    await cancelEvent(db, userId, cancelled.id);
+    await submitRating(db, { eventId: early.id, deviceHash: "lister", input: good, now: AFTER });
+
+    const titles = async (now: Date) =>
+      (await listRateableEvents(db, { now, deviceHash: "lister" })).map((e) => e.title);
+    expect(await titles(DURING)).not.toContain("Show avaliado");
+    const open = await listRateableEvents(db, { now: AFTER, deviceHash: "lister" });
+    expect(open.map((e) => e.title)).toContain("Período de um dia");
+    expect(open.map((e) => e.title)).not.toContain("Rascunho encerrado");
+    expect(draft.slug).toBeTruthy();
+    expect(open.map((e) => e.title)).not.toContain("Cancelado encerrado");
+    expect(open.find((e) => e.title === "Encerrado cedo")).toMatchObject({ slug: early.slug, rated: true });
+    expect(open.find((e) => e.title === "Show avaliado")).toMatchObject({ rated: false });
+    expect(open.at(-1)?.title).toBe("Encerrado cedo");
+    expect(open.find((e) => e.title === "Período de um dia")?.closesAt).toEqual(
+      new Date(ENDS.getTime() + DAY),
+    );
+
+    const twoDaysLater = new Date(ENDS.getTime() + 2 * DAY);
+    expect(await titles(twoDaysLater)).not.toContain("Período de um dia");
+    expect(await titles(new Date(ENDS.getTime() + 8 * DAY))).toEqual([]);
+    const anonymous = await listRateableEvents(db, { now: AFTER, deviceHash: null });
+    expect(anonymous.every((e) => !e.rated)).toBe(true);
+  });
+
+  it("never gives an event the slug of the /eventos/encerrados page", async () => {
+    expect((await newEvent("Encerrados")).slug).toBe("encerrados-2");
   });
 });

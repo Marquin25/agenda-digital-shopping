@@ -1,4 +1,4 @@
-import { and, desc, eq, isNotNull, type SQL } from "drizzle-orm";
+import { and, desc, eq, gt, inArray, isNotNull, lte, sql, type SQL } from "drizzle-orm";
 import { recordAudit } from "@/application/audit";
 import {
   RATING_TAGS,
@@ -176,4 +176,66 @@ export async function setRatingHidden(
     details: { eventId: updated[0]!.eventId },
   });
   return true;
+}
+
+export interface RateableEvent {
+  eventId: string;
+  slug: string;
+  title: string;
+  endedAt: Date;
+  closesAt: Date;
+  /** Whether this device already rated the event. */
+  rated: boolean;
+}
+
+/**
+ * Recently ended events still open for rating (B-27, docs/spec/02 `/eventos/encerrados`): published,
+ * ended, and within their own rating period; the most recently ended first.
+ */
+export async function listRateableEvents(
+  db: Database,
+  { now = new Date(), deviceHash }: { now?: Date; deviceHash: string | null },
+): Promise<RateableEvent[]> {
+  const endedAt = sql<Date>`coalesce(${events.endedAt}, ${events.endsAt})`;
+  const closesAt = sql`${endedAt} + make_interval(days => ${events.ratingPeriodDays})`;
+  const rows = await db
+    .select({
+      eventId: events.id,
+      slug: events.slug,
+      title: events.title,
+      endsAt: events.endsAt,
+      endedAt: events.endedAt,
+      ratingPeriodDays: events.ratingPeriodDays,
+    })
+    .from(events)
+    .where(and(eq(events.publicationStatus, "published"), lte(endedAt, now), gt(closesAt, now)))
+    .orderBy(desc(endedAt), events.title)
+    .limit(50);
+  const rated = new Set<string>();
+  if (deviceHash && rows.length > 0) {
+    const mine = await db
+      .select({ eventId: eventRatings.eventId })
+      .from(eventRatings)
+      .where(
+        and(
+          eq(eventRatings.deviceHash, deviceHash),
+          inArray(
+            eventRatings.eventId,
+            rows.map((r) => r.eventId),
+          ),
+        ),
+      );
+    for (const row of mine) rated.add(row.eventId);
+  }
+  return rows.map((row) => {
+    const window = ratingWindow(row, row.ratingPeriodDays);
+    return {
+      eventId: row.eventId,
+      slug: row.slug,
+      title: row.title,
+      endedAt: window.opensAt,
+      closesAt: window.closesAt,
+      rated: rated.has(row.eventId),
+    };
+  });
 }

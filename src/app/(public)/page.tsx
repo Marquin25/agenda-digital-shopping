@@ -1,4 +1,5 @@
-import { CalendarDays, SearchX, ShieldCheck, Sparkles } from "lucide-react";
+import { CalendarDays, MessageSquareHeart, SearchX, ShieldCheck, Sparkles } from "lucide-react";
+import Link from "next/link";
 import { listAccessibilityFeatures, listCategories } from "@/application/catalog/catalog";
 import { listPublicAgenda, type EventView } from "@/application/events/event-queries";
 import { countActiveFilters, parseAgendaFilters } from "@/domain/agenda/agenda-filters";
@@ -101,6 +102,14 @@ export default async function AgendaPage({ searchParams }: { searchParams: Searc
           );
         })
       )}
+
+      <p className="callout callout--quiet">
+        <MessageSquareHeart size={20} aria-hidden="true" />
+        <span>
+          Foi a algum evento? <Link href="/eventos/encerrados">Avalie os encerrados recentes</Link> ou{" "}
+          <Link href="/sugerir">sugira um evento</Link>.
+        </span>
+      </p>
     </>
   );
 }

@@ -7,10 +7,14 @@ import type { ValidEventInput } from "./event-input";
 
 export class EventRuleError extends Error {}
 
+/** Static pages under /eventos/ that an event slug must not shadow. */
+const RESERVED_EVENT_SLUGS = new Set(["encerrados"]);
+
 async function uniqueSlug(db: Database, title: string): Promise<string> {
   const base = slugify(title) || "evento";
   for (let attempt = 0; attempt < 50; attempt++) {
     const candidate = attempt === 0 ? base : `${base}-${attempt + 1}`;
+    if (RESERVED_EVENT_SLUGS.has(candidate)) continue;
     const existing = await db
       .select({ id: events.id })
       .from(events)
