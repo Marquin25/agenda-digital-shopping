@@ -115,6 +115,16 @@ export const DEFAULT_SCORING_WEIGHTS: ScoringWeights = Object.freeze({
 });
 export const RULES_VERSION = "1.0.0";
 
+function compareNamesAndIds(
+  a: Pick<EliminatedTemplate, "name" | "templateId">,
+  b: Pick<EliminatedTemplate, "name" | "templateId">,
+): number {
+  return (
+    a.name.localeCompare(b.name, "pt-BR") ||
+    (a.templateId < b.templateId ? -1 : a.templateId > b.templateId ? 1 : 0)
+  );
+}
+
 export function recommend(input: RecommendationInput): RecommendationResult {
   const totalWeight =
     input.weights.objective + input.weights.audience + input.weights.segment + input.weights.history;
@@ -235,11 +245,12 @@ export function recommend(input: RecommendationInput): RecommendationResult {
               venue.facilities.map(slugify).includes(slugify(facility)),
             ),
         )
-        .map((venue) => venue.id),
+        .map((venue) => venue.id)
+        .sort(),
       matchedSegmentIds,
       costMin: template.costMin,
       costMax: template.costMax,
-      indicators: [...template.indicators],
+      indicators: [...template.indicators].sort(),
       historyApplied: eligibleHistory !== undefined,
     });
   }
@@ -247,7 +258,9 @@ export function recommend(input: RecommendationInput): RecommendationResult {
   return {
     rulesVersion: input.rulesVersion,
     weights: { ...input.weights },
-    recommendations,
-    eliminated,
+    recommendations: recommendations
+      .sort((a, b) => b.score - a.score || compareNamesAndIds(a, b))
+      .slice(0, input.topN ?? 5),
+    eliminated: eliminated.sort(compareNamesAndIds),
   };
 }

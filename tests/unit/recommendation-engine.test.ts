@@ -406,4 +406,122 @@ describe("recommend", () => {
     expect(result.recommendations[0]!.score).toBe(1);
     expect(result.recommendations[0]!.assumptions).toContain("modelo em rascunho para revisão");
   });
+  it("returns five recommendations by default", () => {
+    const input = createInput();
+    const template = input.templates[0]!;
+    input.templates = ["a", "b", "c", "d", "e", "f", "g"].map((id) => ({ ...template, id, name: id }));
+
+    expect(recommend(input).recommendations.map((recommendation) => recommendation.templateId)).toEqual([
+      "a",
+      "b",
+      "c",
+      "d",
+      "e",
+    ]);
+  });
+  it.each([
+    { topN: 0, ids: [] },
+    { topN: 2, ids: ["a", "b"] },
+    { topN: 10, ids: ["a", "b", "c"] },
+  ])("honors the requested recommendation count: %j", ({ topN, ids }) => {
+    const input = createInput();
+    const template = input.templates[0]!;
+    input.topN = topN;
+    input.templates = ["a", "b", "c"].map((id) => ({ ...template, id, name: id }));
+
+    const result = recommend(input);
+
+    expect(result.recommendations.map((recommendation) => recommendation.templateId)).toEqual(ids);
+    expect(result.eliminated).toEqual([]);
+  });
+  it("sorts by score, then name and id before applying topN", () => {
+    const input = createInput();
+    const template = input.templates[0]!;
+    input.topN = 4;
+    input.templates = [
+      { ...template, id: "low", name: "Abaixo", objectiveWeights: { increase_sales: 1 } },
+      { ...template, id: "z", name: "Zeta" },
+      { ...template, id: "b", name: "Alfa" },
+      { ...template, id: "a", name: "Alfa" },
+      { ...template, id: "middle", name: "Médio", objectiveWeights: { increase_sales: 2 } },
+    ];
+
+    const result = recommend(input);
+
+    expect(result.recommendations.map(({ templateId, score }) => ({ templateId, score }))).toEqual([
+      { templateId: "a", score: 1 },
+      { templateId: "b", score: 1 },
+      { templateId: "z", score: 1 },
+      { templateId: "middle", score: 0.6667 },
+    ]);
+    expect(result.eliminated).toEqual([]);
+  });
+  it("breaks ties using the rounded score rather than the raw score", () => {
+    const input = createInput();
+    const template = input.templates[0]!;
+    input.weights = DEFAULT_SCORING_WEIGHTS;
+    input.templates = [
+      { ...template, id: "z", name: "Zeta" },
+      { ...template, id: "a", name: "Alfa" },
+    ];
+    input.history = [
+      { templateId: "z", comparableEvents: 3, estimatedDevices: 30, adjustment: 0.0004 },
+      { templateId: "a", comparableEvents: 3, estimatedDevices: 30, adjustment: 0.0001 },
+    ];
+
+    expect(recommend(input).recommendations.map(({ templateId, score }) => ({ templateId, score }))).toEqual([
+      { templateId: "a", score: 0.9 },
+      { templateId: "z", score: 0.9 },
+    ]);
+  });
+
+  it("returns identical results for shuffled inputs without mutating them", () => {
+    const input = createInput();
+    const template = input.templates[0]!;
+    const venue = input.venues[0]!;
+    input.weights = DEFAULT_SCORING_WEIGHTS;
+    input.brief.segmentIds = [3, 1];
+    input.templates = [
+      { ...template, id: "b", name: "Alfa", segmentIds: [3, 1], indicators: ["shares", "page_views"] },
+      { ...template, id: "a", name: "Alfa", segmentIds: [3, 1], indicators: ["shares", "page_views"] },
+      { ...template, id: "removed-z", name: "Zeta", costMin: 10001 },
+      { ...template, id: "removed-a", name: "Alfa", costMin: 10001 },
+    ];
+    input.venues = [
+      { ...venue, id: "z" },
+      { ...venue, id: "a" },
+      { ...venue, id: "incompatible", areaSquareMeters: 29 },
+    ];
+    input.history = [
+      { templateId: "b", comparableEvents: 3, estimatedDevices: 30, adjustment: 0 },
+      { templateId: "a", comparableEvents: 3, estimatedDevices: 30, adjustment: 0 },
+    ];
+    const before = structuredClone(input);
+    const shuffled = structuredClone(input);
+    shuffled.templates = [
+      shuffled.templates[2]!,
+      shuffled.templates[0]!,
+      shuffled.templates[3]!,
+      shuffled.templates[1]!,
+    ].map((candidate) => ({
+      ...candidate,
+      segmentIds: [...candidate.segmentIds].reverse(),
+      indicators: [...candidate.indicators].reverse(),
+    }));
+    shuffled.venues.reverse();
+    shuffled.history.reverse();
+    shuffled.brief.segmentIds.reverse();
+    const shuffledBefore = structuredClone(shuffled);
+
+    const result = recommend(input);
+
+    expect(result.recommendations.map((recommendation) => recommendation.templateId)).toEqual(["a", "b"]);
+    expect(result.eliminated.map((template) => template.templateId)).toEqual(["removed-a", "removed-z"]);
+    expect(result.recommendations[0]!.compatibleVenueIds).toEqual(["a", "z"]);
+    expect(result.recommendations[0]!.matchedSegmentIds).toEqual([1, 3]);
+    expect(result.recommendations[0]!.indicators).toEqual(["page_views", "shares"]);
+    expect(recommend(shuffled)).toEqual(result);
+    expect(input).toEqual(before);
+    expect(shuffled).toEqual(shuffledBefore);
+  });
 });
