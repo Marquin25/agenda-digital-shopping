@@ -239,7 +239,7 @@ export async function updateAdminUser(
 
 export async function resetAdminPassword(
   db: Database,
-  actorId: string,
+  actorId: string | null,
   userId: string,
   temporaryPassword: string,
 ) {

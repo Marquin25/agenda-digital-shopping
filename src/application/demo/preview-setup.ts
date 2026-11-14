@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { AuthError, createAdminUser } from "@/application/auth/admin-auth";
+import { AuthError, createAdminUser, resetAdminPassword } from "@/application/auth/admin-auth";
 import { seedReferenceData } from "@/application/catalog/reference-data";
 import { seedDemoData } from "@/application/demo/demo-seed";
 import { seedExampleTemplates } from "@/application/intelligence/experience-templates";
@@ -29,7 +29,12 @@ export function previewSetupPlan(env: Record<string, string | undefined>): Previ
 export interface PreviewSetupReport {
   demoEvents: number;
   templates: number;
-  admin: "created" | "exists" | "rejected" | "not_configured";
+  /**
+   * `password_refreshed`: the account existed but was never used (still on its temporary password), so
+   * the temporary password was replaced by the current secret and any lockout cleared. A used account is
+   * never touched (`exists`).
+   */
+  admin: "created" | "password_refreshed" | "exists" | "rejected" | "not_configured";
   /** Why the account was rejected (never contains the password). */
   adminProblem?: string;
 }
@@ -50,12 +55,16 @@ export async function preparePreviewDatabase(
   if (!admin) return report;
 
   const [existing] = await db
-    .select({ id: adminUsers.id })
+    .select({ id: adminUsers.id, mustChangePassword: adminUsers.mustChangePassword })
     .from(adminUsers)
     .where(eq(adminUsers.email, admin.email.toLowerCase()))
     .limit(1);
-  if (existing) return { ...report, admin: "exists" };
   try {
+    if (existing) {
+      if (!existing.mustChangePassword) return { ...report, admin: "exists" };
+      await resetAdminPassword(db, null, existing.id, admin.password);
+      return { ...report, admin: "password_refreshed" };
+    }
     await createAdminUser(db, null, {
       name: "Avaliação (preview)",
       email: admin.email,
@@ -67,4 +76,11 @@ export async function preparePreviewDatabase(
     if (error instanceof AuthError) return { ...report, admin: "rejected", adminProblem: error.message };
     throw error;
   }
+}
+
+/** Shows which e-mail the evaluation account uses in build logs without revealing it. */
+export function maskEmail(email: string): string {
+  const at = email.lastIndexOf("@");
+  if (at < 1) return "***";
+  return `${email[0]}${"*".repeat(at - 1)}${email.slice(at)}`;
 }

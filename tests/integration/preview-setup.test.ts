@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, it } from "vitest";
-import { login } from "@/application/auth/admin-auth";
+import { changeOwnPassword, login, MAX_FAILED_LOGINS } from "@/application/auth/admin-auth";
 import { listAdminEvents } from "@/application/events/event-queries";
-import { preparePreviewDatabase, previewSetupPlan } from "@/application/demo/preview-setup";
+import { maskEmail, preparePreviewDatabase, previewSetupPlan } from "@/application/demo/preview-setup";
 import { createTestDb } from "./test-db";
 
 describe("preview database setup on Vercel builds (B-84)", () => {
@@ -42,11 +42,37 @@ describe("preparePreviewDatabase", async () => {
     expect(signedIn.ok && signedIn.user.mustChangePassword).toBe(true);
   });
 
-  it("is safe to run on every deploy: data and account are not duplicated or reset", async () => {
+  it("refreshes the temporary password and unlocks the account while it was never used", async () => {
+    for (let i = 0; i < MAX_FAILED_LOGINS; i++) await login(db, admin.email, "senha-errada-qualquer");
+    const renewed = { ...admin, password: "outra-senha-temporaria-de-teste" };
+    const report = await preparePreviewDatabase(db, renewed);
+    expect(report.admin).toBe("password_refreshed");
+    expect((await login(db, admin.email, admin.password)).ok).toBe(false);
+    const signedIn = await login(db, admin.email, renewed.password);
+    expect(signedIn.ok && signedIn.user.mustChangePassword).toBe(true);
+  });
+
+  it("is safe to run on every deploy: data and a used account are not duplicated or reset", async () => {
+    const renewed = "outra-senha-temporaria-de-teste";
+    const signedIn = await login(db, admin.email, renewed);
+    if (!signedIn.ok) throw new Error("expected sign-in");
+    await changeOwnPassword(
+      db,
+      signedIn.user.id,
+      renewed,
+      "senha-definitiva-da-pessoa-avaliadora",
+      signedIn.token,
+    );
     const before = (await listAdminEvents(db, {})).length;
     const report = await preparePreviewDatabase(db, admin);
     expect(report).toMatchObject({ demoEvents: 0, admin: "exists" });
     expect((await listAdminEvents(db, {})).length).toBe(before);
+    expect((await login(db, admin.email, "senha-definitiva-da-pessoa-avaliadora")).ok).toBe(true);
+  });
+
+  it("hints which e-mail the account uses without revealing it", () => {
+    expect(maskEmail("avaliacao@example.com")).toBe("a********@example.com");
+    expect(maskEmail("x@y.z")).toBe("x@y.z");
   });
 
   it("reports a rejected password without failing the build or echoing the value", async () => {
