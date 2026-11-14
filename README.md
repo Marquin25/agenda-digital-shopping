@@ -7,8 +7,6 @@
 
 > **Pitch:** o shopping promove shows, oficinas e experiências, mas o visitante não fica sabendo, e a equipe não sabe o que funcionou. O **Conecta Shopping** reúne a programação num site para celular que abre pelo Instagram, pelo Wi-Fi ou por um QR Code, **sem aplicativo e sem cadastro**. Para a equipe, mostra de onde veio cada acesso, com números honestos que dizem o que é medido, o que é estimado e o que ainda não dá para medir.
 
-> 🎬 **Vídeo de apresentação:** [assistir no YouTube](https://youtu.be/M-xpqdFrVGg)
-
 **Situação:** Núcleo da Fase 1 pronto para uso local; homologação e validação em dispositivos reais pendentes.
 
 | | |
