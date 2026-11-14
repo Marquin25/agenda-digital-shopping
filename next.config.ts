@@ -3,6 +3,8 @@ import { securityHeaders } from "./src/infrastructure/web/security-headers";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // The Docker image (Dockerfile) builds a self-contained server; `next start` keeps the default output.
+  output: process.env.NEXT_OUTPUT === "standalone" ? "standalone" : undefined,
   // Agent instructions live in CLAUDE.md (project convention); do not let `next dev` write AGENTS.md.
   agentRules: false,
   serverExternalPackages: ["@electric-sql/pglite", "@node-rs/argon2", "sharp"],

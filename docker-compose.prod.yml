@@ -1,0 +1,47 @@
+# Production-like stack for this machine only (B-24): PostgreSQL, migrations and the app.
+# The app is published on 127.0.0.1 only and the database is not published at all.
+# Usage and backups: docs/docker.md. Secrets come from .env.docker (never versioned).
+name: conecta-prod-local
+
+x-app-env: &app-env
+  env_file: .env.docker
+  environment:
+    DATABASE_URL: postgres://conecta:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env.docker}@db:5432/conecta
+    UPLOAD_DIR: /app/storage/uploads
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: conecta
+      POSTGRES_DB: conecta
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env.docker}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U conecta -d conecta"]
+      interval: 5s
+      retries: 20
+    restart: unless-stopped
+
+  migrate:
+    build: { context: ., target: tools }
+    <<: *app-env
+    depends_on:
+      db: { condition: service_healthy }
+    restart: "no"
+
+  app:
+    build: { context: ., target: runner }
+    <<: *app-env
+    ports:
+      - "127.0.0.1:${APP_PORT:-3100}:3000"
+    volumes:
+      - uploads:/app/storage/uploads
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    restart: unless-stopped
+
+volumes:
+  db-data:
+  uploads:
