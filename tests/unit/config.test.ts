@@ -58,3 +58,35 @@ describe("trusted proxy hops", () => {
     }
   });
 });
+
+describe("public base URL on Vercel previews", () => {
+  const PREVIEW = { ...BASE, VERCEL_ENV: "preview", VERCEL_BRANCH_URL: "conecta-git-feat-x-team.vercel.app" };
+
+  it("uses the branch URL of a preview when PUBLIC_BASE_URL is not set, so links and QR codes never point to localhost", () => {
+    expect(readConfig(PREVIEW).publicBaseUrl).toBe("https://conecta-git-feat-x-team.vercel.app");
+    expect(readConfig({ ...PREVIEW, PUBLIC_BASE_URL: "" }).publicBaseUrl).toBe(
+      "https://conecta-git-feat-x-team.vercel.app",
+    );
+  });
+
+  it("keeps an explicit PUBLIC_BASE_URL", () => {
+    expect(readConfig({ ...PREVIEW, PUBLIC_BASE_URL: "https://preview.example.com/" }).publicBaseUrl).toBe(
+      "https://preview.example.com",
+    );
+  });
+
+  it("never applies the fallback outside previews", () => {
+    expect(readConfig({ ...BASE, VERCEL_BRANCH_URL: "x.vercel.app" }).publicBaseUrl).toBe(
+      "http://localhost:3000",
+    );
+    expect(
+      readConfig({ ...BASE, VERCEL_ENV: "production", VERCEL_BRANCH_URL: "x.vercel.app" }).publicBaseUrl,
+    ).toBe("http://localhost:3000");
+  });
+
+  it("ignores a branch URL that is not a plain host name", () => {
+    expect(readConfig({ ...PREVIEW, VERCEL_BRANCH_URL: "evil.example/path?x" }).publicBaseUrl).toBe(
+      "http://localhost:3000",
+    );
+  });
+});
