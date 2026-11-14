@@ -406,6 +406,24 @@ test.describe.serial("Phase 1 — admin publishes, visitor discovers", () => {
     await expect(ratings.getByRole("row", { name: /Atração 1/ })).toBeVisible();
     await expect(ratings.getByText("Gostei muito")).toHaveCount(0);
     await expectNoSeriousA11yViolations(admin);
+
+    // B-28: staff read the comment on the moderation page and hide it; it leaves the aggregates.
+    await ratings.getByRole("link", { name: /Ler comentários e moderar/ }).click();
+    await expect(admin.getByRole("heading", { name: "Avaliações do público", level: 1 })).toBeVisible();
+    const row = admin.getByRole("row", { name: /Oficina Encerrada E2E/ });
+    await expect(row).toContainText("Gostei muito da oficina.");
+    await expect(row).toContainText("Visível");
+    await expectNoSeriousA11yViolations(admin);
+    await row.getByRole("button", { name: /^Ocultar avaliação/ }).click();
+    await expect(row).toContainText("Oculta");
+    await expect(row.getByRole("button", { name: /^Reexibir avaliação/ })).toBeVisible();
+    await admin.goBack();
+    await admin.reload();
+    await expect(
+      admin.getByText("1 avaliação(ões) ocultada(s) pela moderação ficam fora destes números.", {
+        exact: false,
+      }),
+    ).toBeAttached();
   });
 
   test("promo link and QR code redirect with origin and are counted as measured hits", async ({
@@ -466,6 +484,9 @@ test.describe.serial("Phase 1 — admin publishes, visitor discovers", () => {
     await expect(analyst.getByRole("heading", { name: "Acesso negado" })).toBeVisible();
     await analyst.goto("/admin/usuarios");
     await expect(analyst.getByRole("heading", { name: "Acesso negado" })).toBeVisible();
+    await analyst.goto("/admin/avaliacoes");
+    await expect(analyst.getByRole("row", { name: /Oficina Encerrada E2E/ })).toBeVisible();
+    await expect(analyst.getByRole("button", { name: /Ocultar|Reexibir/ })).toHaveCount(0);
     await analyst.context().close();
   });
 

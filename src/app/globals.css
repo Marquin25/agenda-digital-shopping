@@ -2292,3 +2292,11 @@ fieldset[aria-invalid="true"] .rating-score {
 .callout--quiet {
   margin-top: var(--space-6);
 }
+
+/* Rating moderation (B-28): visitor text keeps its line breaks and never widens the table too much. */
+.rating-comment {
+  min-width: 14rem;
+  max-width: 32rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

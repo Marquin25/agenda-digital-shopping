@@ -1,4 +1,5 @@
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq, isNotNull, type SQL } from "drizzle-orm";
+import { recordAudit } from "@/application/audit";
 import {
   RATING_TAGS,
   ratingWindow,
@@ -113,4 +114,66 @@ export async function getEventRatingReport(db: Database, eventId: string): Promi
     tags,
     hiddenCount: rows.length - visible.length,
   };
+}
+
+export interface ModeratedRating {
+  id: string;
+  eventId: string;
+  eventTitle: string;
+  score: number;
+  tags: RatingTag[];
+  comment: string | null;
+  hidden: boolean;
+  createdAt: Date;
+}
+
+/** Moderation list (B-28): newest first and never with the device hash (docs/spec/06 §4). */
+export async function listRatingsForModeration(
+  db: Database,
+  filter: { eventId?: string; withComment?: boolean; limit?: number } = {},
+): Promise<ModeratedRating[]> {
+  const conditions: SQL[] = [];
+  if (filter.eventId) conditions.push(eq(eventRatings.eventId, filter.eventId));
+  if (filter.withComment) conditions.push(isNotNull(eventRatings.comment));
+  const rows = await db
+    .select({
+      id: eventRatings.id,
+      eventId: eventRatings.eventId,
+      eventTitle: events.title,
+      score: eventRatings.score,
+      tags: eventRatings.tags,
+      comment: eventRatings.comment,
+      hidden: eventRatings.hidden,
+      createdAt: eventRatings.createdAt,
+    })
+    .from(eventRatings)
+    .innerJoin(events, eq(events.id, eventRatings.eventId))
+    .where(conditions.length > 0 ? and(...conditions) : undefined)
+    .orderBy(desc(eventRatings.createdAt))
+    .limit(filter.limit ?? 200);
+  const known = (t: string): t is RatingTag => (RATING_TAGS as readonly string[]).includes(t);
+  return rows.map((r) => ({ ...r, tags: r.tags.filter(known) }));
+}
+
+/** Hides (or shows again) one rating; hidden ratings leave every aggregate. Audited without the comment. */
+export async function setRatingHidden(
+  db: Database,
+  userId: string,
+  ratingId: string,
+  hidden: boolean,
+): Promise<boolean> {
+  const updated = await db
+    .update(eventRatings)
+    .set({ hidden })
+    .where(eq(eventRatings.id, ratingId))
+    .returning({ eventId: eventRatings.eventId });
+  if (updated.length === 0) return false;
+  await recordAudit(db, {
+    userId,
+    action: hidden ? "rating.hide" : "rating.show",
+    entity: "event_rating",
+    entityId: ratingId,
+    details: { eventId: updated[0]!.eventId },
+  });
+  return true;
 }
