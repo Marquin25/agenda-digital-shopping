@@ -56,8 +56,7 @@ export default async function RatingsModerationPage({
       <ScrollableTable label="Avaliações recebidas">
         <table>
           <caption>
-            {ratings.length} avaliação(ões){eventId ? " deste evento" : ""}, das mais recentes para as mais
-            antigas
+            {ratings.length} avaliação(ões){eventId ? " deste evento" : ""} · mais recentes primeiro
           </caption>
           <thead>
             <tr>
