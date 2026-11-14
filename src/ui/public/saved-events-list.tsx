@@ -2,16 +2,16 @@
 
 import { Heart } from "lucide-react";
 import Link from "next/link";
-import type { EventView } from "@/application/events/event-queries";
+import type { EventCardView } from "@/application/events/event-queries";
 import { EventCard } from "./event-card";
 import { useSavedSlugs } from "./saved-events-store";
 
 /** Shows the upcoming events this device saved, in the order they were saved. */
-export function SavedEventsList({ events }: { events: EventView[] }) {
+export function SavedEventsList({ events }: { events: EventCardView[] }) {
   const { slugs, ready } = useSavedSlugs();
   if (!ready) return null;
   const bySlug = new Map(events.map((e) => [e.slug, e]));
-  const saved = slugs.map((slug) => bySlug.get(slug)).filter((e): e is EventView => e !== undefined);
+  const saved = slugs.map((slug) => bySlug.get(slug)).filter((e): e is EventCardView => e !== undefined);
 
   return (
     <>
