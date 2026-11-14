@@ -18,6 +18,7 @@ import { ADMIN_ROLE_LABELS, can } from "@/domain/auth/permissions";
 import { requireAdmin } from "@/infrastructure/web/admin-session";
 import { AdminNav, type NavItem } from "@/ui/admin/admin-nav";
 import { Brand } from "@/ui/brand";
+import { ThemeToggle } from "@/ui/theme/theme-toggle";
 import { logoutAction } from "./actions";
 
 export const metadata: Metadata = {
@@ -101,6 +102,7 @@ export default async function AdminPanelLayout({ children }: { children: React.R
             </Link>
           </p>
           <div className="admin-topbar__actions">
+            <ThemeToggle />
             {can(admin.role, "events:manage") && (
               <Link href="/admin/eventos/novo" className="button">
                 <Plus size={18} aria-hidden="true" />

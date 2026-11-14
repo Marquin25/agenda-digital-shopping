@@ -66,6 +66,7 @@ O status vale para a `main` depois do merge do PR #69, verificado com `npm test`
 | B-60 | Feito | PR #66: consulta própria para `/salvos`, sem o limite da agenda; o servidor não recebe a lista de salvos |
 | B-61, B-62 | Feito | PRs #64 e #65 |
 | B-68 | A fazer | `CRON_SECRET` vazio impede a aplicação de subir (agravado pela validação na subida de B-58) |
+| B-77 | Em revisão | Modo escuro com morcegos: botão da lua no cabeçalho público e na barra do admin (`aria-pressed`); revoada de morcegos em SVG/CSS numa camada `aria-hidden` sem `pointer-events`, desligada com `prefers-reduced-motion`; escolha só no `localStorage`, aplicada antes da pintura; paleta escura conferida para WCAG AA |
 | Extra | Feito | **Salvos**: eventos guardados só no aparelho (localStorage), sem cadastro. **Visual novo** (terracota/creme) baseado nas telas de referência da equipe |
 | B-76 | Em revisão | Gato preto com lua no rodapé público: a 13ª ativação (clique ou teclado) comemora a sexta-feira 13 numa região `aria-live`; contagem só em memória, nada salvo nem enviado |
 
@@ -87,6 +88,10 @@ Tabelas do núcleo (`04-dados-e-integracoes.md` §Núcleo), migrações e sement
 - [ ] A função pura cobre Rascunho, Cancelado, Agendado, Em andamento e Encerrado, incluindo `fim_real`; testes de fronteira e fuso.
 
 ### E-PUB
+
+**[B-77](https://github.com/Marquin25/agenda-digital-shopping/issues/77) Modo escuro com morcegos** · P3 · P/M · pedido do PO (2026-11-13)
+- [ ] Controle acessível de tema claro/escuro no cabeçalho público e administrativo; ao ativar o escuro, morcegos atravessam a tela numa camada decorativa (`aria-hidden`, `pointer-events: none`) e o tema fica aplicado em toda a aplicação.
+- [ ] Sem animação com `prefers-reduced-motion`; escolha só no navegador (`localStorage`), sem servidor; contraste WCAG AA no tema escuro.
 
 **[B-04](https://github.com/Marquin25/agenda-digital-shopping/issues/4) Agenda pública (lista por dia)** · P1 · M · depende de B-02, B-03 · [C][PDF]
 - [ ] `/` gerada no servidor lista eventos publicados e não encerrados, agrupados por dia; cards conforme RF01.

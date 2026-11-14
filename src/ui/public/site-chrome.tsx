@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Brand } from "@/ui/brand";
+import { ThemeToggle } from "@/ui/theme/theme-toggle";
 import { BlackCatButton } from "./black-cat-button";
 import { PublicNav } from "./public-nav";
 
@@ -8,7 +9,10 @@ export function SiteHeader() {
     <header className="site-header">
       <div className="container site-header__inner">
         <Brand href="/" tagline="Agenda de eventos e experiências" />
-        <PublicNav placement="top" />
+        <div className="site-header__actions">
+          <PublicNav placement="top" />
+          <ThemeToggle />
+        </div>
       </div>
     </header>
   );

@@ -1,6 +1,9 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import { connection } from "next/server";
 import "@fontsource-variable/plus-jakarta-sans";
+import { NONCE_HEADER } from "@/infrastructure/web/content-security-policy";
+import { THEME_INIT_SCRIPT } from "@/ui/theme/theme";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -18,8 +21,13 @@ export const viewport: Viewport = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   // Render every page per request so Next.js can attach the CSP nonce to its scripts (src/proxy.ts).
   await connection();
+  const nonce = (await headers()).get(NONCE_HEADER) ?? undefined;
   return (
-    <html lang="pt-BR">
+    // The theme script below may set data-theme before React hydrates.
+    <html lang="pt-BR" suppressHydrationWarning>
+      <head>
+        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body>
         <a className="skip-link" href="#conteudo">
           Pular para o conteúdo
