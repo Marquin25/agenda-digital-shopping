@@ -18,6 +18,27 @@ export interface AppConfig {
   /** Bearer token for scheduled jobs called over HTTP (e.g. Vercel Cron); jobs are disabled when unset. */
   cronSecret: string | null;
   isProduction: boolean;
+  /** Whether session and visitor cookies carry the `Secure` attribute (see shouldUseSecureCookies). */
+  secureCookies: boolean;
+}
+
+const LOOPBACK_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]"]);
+
+/**
+ * Cookies are `Secure` in production. The only exception is a production build served over plain
+ * HTTP on this machine (end-to-end tests), and only with ALLOW_INSECURE_LOCALHOST_COOKIES=true:
+ * WebKit drops `Secure` cookies on http://localhost, unlike Chromium. A real deployment is never
+ * affected, because its public URL is not plain-HTTP loopback.
+ */
+export function shouldUseSecureCookies(options: {
+  isProduction: boolean;
+  publicBaseUrl: string;
+  allowInsecureLocalhostCookies: boolean;
+}): boolean {
+  if (!options.isProduction) return false;
+  if (!options.allowInsecureLocalhostCookies) return true;
+  const url = new URL(options.publicBaseUrl);
+  return !(url.protocol === "http:" && LOOPBACK_HOSTS.has(url.hostname));
 }
 
 let cached: AppConfig | undefined;
@@ -33,13 +54,19 @@ export function getConfig(): AppConfig {
     pepper = randomBytes(32).toString("base64url");
     console.warn("[config] DEVICE_ID_PEPPER not set; using an ephemeral value (development only).");
   }
+  const publicBaseUrl = env.PUBLIC_BASE_URL.replace(/\/$/, "");
   cached = {
     databaseUrl: env.DATABASE_URL,
     deviceIdPepper: pepper,
-    publicBaseUrl: env.PUBLIC_BASE_URL.replace(/\/$/, ""),
+    publicBaseUrl,
     uploadDir: env.UPLOAD_DIR,
     cronSecret: env.CRON_SECRET ?? null,
     isProduction: env.NODE_ENV === "production",
+    secureCookies: shouldUseSecureCookies({
+      isProduction: env.NODE_ENV === "production",
+      publicBaseUrl,
+      allowInsecureLocalhostCookies: process.env.ALLOW_INSECURE_LOCALHOST_COOKIES === "true",
+    }),
   };
   return cached;
 }

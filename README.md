@@ -269,12 +269,12 @@ Desfazer uma migração **apaga as tabelas dela e os dados que estão nelas**. P
 | Comando | O que faz |
 | --- | --- |
 | `npm test` | Testes de unidade e de integração (Vitest, com PGlite em memória) |
-| `npm run test:e2e` | Compila e roda os testes ponta a ponta com axe (Playwright). Banco descartável e porta 3200 |
+| `npm run test:e2e` | Compila e roda os testes ponta a ponta com axe (Playwright) em Chromium (Pixel 7, porta 3200) e WebKit/Safari (iPhone 15, porta 3201), cada um com banco e uploads descartáveis próprios |
 | `npm run typecheck` · `npm run lint` · `npm run format:check` | Tipos, ESLint e Prettier |
 | `npm run build` | Build de produção |
 | `npm run screens` | Regera as capturas de tela em `docs/telas/` |
 
-Antes do primeiro `test:e2e` ou `screens`, instale o navegador com `npx playwright install chromium`. O mesmo conjunto roda no GitHub Actions a cada pull request (`.github/workflows/ci.yml`).
+Antes do primeiro `test:e2e` ou `screens`, instale os navegadores com `npx playwright install chromium webkit`. O mesmo conjunto roda no GitHub Actions a cada pull request (`.github/workflows/ci.yml`).
 
 ## Documentação
 

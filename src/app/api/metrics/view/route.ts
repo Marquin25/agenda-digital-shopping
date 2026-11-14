@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     // Session cookie: the visit's origin is the first page with campaign parameters.
     gate.response.cookies.set(VISIT_COOKIE, serializeVisitSource(source), {
       httpOnly: true,
-      secure: getConfig().isProduction,
+      secure: getConfig().secureCookies,
       sameSite: "lax",
       path: "/",
     });

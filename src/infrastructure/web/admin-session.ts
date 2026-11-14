@@ -12,7 +12,7 @@ export const ADMIN_SESSION_COOKIE = "cs_admin";
 export async function setAdminSessionCookie(token: string) {
   (await cookies()).set(ADMIN_SESSION_COOKIE, token, {
     httpOnly: true,
-    secure: getConfig().isProduction,
+    secure: getConfig().secureCookies,
     sameSite: "lax",
     path: "/",
     maxAge: SESSION_ABSOLUTE_MS / 1000,
