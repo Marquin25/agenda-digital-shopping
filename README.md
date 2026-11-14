@@ -290,6 +290,18 @@ npm run db:migrate             # aplica de novo
 
 Desfazer uma migração **apaga as tabelas dela e os dados que estão nelas**. Por isso o comando só roda com `--yes`. Antes, faça uma cópia do banco: no PGlite, copie a pasta `storage/pglite` com o servidor parado; no PostgreSQL, use `pg_dump`.
 
+### Importar eventos por planilha
+
+Com o servidor rodando, entre em <http://localhost:3000/admin> com uma conta de **Editor** ou **Administrador** (analistas não têm acesso) e siga:
+
+1. No menu, abra **Eventos** e toque em **Importar planilha** (`/admin/eventos/importar`).
+2. Baixe o **modelo de planilha (CSV)**, apague a linha de exemplo e preencha **uma linha por evento**. Obrigatórias: Título, Descrição, Início, Término, Espaço e Categoria. Datas no formato `dd/mm/aaaa hh:mm` (horário de Brasília) ou como data do Excel. Espaço, categoria, lojas e recursos de acessibilidade precisam já estar cadastrados (maiúsculas e acentos não importam).
+3. Salve como **.xlsx** ou como **CSV UTF-8** (separador `;` ou `,`), envie o arquivo e clique em **Ver prévia**.
+4. Confira a prévia: cada linha aparece como **Será criado**, **Será atualizado**, **Ignorada** ou **Rejeitada**, com o motivo. Nada foi gravado ainda. Se houver erros, baixe o **relatório de erros (CSV)**, corrija e envie de novo, ou descarte a importação.
+5. Clique em **Confirmar importação** (em até 24 horas). Eventos com **Publicar = Sim** entram na agenda; os demais ficam como rascunho.
+
+**Formatos e limites:** só `.xlsx` (primeira aba) e `.csv` em UTF-8; `.xls`, `.xlsm` e arquivos com macros são recusados. Até **1 MB** e **500 eventos** por arquivo. Fórmulas valem pelo valor salvo; banners, imagens e URLs da planilha **não** são baixados (envie o banner depois, na página do evento). A coluna **Código** permite atualizar o mesmo evento em importações futuras; sem código, uma linha com o mesmo título, início e espaço de um evento existente é ignorada. A importação só cria ou altera eventos, nunca espaços, categorias, lojas, usuários ou configurações. Detalhes em [`docs/importacao-de-eventos.md`](docs/importacao-de-eventos.md).
+
 ## Verificações
 
 | Comando | O que faz |
@@ -310,5 +322,6 @@ Antes do primeiro `test:e2e` ou `screens`, instale os navegadores com `npx playw
 | [`GLOSSARY.md`](GLOSSARY.md) | Termos do domínio e seus nomes no código |
 | [`docs/research/referencias.md`](docs/research/referencias.md) | Pesquisa: WCAG, LGPD, iCalendar, métricas e antiabuso |
 | [`docs/implantacao-vercel.md`](docs/implantacao-vercel.md) | Preparação para publicar na Vercel, quando a hospedagem for decidida |
+| [`docs/importacao-de-eventos.md`](docs/importacao-de-eventos.md) | Importação de eventos por planilha: modelo, colunas, regras, segurança e limites |
 | [`docs/painel.md`](docs/painel.md) | Modo painel digital: como configurar cada tela pela URL |
 | [`CLAUDE.md`](CLAUDE.md) | Convenções: documentação e interface em pt-BR, código em inglês, SOLID |
