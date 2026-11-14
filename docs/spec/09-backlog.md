@@ -66,9 +66,10 @@ O status vale para a `main` depois do merge do PR #69, verificado com `npm test`
 | B-60 | Feito | PR #66: consulta própria para `/salvos`, sem o limite da agenda; o servidor não recebe a lista de salvos |
 | B-61, B-62 | Feito | PRs #64 e #65 |
 | B-68 | A fazer | `CRON_SECRET` vazio impede a aplicação de subir (agravado pela validação na subida de B-58) |
-| B-77 | Em revisão | Modo escuro com morcegos: botão da lua no cabeçalho público e na barra do admin (`aria-pressed`); revoada de morcegos em SVG/CSS numa camada `aria-hidden` sem `pointer-events`, desligada com `prefers-reduced-motion`; escolha só no `localStorage`, aplicada antes da pintura; paleta escura conferida para WCAG AA |
+| B-77 | Feito | Modo escuro com morcegos: botão da lua no cabeçalho público e na barra do admin (`aria-pressed`); revoada de morcegos em SVG/CSS numa camada `aria-hidden` sem `pointer-events`, desligada com `prefers-reduced-motion`; escolha só no `localStorage`, aplicada antes da pintura; paleta escura conferida para WCAG AA |
+| B-45 | Em revisão | `/painel` com destaques em rotação pausável (WCAG 2.2.2), sem links e sem piscar; parâmetros por tela na URL (`tela`, `intervalo`, `limite` e os filtros da agenda); QR gerado no servidor com `utm_source=painel` e `utm_campaign` = tela; a própria tela não conta como visitante. Guia em `docs/painel.md`. O equipamento (P-INT-2) segue pendente: falta testar no player real |
 | Extra | Feito | **Salvos**: eventos guardados só no aparelho (localStorage), sem cadastro. **Visual novo** (terracota/creme) baseado nas telas de referência da equipe |
-| B-76 | Em revisão | Gato preto com lua no rodapé público: a 13ª ativação (clique ou teclado) comemora a sexta-feira 13 numa região `aria-live`; contagem só em memória, nada salvo nem enviado |
+| B-76 | Feito | Gato preto com lua no rodapé público: a 13ª ativação (clique ou teclado) comemora a sexta-feira 13 numa região `aria-live`; contagem só em memória, nada salvo nem enviado |
 
 
 ### E-FUND

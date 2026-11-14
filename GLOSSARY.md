@@ -21,6 +21,7 @@
 | **Capacidade informativa** | `displayedCapacity` | Número de vagas exibido ao público; o sistema não controla nem garante vaga | "limite de inscrições" |
 | **Origem** | `TrafficSource` | Canal da visita pelo `utm_source`: wifi, instagram, outro, direto | — |
 | **Modo telão** | `CheckInDisplay` | Tela administrativa que exibe o QR rotativo do check-in no local | — |
+| **Modo painel digital** | `signage` (`/painel`) | Página pública de destaques para telas e totens do shopping: rotação pausável, sem interação; os QR exibidos registram a origem `painel` e o nome da tela | "telão" (é o modo do check-in) |
 | **QR de divulgação** | `PromoQrCode` | QR estático que abre a agenda ou um evento e registra a origem; **não registra presença** | "QR do evento" (ambíguo) |
 | **QR de check-in** | `CheckInQrCode` | QR rotativo exibido no modo telão; registra presença | "QR do evento" (ambíguo) |
 | **Link de divulgação** | `PromoLink` | Link curto `/r/{codigo}` ligado a um canal (Instagram, Wi-Fi, cartaz, totem, painel) | "link rastreado" |
