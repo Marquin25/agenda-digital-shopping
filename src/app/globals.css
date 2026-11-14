@@ -2325,3 +2325,8 @@ fieldset[aria-invalid="true"] .rating-score {
   margin: 0;
   color: var(--color-success);
 }
+
+ul.actions--list {
+  list-style: none;
+  padding: 0;
+}

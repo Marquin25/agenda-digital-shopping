@@ -54,7 +54,7 @@ export default async function SuggestionsPage({
         automática do texto.
       </div>
       <nav aria-label="Situação das sugestões">
-        <ul className="actions">
+        <ul className="actions actions--list">
           {SUGGESTION_STATUSES.map((s) => (
             <li key={s}>
               <Link
@@ -71,8 +71,7 @@ export default async function SuggestionsPage({
       <ScrollableTable label="Sugestões">
         <table>
           <caption>
-            {items.length} sugestão(ões) com situação “{SUGGESTION_STATUS_LABELS[status]}”, das mais recentes
-            para as mais antigas
+            {items.length} · {SUGGESTION_STATUS_LABELS[status]} · mais recentes primeiro
           </caption>
           <thead>
             <tr>
