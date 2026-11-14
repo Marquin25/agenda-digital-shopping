@@ -1,7 +1,7 @@
 import { mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 
-/** Port for uploaded files; a local directory now, S3-compatible later (docs/spec/04 §3). */
+/** Port for uploaded files: a local directory or an S3-compatible bucket (docs/spec/04 §3). */
 export interface FileStorage {
   save(name: string, content: Buffer): Promise<void>;
   read(name: string): Promise<Buffer | null>;
@@ -18,12 +18,19 @@ export interface StoredFile {
 
 const SAFE_NAME = /^[a-z0-9-]+\.(webp)$/;
 
+export const isSafeFileName = (name: string) => SAFE_NAME.test(name);
+
+/** Every adapter checks the name before touching its storage (no paths, no other file types). */
+export function assertSafeFileName(name: string): string {
+  if (!isSafeFileName(name)) throw new Error("Invalid file name");
+  return name;
+}
+
 export class LocalFileStorage implements FileStorage {
   constructor(private readonly directory: string) {}
 
   private resolve(name: string): string {
-    if (!SAFE_NAME.test(name)) throw new Error("Invalid file name");
-    return path.join(this.directory, name);
+    return path.join(this.directory, assertSafeFileName(name));
   }
 
   async save(name: string, content: Buffer): Promise<void> {
@@ -55,7 +62,7 @@ export class LocalFileStorage implements FileStorage {
     }
     const files = await Promise.all(
       names
-        .filter((name) => SAFE_NAME.test(name))
+        .filter(isSafeFileName)
         .map(async (name) => {
           // A file deleted between readdir and stat is simply not listed.
           const info = await stat(this.resolve(name)).catch(() => null);

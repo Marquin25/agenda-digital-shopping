@@ -16,7 +16,7 @@
 | Item | Para quê | Situação |
 | --- | --- | --- |
 | **PostgreSQL gerenciado** (ex.: Neon, Supabase ou um do Vercel Marketplace) | Banco da aplicação. O PGlite grava em disco local, e na Vercel esse disco é efêmero | **Pendente** (provedor, região e custo) |
-| **Armazenamento de imagens** (S3-compatível ou Vercel Blob) | Banners. Hoje eles vão para o disco local (`UPLOAD_DIR`), que **não persiste** na Vercel | **Pendente**. O adaptador S3 da porta `FileStorage` (`src/infrastructure/storage/file-storage.ts`) está em [#58](https://github.com/Marquin25/agenda-digital-shopping/issues/58); o serviço e a conta ainda não foram escolhidos |
+| **Armazenamento de imagens** (S3-compatível: AWS S3, Cloudflare R2 ou MinIO) | Banners. O disco local (`UPLOAD_DIR`) **não persiste** na Vercel | **Pendente** (serviço, bucket e conta ainda não foram escolhidos). O adaptador já existe: `STORAGE_DRIVER=s3` (`src/infrastructure/storage/s3-file-storage.ts`, [#58](https://github.com/Marquin25/agenda-digital-shopping/issues/58)) |
 | **Domínio** | `PUBLIC_BASE_URL` final, links e QR de divulgação impressos, Open Graph | **Pendente** (P-INF-2) |
 | **Agendador da retenção** | Rodar todo dia a retenção de 30 dias (veja [Agendador da retenção](#agendador-da-retenção)) | **Pendente** (depende da hospedagem) |
 
@@ -34,9 +34,9 @@ Nunca versionar os valores. Use valores **diferentes** para Preview e Production
 | `CRON_SECRET` | Production (e Preview, se a retenção rodar lá) | Segredo aleatório com 32 caracteres ou mais, gerado como o `DEVICE_ID_PEPPER` (marcar como *Sensitive*). Liga a rota `GET /api/cron/retention`. **Sem ele, a rota responde 404** e a retenção não roda por HTTP. Um valor com menos de 32 caracteres (inclusive vazio) faz a aplicação falhar ao ler a configuração; para desligar a rota, não cadastre a variável |
 | `UPLOAD_DIR` | — | Não serve na Vercel (disco efêmero); use o armazenamento S3 abaixo |
 
-### Armazenamento S3 (disponíveis após [#58](https://github.com/Marquin25/agenda-digital-shopping/issues/58))
+### Armazenamento S3 ([#58](https://github.com/Marquin25/agenda-digital-shopping/issues/58))
 
-Estas variáveis **ainda não existem** na `main`. Elas passam a valer quando a #58 for entregue; até lá, os banners só vão para o disco local.
+Os banners ficam sob o prefixo `banners/` do bucket. A retenção diária apaga ali os arquivos que nenhum evento usa há mais de 24 h, então não guarde outros arquivos nesse prefixo.
 
 | Variável | Valor |
 | --- | --- |
@@ -48,7 +48,7 @@ Estas variáveis **ainda não existem** na `main`. Elas passam a valer quando a 
 | `S3_SECRET_ACCESS_KEY` | Segredo da chave de acesso (marcar como *Sensitive*) |
 | `S3_FORCE_PATH_STYLE` | `true` para serviços que exigem endereçamento por caminho (ex.: MinIO); senão, deixe vazio |
 
-Com `STORAGE_DRIVER=s3` e alguma dessas variáveis faltando, a aplicação deve falhar ao subir, com mensagem clara e sem imprimir valores (critério da #58).
+Com `STORAGE_DRIVER=s3` e `S3_REGION`, `S3_BUCKET`, `S3_ACCESS_KEY_ID` ou `S3_SECRET_ACCESS_KEY` faltando, a aplicação não sobe: a mensagem lista os nomes das variáveis, sem imprimir valores.
 
 ### `PUBLIC_BASE_URL`
 
