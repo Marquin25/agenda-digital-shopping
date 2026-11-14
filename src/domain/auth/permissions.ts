@@ -13,6 +13,7 @@ export type Permission =
   | "venues:manage"
   | "stores:manage"
   | "catalog:manage"
+  | "plans:manage"
   | "promo-links:manage"
   | "users:manage"
   | "audit:view";
@@ -20,6 +21,7 @@ export type Permission =
 /**
  * Permission matrix (docs/spec/01 §7, provisional roles confirmed by the product owner).
  * `catalog:manage` is administrator-only until P-INT-IA-1 says who maintains the catalog.
+ * `plans:manage` follows docs/spec/01 §7 (administrators and analysts); editors wait for P-INT-IA-2.
  */
 const MATRIX: Record<AdminRole, ReadonlySet<Permission>> = {
   administrator: new Set<Permission>([
@@ -28,6 +30,7 @@ const MATRIX: Record<AdminRole, ReadonlySet<Permission>> = {
     "venues:manage",
     "stores:manage",
     "catalog:manage",
+    "plans:manage",
     "promo-links:manage",
     "users:manage",
     "audit:view",
@@ -39,7 +42,7 @@ const MATRIX: Record<AdminRole, ReadonlySet<Permission>> = {
     "stores:manage",
     "promo-links:manage",
   ]),
-  analyst: new Set<Permission>(["dashboard:view"]),
+  analyst: new Set<Permission>(["dashboard:view", "plans:manage"]),
 };
 
 export function can(role: AdminRole, permission: Permission): boolean {

@@ -179,6 +179,42 @@ test.describe.serial("Phase 1 — admin publishes, visitor discovers", () => {
     expect(eventUrl).toMatch(/^\/eventos\/show-acustico-e2e/);
   });
 
+  test("staff writes a planning brief with a target audience, budget, period and venues", async () => {
+    await admin.goto("/admin/planejamento/novo");
+    await admin.getByLabel("Nome do planejamento *").fill("Março da moda E2E");
+    await admin.getByLabel("Orçamento mínimo (R$) *").fill("15000");
+    await admin.getByLabel("Orçamento máximo (R$) *").fill("5000");
+    await admin.getByRole("button", { name: "Cadastrar planejamento" }).click();
+    const alert = admin.locator(ALERT);
+    await expect(
+      alert.getByRole("link", { name: /Objetivo principal: Escolha o objetivo principal/ }),
+    ).toBeVisible();
+    await expect(
+      alert.getByRole("link", { name: /Público desejado: Escolha ao menos um público/ }),
+    ).toBeVisible();
+    await expect(alert.getByRole("link", { name: /Espaços: Escolha ao menos um espaço/ })).toBeVisible();
+    await expect(admin.getByLabel("Nome do planejamento *")).toHaveValue("Março da moda E2E");
+    await expectNoSeriousA11yViolations(admin);
+
+    await admin.getByLabel("Objetivo principal *").selectOption({ label: "Aumentar vendas" });
+    await admin.getByRole("checkbox", { name: "Adultos (25–40)" }).check();
+    await admin.getByRole("checkbox", { name: "L1 · Praça Central" }).check();
+    await admin.getByLabel("Orçamento mínimo (R$) *").fill("5000");
+    await admin.getByLabel("Orçamento máximo (R$) *").fill("15000");
+    await admin.getByLabel("Início do período *").fill(localDateTime(10, "00:00").slice(0, 10));
+    await admin.getByLabel("Fim do período *").fill(localDateTime(40, "00:00").slice(0, 10));
+    await admin.getByLabel("Horário disponível: início").fill("10:00");
+    await admin.getByLabel("Horário disponível: fim").fill("18:00");
+    await admin.getByRole("button", { name: "Cadastrar planejamento" }).click();
+    await expect(admin.getByRole("status").filter({ hasText: "Alterações salvas." })).toBeVisible();
+    await expect(admin.getByRole("heading", { name: "Março da moda E2E", level: 1 })).toBeVisible();
+    await expect(admin.getByRole("checkbox", { name: "Adultos (25–40)" })).toBeChecked();
+
+    await admin.goto("/admin/planejamento");
+    await expect(admin.getByRole("row", { name: /Março da moda E2E/ })).toContainText("Aumentar vendas");
+    await expectNoSeriousA11yViolations(admin);
+  });
+
   test("validation errors are announced and linked to fields", async () => {
     await admin.goto("/admin/eventos/novo");
     await admin.getByRole("button", { name: "Salvar rascunho" }).click();
@@ -298,6 +334,7 @@ test.describe.serial("Phase 1 — admin publishes, visitor discovers", () => {
     await expect(analyst.getByRole("link", { name: "Usuários" })).toHaveCount(0);
     await analyst.goto("/admin/eventos/novo");
     await expect(analyst.getByRole("heading", { name: "Acesso negado" })).toBeVisible();
+    await expect(analyst.getByRole("link", { name: "Planejamento" })).toBeVisible();
     await analyst.goto("/admin/catalogo");
     await expect(analyst.getByRole("heading", { name: "Acesso negado" })).toBeVisible();
     await analyst.goto("/admin/usuarios");

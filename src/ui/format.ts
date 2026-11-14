@@ -89,3 +89,10 @@ export function formatDuration(minutes: number): string {
   if (hours === 0) return `${rest} min`;
   return rest === 0 ? `${hours} h` : `${hours} h ${rest} min`;
 }
+
+const fromDateKey = (key: string) => key.split("-").reverse().join("/");
+
+/** "01/03/2027 a 31/03/2027" for a period of local date keys, or one date for a single day. */
+export function formatDateKeyRange(start: string, end: string): string {
+  return start === end ? fromDateKey(start) : `${fromDateKey(start)} a ${fromDateKey(end)}`;
+}
