@@ -1,10 +1,10 @@
 # 🛍️ Conecta Shopping: Plataforma Inteligente de Eventos e Experiências
 
-> **Tema:** 10. Eventos, entretenimento e experiências (shopping center)
-> **Equipe:** 48 - Poliwhirl
-> **Link do video:** https://youtu.be/M-xpqdFrVGg?is=UOv7-kE8x5slbFBJ
-> **Link do painel adm:** https://agenda-digital-shopping-git-feat-event-import-poliwhirl.vercel.app/admin
-> **Link do painel:** https://agenda-digital-shopping-git-feat-event-import-poliwhirl.vercel.app
+> **Tema:** 10. Eventos, entretenimento e experiências (shopping center)  
+> **Equipe:** 48 - Poliwhirl  
+> **Link do video:** https://youtu.be/M-xpqdFrVGg?is=UOv7-kE8x5slbFBJ  
+> **Link do painel adm:** https://agenda-digital-shopping-git-feat-event-import-poliwhirl.vercel.app/admin  
+> **Link do painel:** https://agenda-digital-shopping-git-feat-event-import-poliwhirl.vercel.app  
 > **Integrantes:** Ana Carolina Guedes Santos, Marcus Antônio Rodrigues Monteiro Rios de Pina e Arthur Salomão Negreiros
 
 > **Pitch:** o shopping promove shows, oficinas e experiências, mas o visitante não fica sabendo, e a equipe não sabe o que funcionou. O **Conecta Shopping** reúne a programação num site para celular que abre pelo Instagram, pelo Wi-Fi ou por um QR Code, **sem aplicativo e sem cadastro**. Para a equipe, mostra de onde veio cada acesso, com números honestos que dizem o que é medido, o que é estimado e o que ainda não dá para medir.
