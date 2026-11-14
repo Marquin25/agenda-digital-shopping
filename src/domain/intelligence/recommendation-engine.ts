@@ -2,11 +2,15 @@
  * Objective = (2 * primary + sum(distinct secondaries)) / (MAX_WEIGHT * (2 + secondary count)).
  * Audience = mean(desired catalog weights) / MAX_WEIGHT; segment = matched / desired segments.
  * Empty audience/segment sets contribute 0. Score = weighted sum / sum of all scoring weights,
- * clamped to [0, 1] and rounded to four decimals before sorting. History contributes 0 without
- * sufficient data: with the default weights, the maximum score without history is 0.90.
+ * clamped to [0, 1] and rounded to four decimals before sorting. History uses the supplied [-1, 1]
+ * adjustment only with >= 3 events and >= 30 estimated devices; otherwise it contributes 0.
+ * With the default weights, the maximum score without history is 0.90.
  */
 import {
+  AUDIENCE_LABELS,
   MAX_WEIGHT,
+  OBJECTIVE_LABELS,
+  rankWeights,
   type Audience,
   type IndicatorKey,
   type Objective,
@@ -220,6 +224,34 @@ export function recommend(input: RecommendationInput): RecommendationResult {
         input.weights.segment * segment +
         input.weights.history * (eligibleHistory?.adjustment ?? 0)) /
       totalWeight;
+    const scoreReasons: string[] = [];
+    if (input.weights.objective > 0 && (template.objectiveWeights[input.brief.primaryObjective] ?? 0) > 0) {
+      scoreReasons.push(`Atende ao objetivo principal: ${OBJECTIVE_LABELS[input.brief.primaryObjective]}.`);
+    }
+    if (input.weights.objective > 0) {
+      const secondaryLabels = rankWeights(template.objectiveWeights, OBJECTIVE_LABELS)
+        .filter(({ key }) => secondaryObjectives.includes(key))
+        .map(({ label }) => label);
+      if (secondaryLabels.length > 0) {
+        scoreReasons.push(`Atende aos objetivos secundários: ${secondaryLabels.join(", ")}.`);
+      }
+    }
+    if (input.weights.audience > 0 && audience > 0) {
+      const audienceLabels = rankWeights(template.audienceWeights, AUDIENCE_LABELS)
+        .filter(({ key }) => audiences.includes(key))
+        .map(({ label }) => label);
+      scoreReasons.push(`Atende ao público desejado: ${audienceLabels.join(", ")}.`);
+    }
+    if (input.weights.segment > 0 && segment > 0) {
+      scoreReasons.push("Atende aos segmentos comerciais desejados.");
+    }
+    if (input.weights.history > 0 && eligibleHistory && eligibleHistory.adjustment !== 0) {
+      scoreReasons.push(
+        eligibleHistory.adjustment > 0
+          ? "O histórico comparável favoreceu a pontuação."
+          : "O histórico comparável reduziu a pontuação.",
+      );
+    }
 
     recommendations.push({
       templateId: template.id,
@@ -230,8 +262,9 @@ export function recommend(input: RecommendationInput): RecommendationResult {
           ? "high"
           : "medium"
         : "low",
-      reasons: [],
+      reasons: scoreReasons,
       assumptions: [
+        `custo conforme o catálogo, atualizado em ${template.updatedAt.toISOString().slice(0, 10).split("-").reverse().join("/")} (UTC)`,
         ...(eligibleHistory ? [] : ["sem histórico suficiente"]),
         ...(template.reviewStatus === "draft" ? ["modelo em rascunho para revisão"] : []),
       ],

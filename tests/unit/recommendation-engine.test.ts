@@ -524,4 +524,91 @@ describe("recommend", () => {
     expect(input).toEqual(before);
     expect(shuffled).toEqual(shuffledBefore);
   });
+  it("states the catalog cost update date explicitly in UTC", () => {
+    const input = createInput();
+
+    const recommendation = recommend(input).recommendations[0]!;
+
+    expect(recommendation.assumptions).toEqual([
+      "custo conforme o catálogo, atualizado em 13/11/2026 (UTC)",
+      "sem histórico suficiente",
+    ]);
+    expect(recommendation.costMin).toBe(10000);
+    expect(recommendation.costMax).toBe(15000);
+    expect(recommendation.indicators).toEqual(["page_views"]);
+  });
+  it("explains the contributing rules in plain Portuguese without promising attendance", () => {
+    const input = createInput();
+    input.weights = DEFAULT_SCORING_WEIGHTS;
+
+    const recommendation = recommend(input).recommendations[0]!;
+
+    expect(recommendation.reasons).toEqual([
+      "Atende ao objetivo principal: Aumentar vendas.",
+      "Atende ao público desejado: Adultos (25–40).",
+      "Atende aos segmentos comerciais desejados.",
+    ]);
+    expect([...recommendation.reasons, ...recommendation.assumptions].join(" ")).not.toMatch(
+      /\b\d+\s+(pessoas|visitantes|participantes)\b/i,
+    );
+  });
+  it("explains secondary objective matches without claiming a primary match", () => {
+    const input = createInput();
+    input.brief.secondaryObjectives = ["strengthen_experience"];
+    input.templates[0]!.objectiveWeights = { strengthen_experience: 3 };
+
+    const recommendation = recommend(input).recommendations[0]!;
+
+    expect(recommendation.score).toBe(0.3333);
+    expect(recommendation.reasons).toEqual(["Atende aos objetivos secundários: Fortalecer a experiência."]);
+  });
+  it.each([
+    { adjustment: 1, reason: "O histórico comparável favoreceu a pontuação." },
+    { adjustment: -1, reason: "O histórico comparável reduziu a pontuação." },
+  ])("explains the direction of the history contribution: %j", ({ adjustment, reason }) => {
+    const input = createInput();
+    input.weights = { objective: 0, audience: 0, segment: 0, history: 1 };
+    input.history = [
+      { templateId: "style-consultation", comparableEvents: 3, estimatedDevices: 30, adjustment },
+    ];
+
+    expect(recommend(input).recommendations[0]!.reasons).toEqual([reason]);
+  });
+  it("does not describe zero-weight matches as contributing rules", () => {
+    const input = createInput();
+    input.weights = { objective: 0, audience: 0, segment: 0, history: 1 };
+
+    const recommendation = recommend(input).recommendations[0]!;
+
+    expect(recommendation.score).toBe(0);
+    expect(recommendation.reasons).toEqual([]);
+    expect(recommendation.assumptions).not.toContain("modelo em rascunho para revisão");
+  });
+
+  it("keeps explanations stable when desired objectives and audiences are shuffled", () => {
+    const input = createInput();
+    input.weights = DEFAULT_SCORING_WEIGHTS;
+    input.brief.secondaryObjectives = ["strengthen_experience", "increase_traffic"];
+    input.brief.audiences = ["families", "young_adults"];
+    input.templates[0]!.objectiveWeights = {
+      increase_sales: 3,
+      increase_traffic: 3,
+      strengthen_experience: 3,
+    };
+    input.templates[0]!.audienceWeights = { families: 3, young_adults: 3 };
+    const shuffled = structuredClone(input);
+    shuffled.brief.secondaryObjectives.reverse();
+    shuffled.brief.audiences.reverse();
+
+    const result = recommend(input);
+
+    expect(result.recommendations[0]!.score).toBe(0.9);
+    expect(result.recommendations[0]!.reasons).toEqual([
+      "Atende ao objetivo principal: Aumentar vendas.",
+      "Atende aos objetivos secundários: Ampliar fluxo, Fortalecer a experiência.",
+      "Atende ao público desejado: Jovens (18–24), Famílias com crianças.",
+      "Atende aos segmentos comerciais desejados.",
+    ]);
+    expect(recommend(shuffled)).toEqual(result);
+  });
 });
