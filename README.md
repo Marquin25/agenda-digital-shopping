@@ -6,7 +6,15 @@
 
 > **Pitch:** o shopping promove shows, oficinas e experiências, mas o visitante não fica sabendo, e a equipe não sabe o que funcionou. O **Conecta Shopping** reúne a programação num site para celular que abre pelo Instagram, pelo Wi-Fi ou por um QR Code, **sem aplicativo e sem cadastro**. Para a equipe, mostra de onde veio cada acesso, com números honestos que dizem o que é medido, o que é estimado e o que ainda não dá para medir.
 
-Situação: **Fase 1 implementada** e rodando localmente, ainda não publicada (veja [Situação e próximos passos](#situação-e-próximos-passos)).
+**Situação:** Núcleo da Fase 1 pronto para uso local; homologação e validação em dispositivos reais pendentes.
+
+| | |
+| --- | --- |
+| **O que funciona (localmente)** | Agenda pública com busca, filtros e detalhes; `.ics`, Google Agenda e compartilhamento; "Salvos" no aparelho; área da equipe com papéis; espaços, eventos e banners; links e QR de divulgação; painel de métricas; privacidade e retenção de 30 dias. Fase 2: lojas e segmentos ([#37](https://github.com/Marquin25/agenda-digital-shopping/issues/37)) e catálogo de experiências ([#39](https://github.com/Marquin25/agenda-digital-shopping/issues/39)) |
+| **O que depende de infraestrutura** | PostgreSQL gerenciado, armazenamento persistente de banners, domínio, agendador da retenção e limitador compartilhado. Aguarda as decisões de hospedagem, orçamento e privacidade (veja [`docs/implantacao-vercel.md`](docs/implantacao-vercel.md)) |
+| **URL da homologação** | Ainda não existe; veja [#25](https://github.com/Marquin25/agenda-digital-shopping/issues/25) |
+| **Como entrar com dados de demonstração** | `npm run db:migrate`, `npm run db:seed` e `npm run admin:create` (a senha é digitada no terminal e trocada no primeiro acesso). Passo a passo em [Como rodar localmente](#como-rodar-localmente) |
+| **Próxima fatia** | [#57](https://github.com/Marquin25/agenda-digital-shopping/issues/57) a [#62](https://github.com/Marquin25/agenda-digital-shopping/issues/62) (banner, armazenamento S3, WebKit, Salvos, documentação); depois [#20](https://github.com/Marquin25/agenda-digital-shopping/issues/20) "Tenho interesse", conforme decisão (P-FASE-1) |
 
 ---
 
@@ -192,7 +200,7 @@ O projeto segue os princípios da LGPD desde o desenho. A conformidade formal de
 
 ## Situação e próximos passos
 
-**Fase 1, pronto e testado:**
+**Fase 1, núcleo pronto e testado localmente** (testes automatizados e CI; ainda sem homologação nem validação em celulares reais):
 - agenda, filtros e detalhes;
 - `.ics` e Google Agenda, compartilhamento;
 - área administrativa com papéis;
@@ -204,11 +212,25 @@ O projeto segue os princípios da LGPD desde o desenho. A conformidade formal de
 - CSP com nonce;
 - "Salvos" no aparelho e visual novo (terracota/creme).
 
-**Fase 2, em andamento:**
+**Fase 2, entregue até agora:**
 - [#37](https://github.com/Marquin25/agenda-digital-shopping/issues/37) segmentos e lojas participantes;
 - [#39](https://github.com/Marquin25/agenda-digital-shopping/issues/39) catálogo de modelos de experiência (base do motor de recomendações).
 
-**Fase 1, ainda aberto:** [#7](https://github.com/Marquin25/agenda-digital-shopping/issues/7) teste em celulares reais (Instagram e Wi-Fi); [#23](https://github.com/Marquin25/agenda-digital-shopping/issues/23) limitador compartilhado e checklist ASVS; [#24](https://github.com/Marquin25/agenda-digital-shopping/issues/24) Dockerfile, backup e restauração.
+**Em andamento:**
+- [#57](https://github.com/Marquin25/agenda-digital-shopping/issues/57) troca de banner consistente quando o armazenamento falha;
+- [#58](https://github.com/Marquin25/agenda-digital-shopping/issues/58) armazenamento de banners compatível com S3;
+- [#59](https://github.com/Marquin25/agenda-digital-shopping/issues/59) WebKit (Safari) nos testes ponta a ponta;
+- [#60](https://github.com/Marquin25/agenda-digital-shopping/issues/60) "Salvos" mostra eventos além dos 200 primeiros;
+- [#61](https://github.com/Marquin25/agenda-digital-shopping/issues/61) quadro de status no topo deste README;
+- [#62](https://github.com/Marquin25/agenda-digital-shopping/issues/62) guia de implantação (retenção agendada, verificação rápida e checklist de aceite).
+
+**Fase 1, ainda aberto:**
+- [#25](https://github.com/Marquin25/agenda-digital-shopping/issues/25) publicar a homologação (prioridade P0, bloqueada por decisão de hospedagem, orçamento, domínio e privacidade);
+- [#7](https://github.com/Marquin25/agenda-digital-shopping/issues/7) teste em celulares reais (Instagram e Wi-Fi);
+- [#23](https://github.com/Marquin25/agenda-digital-shopping/issues/23) limitador compartilhado e checklist ASVS;
+- [#24](https://github.com/Marquin25/agenda-digital-shopping/issues/24) Dockerfile, backup e restauração.
+
+Depois dessa fatia, a próxima funcionalidade prevista é [#20](https://github.com/Marquin25/agenda-digital-shopping/issues/20) "Tenho interesse", que depende da decisão P-FASE-1.
 
 **Fora do escopo atual, porque aguarda decisão** ([`docs/spec/07-mvp-e-riscos.md`](docs/spec/07-mvp-e-riscos.md) §4):
 - "Tenho interesse" (P-FASE-1);
