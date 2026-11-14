@@ -19,3 +19,20 @@ export function originalBannerFileName(fileName: string): string {
   const suffixes = BANNER_WIDTHS.filter((w) => w !== LARGEST).join("|");
   return fileName.replace(new RegExp(`-(${suffixes})\\.webp$`), ".webp");
 }
+
+/** Unreferenced files younger than this are kept: an upload may still be in progress (B-57). */
+export const ORPHAN_BANNER_GRACE_MS = 24 * 60 * 60 * 1000;
+
+/** Names of stored banner files that no event references and that are older than the grace period. */
+export function orphanBannerFiles(
+  files: ReadonlyArray<{ name: string; modifiedAt: Date }>,
+  referencedBanners: ReadonlyArray<string>,
+  now: Date,
+): string[] {
+  const referenced = new Set(referencedBanners);
+  const graceStart = now.getTime() - ORPHAN_BANNER_GRACE_MS;
+  return files
+    .filter((file) => file.modifiedAt.getTime() < graceStart)
+    .filter((file) => !referenced.has(originalBannerFileName(file.name)))
+    .map((file) => file.name);
+}
