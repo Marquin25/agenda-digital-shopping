@@ -1,51 +1,148 @@
 # Implantação na Vercel (preparação)
 
-> Revisão 1 · 2026-11-13 · **Situação:** preparado, **não vinculado**. Nenhum projeto Vercel foi criado e nada foi publicado. A escolha da hospedagem ainda está pendente (P-INF-1, `docs/spec/05-arquitetura.md` §3). Na comparação, a Vercel é a **opção D**: o plano Hobby é para uso não comercial, e os dados podem ficar fora do Brasil (P-LGPD-5, P-ORC-1).
+> Revisão 2 · 2026-11-13 · **Situação:** preparado, **não vinculado**. **Nada foi publicado:** nenhum projeto Vercel foi criado e não existe URL de homologação. A publicação ([#25](https://github.com/Marquin25/agenda-digital-shopping/issues/25)) depende das decisões **P-INF-1** (hospedagem), **P-INF-2** (domínio), **P-ORC-1** (orçamento) e **P-LGPD-\*** (privacidade), registradas em [`spec/07-mvp-e-riscos.md`](spec/07-mvp-e-riscos.md) §4 e [`spec/06-qualidade.md`](spec/06-qualidade.md) §3. Na comparação de hospedagem ([`spec/05-arquitetura.md`](spec/05-arquitetura.md) §3), a Vercel é a **opção D**: o plano Hobby é para uso não comercial, e os dados podem ficar fora do Brasil (P-LGPD-5, P-ORC-1).
+>
+> Este guia é só documentação. Ele não cria contas nem arquivos de configuração de deploy, e nada aqui deve ser executado antes de a #25 ser autorizada.
 
 ## Como deve funcionar
 
 - **Integração oficial GitHub ↔ Vercel**, sem GitHub Actions para o deploy e **sem secrets no GitHub**. A validação continua no workflow `CI` (`.github/workflows/ci.yml`).
 - **Preview** para cada push em branch e em pull request.
 - **Produção** só a partir da branch `main`, ou seja, depois do merge aprovado de um PR (Settings → Git → *Production Branch* = `main`).
-- A Vercel detecta Next.js sozinha, então não há `vercel.json`. A pasta `.vercel/`, criada pelo `vercel link` com os IDs do projeto, está no `.gitignore`.
+- A Vercel detecta Next.js sozinha, então hoje não há `vercel.json`. A pasta `.vercel/`, criada pelo `vercel link` com os IDs do projeto, está no `.gitignore`.
 
 ## O que precisa existir antes de um preview funcionar
 
 | Item | Para quê | Situação |
 | --- | --- | --- |
 | **PostgreSQL gerenciado** (ex.: Neon, Supabase ou um do Vercel Marketplace) | Banco da aplicação. O PGlite grava em disco local, e na Vercel esse disco é efêmero | **Pendente** (provedor, região e custo) |
-| **Armazenamento de imagens** (S3-compatível: AWS S3, Cloudflare R2 ou MinIO) | Banners. O disco local (`UPLOAD_DIR`) **não persiste** na Vercel | **Pendente** (fornecedor, bucket e credenciais). O adaptador já existe: `STORAGE_DRIVER=s3` (`src/infrastructure/storage/s3-file-storage.ts`, B-58) |
+| **Armazenamento de imagens** (S3-compatível: AWS S3, Cloudflare R2 ou MinIO) | Banners. O disco local (`UPLOAD_DIR`) **não persiste** na Vercel | **Pendente** (serviço, bucket e conta ainda não foram escolhidos). O adaptador já existe: `STORAGE_DRIVER=s3` (`src/infrastructure/storage/s3-file-storage.ts`, [#58](https://github.com/Marquin25/agenda-digital-shopping/issues/58)) |
 | **Domínio** | `PUBLIC_BASE_URL` final, links e QR de divulgação impressos, Open Graph | **Pendente** (P-INF-2) |
+| **Agendador da retenção** | Rodar todo dia a retenção de 30 dias (veja [Agendador da retenção](#agendador-da-retenção)) | **Pendente** (depende da hospedagem) |
 
 Sem banco, o build passa, mas as páginas respondem com erro.
 
 ## Variáveis de ambiente (cadastrar em Vercel → Settings → Environment Variables)
 
-Nunca versionar os valores. Use valores **diferentes** para Preview e Production.
+Nunca versionar os valores. Use valores **diferentes** para Preview e Production. A lista completa, com os campos vazios, está em [`.env.example`](../.env.example).
 
 | Variável | Ambientes | Valor |
 | --- | --- | --- |
 | `DATABASE_URL` | Preview, Production | URL `postgres://…` do banco gerenciado (marcar como *Sensitive*). Use um banco separado para Preview |
 | `DEVICE_ID_PEPPER` | Preview, Production | Segredo aleatório com 32 caracteres ou mais: `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"`. **Obrigatório** em produção, senão a aplicação não sobe. Trocar o valor zera a deduplicação de visitantes |
-| `PUBLIC_BASE_URL` | Production (e Preview, se quiser) | URL pública sem barra no fim, por exemplo `https://agenda.exemplo-do-shopping.com.br`. Sem ela, links e QR usam `http://localhost:3000` |
-| `STORAGE_DRIVER` | Preview, Production | `s3` (o disco local não persiste na Vercel) |
-| `S3_REGION`, `S3_BUCKET` | Preview, Production | Região e bucket do armazenamento. Use um bucket separado para Preview |
-| `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | Preview, Production | Chave com acesso só a esse bucket (marcar como *Sensitive*). Sem elas, a aplicação não sobe |
-| `S3_ENDPOINT`, `S3_FORCE_PATH_STYLE` | Se necessário | Endpoint do R2/MinIO; `true` para endereçamento por caminho (MinIO) |
-| `UPLOAD_DIR` | — | Não serve na Vercel; use `STORAGE_DRIVER=s3` |
+| `PUBLIC_BASE_URL` | Production e Preview, cada um com a sua URL | URL pública **final** do ambiente, sem barra no fim, por exemplo `https://agenda.exemplo-do-shopping.com.br`. Sem ela, links e QR usam `http://localhost:3000`. Veja [`PUBLIC_BASE_URL`](#public_base_url) |
+| `CRON_SECRET` | Production (e Preview, se a retenção rodar lá) | Segredo aleatório com 32 caracteres ou mais, gerado como o `DEVICE_ID_PEPPER` (marcar como *Sensitive*). Liga a rota `GET /api/cron/retention`. **Sem ele, a rota responde 404** e a retenção não roda por HTTP. Um valor com menos de 32 caracteres (inclusive vazio) faz a aplicação falhar ao ler a configuração; para desligar a rota, não cadastre a variável |
+| `UPLOAD_DIR` | — | Não serve na Vercel (disco efêmero); use o armazenamento S3 abaixo |
+
+### Armazenamento S3 ([#58](https://github.com/Marquin25/agenda-digital-shopping/issues/58))
+
+Os banners ficam sob o prefixo `banners/` do bucket. A retenção diária apaga ali os arquivos que nenhum evento usa há mais de 24 h, então não guarde outros arquivos nesse prefixo.
+
+| Variável | Valor |
+| --- | --- |
+| `STORAGE_DRIVER` | `local` (padrão, disco em `UPLOAD_DIR`) ou `s3`. Na Vercel, use `s3` |
+| `S3_ENDPOINT` | Endpoint do serviço compatível com S3 (necessário para R2 ou MinIO) |
+| `S3_REGION` | Região do bucket. A escolha depende de P-LGPD-5 (dados fora do Brasil) |
+| `S3_BUCKET` | Nome do bucket, um por ambiente |
+| `S3_ACCESS_KEY_ID` | Chave de acesso com permissão só nesse bucket (marcar como *Sensitive*) |
+| `S3_SECRET_ACCESS_KEY` | Segredo da chave de acesso (marcar como *Sensitive*) |
+| `S3_FORCE_PATH_STYLE` | `true` para serviços que exigem endereçamento por caminho (ex.: MinIO); senão, deixe vazio |
+
+Com `STORAGE_DRIVER=s3` e `S3_REGION`, `S3_BUCKET`, `S3_ACCESS_KEY_ID` ou `S3_SECRET_ACCESS_KEY` faltando, a aplicação não sobe: a mensagem lista os nomes das variáveis, sem imprimir valores.
+
+### `PUBLIC_BASE_URL`
+
+Essa variável vira parte de tudo o que sai do sistema: o link curto `/r/{código}` e o QR Code de cada canal de divulgação, os links de compartilhamento e as prévias de link (Open Graph) no Instagram e no WhatsApp. Por isso:
+
+- **Precisa ser a URL final do ambiente.** Um QR impresso com a URL errada (ou com `localhost`) não pode ser corrigido depois; só reimpresso.
+- **Cada ambiente tem o seu valor.** A homologação usa a URL da homologação, e a produção, o domínio definitivo (P-INF-2). Assim, um QR de teste nunca leva o visitante para o ambiente errado.
+- **QR definitivos só depois do domínio.** Enquanto o domínio não existir, gere QR apenas para teste.
+- **Confira antes de divulgar:** abra a área de divulgação, gere um link e confirme que ele começa pela URL do ambiente; depois leia o QR com um celular.
 
 ## Banco: migração e primeira conta
 
 A aplicação só migra o PGlite automaticamente. No PostgreSQL, rode estes comandos no seu Terminal, apontando para o banco do ambiente, sem gravar a URL em arquivo versionado:
 
 ```sh
-DATABASE_URL='postgres://…' npm run db:migrate
-DATABASE_URL='postgres://…' npm run admin:create -- --name "Seu nome" --email voce@example.com --role administrator
+DATABASE_URL='<url-do-banco-do-ambiente>' npm run db:migrate
+DATABASE_URL='<url-do-banco-do-ambiente>' npm run admin:create -- --name "Seu nome" --email voce@example.com --role administrator
 ```
+
+A senha da conta é pedida no terminal (sem aparecer na tela) e precisa ser trocada no primeiro acesso. Para o smoke test, crie também uma conta `--role editor` e outra `--role analyst`.
+
+`npm run db:seed` cria **dados de demonstração** e é só para uso local; não rode no banco de produção.
+
+## Agendador da retenção
+
+A retenção agrega e apaga os identificadores de dispositivo com mais de 30 dias e as sessões expiradas, mantendo os totais do painel (prazo proposto, pendente de P-LGPD-3). Ela pode rodar mais de uma vez por dia sem problema. Há duas formas de acioná-la:
+
+- **Por HTTP:** `GET /api/cron/retention` com o cabeçalho `Authorization: Bearer <CRON_SECRET>` ([rota](../src/app/api/cron/retention/route.ts)). Sem `CRON_SECRET` configurado, a rota responde **404**; com o cabeçalho errado, **401**.
+- **Pelo terminal:** `npm run retention:run`, numa máquina com acesso ao banco do ambiente.
+
+### Opções de agendador
+
+| Opção | Como funciona | Observações |
+| --- | --- | --- |
+| **Vercel Cron** | A Vercel chama a rota no horário configurado e envia o `CRON_SECRET` como Bearer token | Exige declarar o agendamento num arquivo de configuração do projeto. Esse arquivo **não existe** e só deve ser criado dentro da #25, depois da decisão de hospedagem. Confira os limites de frequência do plano escolhido (P-ORC-1) |
+| **Agendador externo** (serviço de cron HTTP do provedor escolhido) | Faz o `GET` na rota com o cabeçalho `Authorization` | O `CRON_SECRET` fica guardado no cofre do próprio serviço, nunca no repositório nem nos secrets do GitHub |
+| **Cron de servidor** | `npm run retention:run` todo dia | Só serve se a hospedagem tiver um servidor com cron (opções que não sejam serverless) |
+
+**Frequência sugerida:** uma vez por dia, de madrugada no horário de São Paulo (por exemplo, 3h; em agendadores que usam UTC, isso é 6h UTC).
+
+### Como verificar o resultado
+
+1. Chame a rota sem cabeçalho: a resposta deve ser **401** (ou **404**, se o `CRON_SECRET` não estiver configurado no ambiente).
+2. Chame com o segredo, sem gravá-lo em arquivo nem no histórico do shell compartilhado:
+   ```sh
+   curl -s -H "Authorization: Bearer <valor-gerado-localmente>" https://<url-do-ambiente>/api/cron/retention
+   ```
+   A resposta é um JSON com os totais processados: `pageViewRows`, `engagementRows`, `expiredSessions` e `auditEntries`. Zeros são normais quando não há nada com mais de 30 dias.
+3. No painel do agendador (ou nos logs de funções da Vercel), confira que a chamada diária responde **200**.
+4. Depois de uma execução que processou linhas, os totais do painel de métricas devem continuar iguais.
+
+## Roteiro de verificação rápida (smoke test)
+
+Rode depois de cada publicação na homologação, com dados fictícios. Registre o resultado na #25 (URL, ambiente, commit implantado e o resultado de cada passo).
+
+1. **Saúde:** `GET /api/saude` responde `{"status":"ok"}` com o PostgreSQL do ambiente. Uma resposta `503` com `{"status":"unavailable"}` indica que o banco não conecta.
+2. **Evento com banner:** entre como Administrador em `/admin`, crie um evento com banner e texto alternativo e publique-o.
+3. **Página pública:** abra a agenda (`/`) e a página do evento no celular; o banner aparece.
+4. **Origem no painel:** em Divulgação, gere um link para um canal; acesse `/r/{código}` (pelo link ou lendo o QR) e confira que o link começa pela `PUBLIC_BASE_URL` do ambiente e que o acesso aparece com a origem certa no painel.
+5. **Persistência:** publique uma nova versão (novo deploy) e confirme que evento, banner e métricas continuam lá.
+6. **Papéis:** com o Editor, confirme que ele gerencia eventos, mas não usuários nem o catálogo; com o Analista, confirme que ele só vê o painel e não consegue editar eventos.
+
+A CI roda os testes de integração com PGlite. Por isso este roteiro, contra o PostgreSQL real do ambiente, é necessário para validar a implantação.
+
+## Checklist de aceite da homologação
+
+- [ ] A CI da `main` termina com sucesso no commit publicado.
+- [ ] `/api/saude` responde `ok` com o banco real do ambiente.
+- [ ] A equipe entra na área administrativa e um papel sem permissão não consegue editar eventos.
+- [ ] A equipe cria, publica e consulta um evento com banner e texto alternativo.
+- [ ] A troca de banner mantém a imagem correta mesmo quando a limpeza da imagem antiga falha ([#57](https://github.com/Marquin25/agenda-digital-shopping/issues/57)).
+- [ ] A agenda mostra o evento; busca, filtros, detalhes, compartilhamento e calendário funcionam no celular.
+- [ ] Um link e QR de divulgação usam a URL pública correta e registram sua origem no painel.
+- [ ] Evento, banner e indicadores persistem depois de novo deploy.
+- [ ] A retenção é executada pelo agendador e tem resultado verificável.
+- [ ] Os controles de requisição e a leitura do IP foram validados no provedor escolhido ([#23](https://github.com/Marquin25/agenda-digital-shopping/issues/23)).
+- [ ] Safari iOS, Chrome Android e navegador interno do Instagram tiveram os fluxos críticos registrados; o portal Wi-Fi foi testado quando disponível ([#7](https://github.com/Marquin25/agenda-digital-shopping/issues/7)).
+- [ ] A página de privacidade usa o texto aprovado para o ambiente e não afirma conformidade que ainda não foi validada (P-LGPD-4).
+
+## Riscos e decisões que não devem ficar implícitos
+
+| Risco ou pendência | Efeito | Tratamento proposto |
+| --- | --- | --- |
+| Publicar com PGlite ou banners em disco efêmero na Vercel | Perda ou inconsistência de dados após deploy ou troca de instância | Usar PostgreSQL e armazenamento persistente ([#58](https://github.com/Marquin25/agenda-digital-shopping/issues/58)) antes do smoke test |
+| Falha na limpeza de banners depois de atualizar o evento | O banco pode apontar para uma imagem já removida | Corrigir o fluxo de troca e testar falhas de armazenamento antes de usar um serviço remoto ([#57](https://github.com/Marquin25/agenda-digital-shopping/issues/57)) |
+| `PUBLIC_BASE_URL` incorreto | QR, links de divulgação e prévias apontam para `localhost` ou para o ambiente errado | Conferir a URL final e testar um QR real |
+| Limitador por instância e IP assumindo um proxy específico | Proteção desigual quando houver mais de uma instância | Validar cabeçalhos no provedor e adotar armazenamento compartilhado se necessário ([#23](https://github.com/Marquin25/agenda-digital-shopping/issues/23)) |
+| Só Chromium automatizado | Problemas em Safari ou navegadores internos passam despercebidos | Adicionar WebKit ao E2E ([#59](https://github.com/Marquin25/agenda-digital-shopping/issues/59)) e cumprir a [#7](https://github.com/Marquin25/agenda-digital-shopping/issues/7) |
+| Fase 1 descrita como pronta sem URL pública | Expectativa de entrega maior do que a evidência disponível | Manter no README a distinção entre local, homologação e uso público ([#61](https://github.com/Marquin25/agenda-digital-shopping/issues/61)) |
+| Iniciar avaliações ou recomendações antes de ter dados e operação | Aumenta o escopo sem validar o fluxo principal | Publicar e validar a homologação primeiro; depois escolher uma fatia vertical do [backlog](spec/09-backlog.md) |
 
 ## Passos que dependem do responsável
 
-1. Decidir se a Vercel será usada (P-INF-1) e em qual plano (P-ORC-1).
+1. Decidir se a Vercel será usada (P-INF-1), em qual plano (P-ORC-1), qual domínio (P-INF-2) e como ficam as pendências de privacidade (P-LGPD-\*).
 2. Fazer login e vincular o projeto. O vínculo pelo CLI **não** publica nada:
    ```sh
    npx vercel login
@@ -53,11 +150,13 @@ DATABASE_URL='postgres://…' npm run admin:create -- --name "Seu nome" --email 
    ```
 3. No painel da Vercel, em Settings → Git, conectar o repositório `Marquin25/agenda-digital-shopping` e conferir que *Production Branch* é `main`.
 4. Manter ligada a *Deployment Protection* (Vercel Authentication) dos previews. O texto de privacidade ainda está pendente de validação.
-5. Cadastrar as variáveis acima quando o banco existir.
-6. O próximo push na branch do PR gera o preview. A produção só sai depois do merge na `main`.
+5. Cadastrar as variáveis acima quando o banco e o armazenamento existirem.
+6. Configurar o agendador da retenção e verificar a primeira execução.
+7. O próximo push na branch do PR gera o preview. A produção só sai depois do merge na `main`.
+8. Rodar o smoke test e registrar o resultado na #25.
 
 ## Limitações conhecidas neste ambiente
 
-- **Limitador de requisições em memória:** cada instância serverless tem o próprio contador, então os limites ficam mais frouxos. Antes de uso real, trocar por um armazenamento compartilhado.
+- **Limitador de requisições em memória:** cada instância serverless tem o próprio contador, então os limites ficam mais frouxos. Antes de uso real, trocar por um armazenamento compartilhado ([#23](https://github.com/Marquin25/agenda-digital-shopping/issues/23)).
 - **IP do cliente:** o código lê o último valor de `X-Forwarded-For`. Validar o comportamento na Vercel antes de confiar no limite por IP.
 - **Região:** escolher a região das funções e do banco perto de São Paulo (ex.: `gru1`) depende da decisão de residência dos dados (P-LGPD-5).
