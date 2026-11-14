@@ -21,6 +21,7 @@ export interface EventFormValues {
   displayedCapacity: string;
   bannerAlt: string;
   bannerUrl: string | null;
+  ratingPeriodDays: string;
   /** Set when the event is created from a recommended idea (docs/spec/10 §5). */
   planId?: string;
   experienceTemplateId?: string;
@@ -37,6 +38,7 @@ const LABELS: Record<string, string> = {
   displayedCapacity: "Capacidade",
   banner: "Banner",
   bannerAlt: "Texto alternativo",
+  ratingPeriodDays: "Período de avaliação",
 };
 
 function groupBySegment<T extends { segmentName: string }>(items: T[]): [string, T[]][] {
@@ -179,6 +181,24 @@ export function EventForm({
             maxLength={300}
             placeholder="Ex.: Gratuito"
           />
+        </div>
+        <div className="field">
+          <label htmlFor="ratingPeriodDays">Período de avaliação (dias)</label>
+          <input
+            id="ratingPeriodDays"
+            name="ratingPeriodDays"
+            type="number"
+            inputMode="numeric"
+            min={1}
+            max={30}
+            defaultValue={values.ratingPeriodDays}
+            aria-describedby={`ratingPeriodDays-ajuda${e.ratingPeriodDays ? " ratingPeriodDays-erro" : ""}`}
+            aria-invalid={e.ratingPeriodDays ? true : undefined}
+          />
+          <span id="ratingPeriodDays-ajuda" className="hint">
+            O público pode avaliar do fim do evento até este número de dias depois (1 a 30).
+          </span>
+          <FieldError id="ratingPeriodDays" message={e.ratingPeriodDays} />
         </div>
         <fieldset className="full">
           <legend>Recursos de acessibilidade</legend>

@@ -22,6 +22,7 @@ const EMPTY: EventFormValues = {
   featureIds: [],
   storeIds: [],
   admissionInfo: "",
+  ratingPeriodDays: "7",
   capacityMode: "unlimited",
   displayedCapacity: "",
   bannerAlt: "",

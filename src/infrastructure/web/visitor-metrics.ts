@@ -4,7 +4,6 @@ import { isLikelyBot } from "@/domain/metrics/traffic-source";
 import { getConfig } from "@/infrastructure/config";
 import {
   DEVICE_COOKIE,
-  DEVICE_COOKIE_MAX_AGE_SECONDS,
   hashDeviceId,
   isValidDeviceId,
   newDeviceId,
@@ -12,6 +11,7 @@ import {
 import { RateLimiter } from "@/infrastructure/security/rate-limiter";
 import { isStaffRequest } from "./admin-session";
 import { clientIp } from "./request";
+import { deviceCookieOptions } from "./visitor-device";
 
 const perIp = new RateLimiter(600, 60_000);
 const perDevice = new RateLimiter(60, 60_000);
@@ -48,13 +48,7 @@ export async function openVisitorMetric(request: Request): Promise<VisitorMetric
   if (!isValidDeviceId(deviceId)) {
     if (!newDevicesPerIp.consume(ip)) return { accepted: false, response: tooManyRequests() };
     deviceId = newDeviceId();
-    response.cookies.set(DEVICE_COOKIE, deviceId, {
-      httpOnly: true,
-      secure: config.secureCookies,
-      sameSite: "lax",
-      path: "/",
-      maxAge: DEVICE_COOKIE_MAX_AGE_SECONDS,
-    });
+    response.cookies.set(DEVICE_COOKIE, deviceId, deviceCookieOptions(config.secureCookies));
   }
   if (!perDevice.consume(deviceId)) return { accepted: false, response: tooManyRequests() };
   return { accepted: true, deviceHash: hashDeviceId(deviceId, config.deviceIdPepper), response };

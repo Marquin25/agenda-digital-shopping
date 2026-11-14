@@ -14,12 +14,14 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import { getPublicEventBySlug, type EventView } from "@/application/events/event-queries";
+import { getRatingContext, hasRated } from "@/application/ratings/ratings";
 import { buildGoogleCalendarUrl } from "@/domain/calendar/ics";
 import { getConfig } from "@/infrastructure/config";
 import { getDb } from "@/infrastructure/db";
 import { NONCE_HEADER } from "@/infrastructure/web/content-security-policy";
+import { currentDeviceHash } from "@/infrastructure/web/visitor-device";
 import { CategoryIcon } from "@/ui/category-icon";
-import { formatEventDate, formatEventTime, formatVenue } from "@/ui/format";
+import { formatDateTime, formatEventDate, formatEventTime, formatVenue } from "@/ui/format";
 import { BannerImage, bannerUrl } from "@/ui/banner-image";
 import { CalendarLinks } from "@/ui/public/calendar-links";
 import { SaveButton } from "@/ui/public/save-button";
@@ -91,6 +93,7 @@ export default async function EventPage({ params }: { params: Params }) {
   const location = formatVenue(event.venue, event.locationDetail);
   const isOpen = event.status === "scheduled" || event.status === "ongoing";
   const capacity = capacityText(event);
+  const rating = event.status === "ended" ? await ratingInvite(event.slug) : null;
   const googleUrl = buildGoogleCalendarUrl({
     id: event.id,
     title: event.title,
@@ -121,7 +124,16 @@ export default async function EventPage({ params }: { params: Params }) {
       )}
       {event.status === "ended" && (
         <div className="notice" role="note">
-          Este evento já foi encerrado.
+          <p>Este evento já foi encerrado.</p>
+          {rating?.kind === "open" && (
+            <p>
+              <Link className="button" href={`/eventos/${event.slug}/avaliar`}>
+                Avaliar este evento
+              </Link>{" "}
+              Você pode avaliar até {formatDateTime(rating.closesAt)}.
+            </p>
+          )}
+          {rating?.kind === "rated" && <p>Você já avaliou este evento neste aparelho. Obrigado!</p>}
         </div>
       )}
       <div className="event-page">
@@ -248,6 +260,16 @@ export default async function EventPage({ params }: { params: Params }) {
       </div>
     </>
   );
+}
+
+/** Invitation to rate an ended event while its rating period is open (B-26). */
+async function ratingInvite(slug: string) {
+  const db = await getDb();
+  const context = await getRatingContext(db, slug);
+  if (context?.state !== "open") return null;
+  const deviceHash = await currentDeviceHash();
+  if (deviceHash && (await hasRated(db, context.eventId, deviceHash))) return { kind: "rated" as const };
+  return { kind: "open" as const, closesAt: context.window.closesAt };
 }
 
 function Fact({

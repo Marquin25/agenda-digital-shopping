@@ -97,7 +97,7 @@ A retenção agrega e apaga os identificadores de dispositivo com mais de 30 dia
    ```sh
    curl -s -H "Authorization: Bearer <valor-gerado-localmente>" https://<url-do-ambiente>/api/cron/retention
    ```
-   A resposta é um JSON com os totais processados: `pageViewRows`, `engagementRows`, `expiredSessions` e `auditEntries`. Zeros são normais quando não há nada com mais de 30 dias.
+   A resposta é um JSON com os totais processados: `pageViewRows`, `engagementRows`, `expiredSessions`, `auditEntries`, `ratingDeviceHashes`, `ratings` e `orphanBanners`. Zeros são normais quando não há nada com mais de 30 dias.
 3. No painel do agendador (ou nos logs de funções da Vercel), confira que a chamada diária responde **200**.
 4. Depois de uma execução que processou linhas, os totais do painel de métricas devem continuar iguais.
 

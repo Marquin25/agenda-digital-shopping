@@ -48,6 +48,11 @@ export default async function PrivacyPage({ searchParams }: { searchParams: Prom
           armazenamento deste navegador e nunca é enviada para nós.
         </li>
         <li>
+          <strong>Avaliações de eventos</strong> (se você avaliar): nota, destaques marcados e o comentário
+          opcional, ligados ao identificador cifrado deste dispositivo para impedir avaliações repetidas. Só a
+          equipe do shopping lê os comentários; por isso, não escreva dados pessoais neles.
+        </li>
+        <li>
           <strong>Endereço IP</strong>: usado só em memória, por alguns minutos, para evitar abuso. Não é
           gravado no banco de dados.
         </li>
@@ -60,8 +65,9 @@ export default async function PrivacyPage({ searchParams }: { searchParams: Prom
       <h2>Por quanto tempo</h2>
       <p>
         Prazo proposto: uma rotina de retenção agrega e apaga os registros por dispositivo com mais de 30
-        dias; ficam só os totais, sem identificador. Esse prazo ainda depende de validação pelo shopping. Você
-        também pode usar o botão abaixo para apagar seus dados quando quiser.
+        dias; ficam só os totais, sem identificador. Nas avaliações, o identificador é apagado 90 dias depois
+        do fim do evento, e a nota, os destaques e o comentário, depois de 2 anos. Esses prazos ainda dependem
+        de validação pelo shopping. Você também pode usar o botão abaixo para apagar seus dados quando quiser.
       </p>
 
       <h2>Apagar meus dados deste dispositivo</h2>

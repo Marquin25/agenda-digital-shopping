@@ -1,4 +1,4 @@
-import { isNotNull, lt, or, sql } from "drizzle-orm";
+import { and, inArray, isNotNull, lt, or, sql } from "drizzle-orm";
 import { SESSION_IDLE_MS } from "@/application/auth/admin-auth";
 import { orphanBannerFiles } from "@/domain/media/banner-variants";
 import { retentionCutoffs } from "@/domain/privacy/retention-policy";
@@ -8,6 +8,7 @@ import {
   auditLog,
   engagementDaily,
   engagementDailyTotals,
+  eventRatings,
   events,
   pageViewDailyTotals,
   pageViewsDaily,
@@ -21,6 +22,10 @@ export interface RetentionResult {
   engagementRows: number;
   expiredSessions: number;
   auditEntries: number;
+  /** Ratings whose device hash was cleared (90 days after the event ended). */
+  ratingDeviceHashes: number;
+  /** Ratings older than 2 years, deleted. */
+  ratings: number;
   /** Banner files no event references, older than the grace period, deleted from storage. */
   orphanBanners: number;
 }
@@ -59,7 +64,8 @@ export async function applyRetention(
   storage: FileStorage,
   now = new Date(),
 ): Promise<RetentionResult> {
-  const { deviceMetricsBefore, auditLogBefore } = retentionCutoffs(now);
+  const { deviceMetricsBefore, auditLogBefore, ratingDeviceEventEndedBefore, ratingsBefore } =
+    retentionCutoffs(now);
   const rows = await db.transaction(async (tx) => {
     const expiredViews = lt(pageViewsDaily.day, deviceMetricsBefore);
     await tx
@@ -129,11 +135,27 @@ export async function applyRetention(
       .where(lt(auditLog.createdAt, auditLogBefore))
       .returning({ id: auditLog.id });
 
+    const longEnded = tx
+      .select({ id: events.id })
+      .from(events)
+      .where(lt(sql`coalesce(${events.endedAt}, ${events.endsAt})`, ratingDeviceEventEndedBefore));
+    const ratingDeviceHashes = await tx
+      .update(eventRatings)
+      .set({ deviceHash: null })
+      .where(and(isNotNull(eventRatings.deviceHash), inArray(eventRatings.eventId, longEnded)))
+      .returning({ id: eventRatings.id });
+    const ratings = await tx
+      .delete(eventRatings)
+      .where(lt(eventRatings.createdAt, ratingsBefore))
+      .returning({ id: eventRatings.id });
+
     return {
       pageViewRows: pageViewRows.length,
       engagementRows: engagementRows.length,
       expiredSessions: expiredSessions.length,
       auditEntries: auditEntries.length,
+      ratingDeviceHashes: ratingDeviceHashes.length,
+      ratings: ratings.length,
     };
   });
   return { ...rows, orphanBanners: await removeOrphanBanners(db, storage, now) };
