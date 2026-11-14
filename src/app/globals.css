@@ -1019,6 +1019,25 @@ legend {
   font-weight: 650;
 }
 
+/* Recommendations: one card per idea, facts in plain weight because most are lists. */
+.recommendation-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--space-5);
+  display: grid;
+  gap: var(--space-4);
+}
+.recommendation-list .template-facts {
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+}
+.recommendation-list .template-facts dd {
+  font-weight: 400;
+}
+.recommendation-list .template-facts ul {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
 .empty-state {
   text-align: center;
   padding: var(--space-8) var(--space-4);

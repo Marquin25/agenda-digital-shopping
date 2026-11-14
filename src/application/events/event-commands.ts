@@ -66,6 +66,8 @@ export async function createEvent(
       slug,
       bannerPath: banner?.path ?? null,
       bannerAlt: banner ? input.bannerAlt : null,
+      planId: input.planId,
+      experienceTemplateId: input.experienceTemplateId,
       createdBy: userId,
     })
     .returning({ id: events.id });

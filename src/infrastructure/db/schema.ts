@@ -1,4 +1,5 @@
 import {
+  type AnyPgColumn,
   boolean,
   date,
   index,
@@ -108,11 +109,21 @@ export const events = pgTable(
       .default("draft"),
     icsSequence: integer("ics_sequence").notNull().default(0),
     publishedAt: timestamp("published_at", { withTimezone: true }),
+    /** Planning brief and catalog idea the event came from (docs/spec/10 §5); null for other events. */
+    planId: uuid("plan_id").references((): AnyPgColumn => plans.id, { onDelete: "set null" }),
+    experienceTemplateId: uuid("experience_template_id").references(
+      (): AnyPgColumn => experienceTemplates.id,
+      { onDelete: "set null" },
+    ),
     createdBy: uuid("created_by").references(() => adminUsers.id, { onDelete: "set null" }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
-  (t) => [index("events_starts_at_idx").on(t.startsAt), index("events_status_idx").on(t.publicationStatus)],
+  (t) => [
+    index("events_starts_at_idx").on(t.startsAt),
+    index("events_status_idx").on(t.publicationStatus),
+    index("events_experience_template_idx").on(t.experienceTemplateId),
+  ],
 );
 
 export const eventAccessibilityFeatures = pgTable(
@@ -272,6 +283,27 @@ export const planVenues = pgTable(
       .references(() => venues.id, { onDelete: "cascade" }),
   },
   (t) => [primaryKey({ columns: [t.planId, t.venueId] })],
+);
+
+/**
+ * One run of the recommendation engine for a brief (docs/spec/10 §3.5): the exact input, rules version,
+ * weights and result, so a run can be reproduced and audited later. Aggregates only, no visitor data.
+ */
+export const recommendationRuns = pgTable(
+  "recommendation_runs",
+  {
+    id: id(),
+    planId: uuid("plan_id")
+      .notNull()
+      .references(() => plans.id, { onDelete: "cascade" }),
+    rulesVersion: text("rules_version").notNull(),
+    weights: jsonb("weights").$type<Record<string, number>>().notNull(),
+    input: jsonb("input").$type<unknown>().notNull(),
+    result: jsonb("result").$type<unknown>().notNull(),
+    createdBy: uuid("created_by").references(() => adminUsers.id, { onDelete: "set null" }),
+    createdAt: createdAt(),
+  },
+  (t) => [index("recommendation_runs_plan_idx").on(t.planId, t.createdAt)],
 );
 
 export const promoLinks = pgTable("promo_links", {

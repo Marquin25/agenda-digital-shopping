@@ -215,6 +215,36 @@ test.describe.serial("Phase 1 — admin publishes, visitor discovers", () => {
     await expectNoSeriousA11yViolations(admin);
   });
 
+  test("a brief has a recommendations page, and an idea prefills a new event linked to the brief", async () => {
+    await admin.goto("/admin/planejamento");
+    await admin.getByRole("link", { name: "Março da moda E2E" }).click();
+    await admin.getByRole("link", { name: "Ver recomendações" }).click();
+    await expect(admin.getByRole("heading", { name: "Recomendações", level: 1 })).toBeVisible();
+    await expect(admin.getByText("Nenhuma recomendação gerada para este planejamento.")).toBeVisible();
+    await expectNoSeriousA11yViolations(admin);
+    const planId = admin.url().split("/planejamento/")[1]!.split("/")[0]!;
+
+    await admin.goto("/admin/catalogo");
+    const templateHref = await admin
+      .getByRole("link", { name: "Consultoria de estilo E2E" })
+      .getAttribute("href");
+    const templateId = templateHref!.split("/").pop()!;
+
+    await admin.goto(`/admin/eventos/novo?planejamento=${planId}&modelo=${templateId}`);
+    await expect(admin.getByRole("status").filter({ hasText: "Consultoria de estilo E2E" })).toContainText(
+      "Março da moda E2E",
+    );
+    await expect(admin.getByLabel("Título *")).toHaveValue("Consultoria de estilo E2E");
+    await admin.getByLabel("Descrição *").fill("Consultores de moda atendem nas lojas participantes.");
+    await admin.getByLabel(/Início \*/).fill(localDateTime(12, "14:00"));
+    await admin.getByLabel("Término *").fill(localDateTime(12, "18:00"));
+    await admin.getByLabel("Espaço *").selectOption({ label: "L1 · Praça Central" });
+    await admin.getByLabel("Categoria *").selectOption({ label: "Música" });
+    await expectNoSeriousA11yViolations(admin);
+    await admin.getByRole("button", { name: "Salvar rascunho" }).click();
+    await expect(admin.getByRole("status").filter({ hasText: "Alterações salvas." })).toBeVisible();
+  });
+
   test("validation errors are announced and linked to fields", async () => {
     await admin.goto("/admin/eventos/novo");
     await admin.getByRole("button", { name: "Salvar rascunho" }).click();
