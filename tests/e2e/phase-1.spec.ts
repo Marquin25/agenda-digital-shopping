@@ -12,6 +12,9 @@ const TINY_PNG = Buffer.from(
 const NEW_PASSWORD = "e2e-new-password-after-first-login";
 
 async function expectNoSeriousA11yViolations(page: Page) {
+  // Next.js streams page metadata, so <title> can land just after the body; wait for it instead of
+  // racing axe's document-title rule. A page that never gets a title still fails here.
+  await expect(page).toHaveTitle(/\S/);
   const results = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
     .analyze();

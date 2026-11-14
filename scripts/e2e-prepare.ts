@@ -10,6 +10,9 @@ const url = process.env.DATABASE_URL ?? "";
 if (!url.startsWith("pglite:./storage/e2e"))
   throw new Error("e2e-prepare only runs against pglite:./storage/e2e*");
 await rm(url.slice("pglite:".length), { recursive: true, force: true });
+// Uploads from a previous run would outlive the fresh database; clear them too (disposable dirs only).
+const uploadDir = process.env.UPLOAD_DIR ?? "";
+if (uploadDir.startsWith("./storage/e2e")) await rm(uploadDir, { recursive: true, force: true });
 const connection = await connect(url);
 await connection.migrate(path.join(process.cwd(), "drizzle"));
 await seedReferenceData(connection.db);

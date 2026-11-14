@@ -50,7 +50,7 @@ export async function openVisitorMetric(request: Request): Promise<VisitorMetric
     deviceId = newDeviceId();
     response.cookies.set(DEVICE_COOKIE, deviceId, {
       httpOnly: true,
-      secure: config.isProduction,
+      secure: config.secureCookies,
       sameSite: "lax",
       path: "/",
       maxAge: DEVICE_COOKIE_MAX_AGE_SECONDS,
