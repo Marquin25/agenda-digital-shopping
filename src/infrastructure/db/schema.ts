@@ -211,6 +211,69 @@ export const experienceTemplateSegments = pgTable(
   ],
 );
 
+/** Planning brief written by staff (docs/spec/10 §2.1); the audience describes a target, not visitors. */
+export const plans = pgTable("plans", {
+  id: id(),
+  title: text("title").notNull(),
+  primaryObjective: text("primary_objective").notNull(),
+  secondaryObjectives: text("secondary_objectives").array().notNull().default([]),
+  audiences: text("audiences").array().notNull().default([]),
+  interests: text("interests").array().notNull().default([]),
+  /** Budget range in whole reais. */
+  budgetMin: integer("budget_min").notNull(),
+  budgetMax: integer("budget_max").notNull(),
+  periodStart: date("period_start").notNull(),
+  periodEnd: date("period_end").notNull(),
+  /** 0 = Sunday … 6 = Saturday; empty = any day. */
+  preferredWeekdays: integer("preferred_weekdays").array().notNull().default([]),
+  /** Daily time range "HH:MM" in the mall time zone; both null = no limit. */
+  timeFrom: text("time_from"),
+  timeTo: text("time_to"),
+  archived: boolean("archived").notNull().default(false),
+  createdBy: uuid("created_by").references(() => adminUsers.id, { onDelete: "set null" }),
+  createdAt: createdAt(),
+  updatedAt: updatedAt(),
+});
+
+export const planSegments = pgTable(
+  "plan_segments",
+  {
+    planId: uuid("plan_id")
+      .notNull()
+      .references(() => plans.id, { onDelete: "cascade" }),
+    segmentId: integer("segment_id")
+      .notNull()
+      .references(() => segments.id, { onDelete: "cascade" }),
+  },
+  (t) => [primaryKey({ columns: [t.planId, t.segmentId] })],
+);
+
+export const planStores = pgTable(
+  "plan_stores",
+  {
+    planId: uuid("plan_id")
+      .notNull()
+      .references(() => plans.id, { onDelete: "cascade" }),
+    storeId: uuid("store_id")
+      .notNull()
+      .references(() => stores.id, { onDelete: "cascade" }),
+  },
+  (t) => [primaryKey({ columns: [t.planId, t.storeId] })],
+);
+
+export const planVenues = pgTable(
+  "plan_venues",
+  {
+    planId: uuid("plan_id")
+      .notNull()
+      .references(() => plans.id, { onDelete: "cascade" }),
+    venueId: uuid("venue_id")
+      .notNull()
+      .references(() => venues.id, { onDelete: "cascade" }),
+  },
+  (t) => [primaryKey({ columns: [t.planId, t.venueId] })],
+);
+
 export const promoLinks = pgTable("promo_links", {
   id: id(),
   code: text("code").notNull().unique(),

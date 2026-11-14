@@ -9,6 +9,7 @@ import {
   Plus,
   QrCode,
   ShoppingBag,
+  Target,
   Users,
 } from "lucide-react";
 import type { Metadata } from "next";
@@ -43,6 +44,9 @@ export default async function AdminPanelLayout({ children }: { children: React.R
       : []),
     ...(can(admin.role, "stores:manage")
       ? [{ href: "/admin/estabelecimentos", label: "Lojas", icon: icon(ShoppingBag) }]
+      : []),
+    ...(can(admin.role, "plans:manage")
+      ? [{ href: "/admin/planejamento", label: "Planejamento", icon: icon(Target) }]
       : []),
     ...(can(admin.role, "catalog:manage")
       ? [{ href: "/admin/catalogo", label: "Catálogo", icon: icon(Lightbulb) }]

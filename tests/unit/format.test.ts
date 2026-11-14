@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   formatCostRange,
+  formatDateKeyRange,
   formatDayHeading,
   formatDuration,
   formatEventDate,
@@ -47,5 +48,15 @@ describe("formatDuration", () => {
     [90, "1 h 30 min"],
   ])("%i minutes → %s", (minutes, text) => {
     expect(formatDuration(minutes)).toBe(text);
+  });
+});
+
+describe("formatDateKeyRange", () => {
+  it("shows a planning period in Brazilian date format", () => {
+    expect(formatDateKeyRange("2027-03-01", "2027-03-31")).toBe("01/03/2027 a 31/03/2027");
+  });
+
+  it("shows a single date when the period is one day", () => {
+    expect(formatDateKeyRange("2027-03-06", "2027-03-06")).toBe("06/03/2027");
   });
 });

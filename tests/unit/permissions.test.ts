@@ -27,6 +27,12 @@ describe("permissions matrix (docs/spec/01 §7)", () => {
     expect(can("analyst", "catalog:manage")).toBe(false);
   });
 
+  it("lets administrators and analysts write planning briefs until P-INT-IA-2 is decided", () => {
+    expect(can("administrator", "plans:manage")).toBe(true);
+    expect(can("analyst", "plans:manage")).toBe(true);
+    expect(can("editor", "plans:manage")).toBe(false);
+  });
+
   it("keeps analysts read-only", () => {
     expect(can("analyst", "events:manage")).toBe(false);
     expect(can("analyst", "promo-links:manage")).toBe(false);

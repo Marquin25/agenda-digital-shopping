@@ -170,6 +170,7 @@ O visual segue as referências da equipe: paleta terracota e creme, fonte Plus J
 - **Eventos:** rascunho, publicação, cancelamento (com confirmação) e encerramento, com banner e texto alternativo obrigatório.
 - **Lojas:** cadastro de segmentos e lojas participantes, só com dados comerciais (nome, segmento e piso, nunca contatos de pessoas). As lojas vinculadas aparecem na página do evento e no relatório do painel.
 - **Catálogo de experiências** (só Administrador): ideias de evento com pesos por objetivo e público, segmentos, faixa de custo informada, estrutura, duração e indicadores sugeridos, com data de atualização. É a base do motor de recomendações. A semente traz 10 modelos marcados como "rascunho para revisão".
+- **Planejamento** (Administrador e Analista): briefing com objetivo principal e secundários, público desejado (descrição do alvo, não perfil de visitante), interesses, segmentos, lojas interessadas, faixa de orçamento, período, dias e horário disponíveis e espaços. É a entrada das recomendações (#41).
 - **Divulgação:** um link curto e um QR Code (PNG ou SVG) para cada canal: Instagram, Wi-Fi, cartaz, totem.
 
 ### Funcionalidades planejadas (próximas fases)
