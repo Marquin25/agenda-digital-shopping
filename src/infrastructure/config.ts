@@ -115,6 +115,19 @@ export function getConfig(): AppConfig {
   return cached;
 }
 
+const HOST_NAME = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/;
+
+/**
+ * PUBLIC_BASE_URL goes into promo links, QR codes and share links. A Vercel preview without it uses its
+ * own branch URL (set by Vercel), so a preview never hands out localhost links (docs/implantacao-vercel.md).
+ */
+function resolvePublicBaseUrl(source: Env, configured: string): string {
+  const branchHost = source.VERCEL_BRANCH_URL?.toLowerCase();
+  if (!source.PUBLIC_BASE_URL && source.VERCEL_ENV === "preview" && branchHost && HOST_NAME.test(branchHost))
+    return `https://${branchHost}`;
+  return configured.replace(/\/$/, "");
+}
+
 /** Builds the configuration from environment variables; errors name variables, never their values. */
 export function readConfig(rawEnv: Env): AppConfig {
   const source = withoutBlankValues(rawEnv);
@@ -127,7 +140,7 @@ export function readConfig(rawEnv: Env): AppConfig {
     pepper = randomBytes(32).toString("base64url");
     console.warn("[config] DEVICE_ID_PEPPER not set; using an ephemeral value (development only).");
   }
-  const publicBaseUrl = env.PUBLIC_BASE_URL.replace(/\/$/, "");
+  const publicBaseUrl = resolvePublicBaseUrl(source, env.PUBLIC_BASE_URL);
   return {
     databaseUrl: env.DATABASE_URL,
     deviceIdPepper: pepper,

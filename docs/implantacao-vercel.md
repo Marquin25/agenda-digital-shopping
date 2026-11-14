@@ -1,15 +1,63 @@
 # Implantação na Vercel (preparação)
 
-> Revisão 2 · 2026-11-13 · **Situação:** preparado, **não vinculado**. **Nada foi publicado:** nenhum projeto Vercel foi criado e não existe URL de homologação. A publicação ([#25](https://github.com/Marquin25/agenda-digital-shopping/issues/25)) depende das decisões **P-INF-1** (hospedagem), **P-INF-2** (domínio), **P-ORC-1** (orçamento) e **P-LGPD-\*** (privacidade), registradas em [`spec/07-mvp-e-riscos.md`](spec/07-mvp-e-riscos.md) §4 e [`spec/06-qualidade.md`](spec/06-qualidade.md) §3. Na comparação de hospedagem ([`spec/05-arquitetura.md`](spec/05-arquitetura.md) §3), a Vercel é a **opção D**: o plano Hobby é para uso não comercial, e os dados podem ficar fora do Brasil (P-LGPD-5, P-ORC-1).
+> Revisão 3 · 2026-11-14 · **Situação:** preview de avaliação autorizado pelo PO em 2026-11-14 ([#84](https://github.com/Marquin25/agenda-digital-shopping/issues/84)), **ainda não vinculado** (nenhum projeto Vercel existe). **Produção continua bloqueada:** a homologação ([#25](https://github.com/Marquin25/agenda-digital-shopping/issues/25)) depende das decisões **P-INF-1** (hospedagem), **P-INF-2** (domínio), **P-ORC-1** (orçamento) e **P-LGPD-\*** (privacidade), registradas em [`spec/07-mvp-e-riscos.md`](spec/07-mvp-e-riscos.md) §4 e [`spec/06-qualidade.md`](spec/06-qualidade.md) §3. Na comparação de hospedagem ([`spec/05-arquitetura.md`](spec/05-arquitetura.md) §3), a Vercel é a **opção D**: o plano Hobby é para uso não comercial, e os dados podem ficar fora do Brasil (P-LGPD-5, P-ORC-1).
 >
-> Este guia é só documentação. Ele não cria contas nem arquivos de configuração de deploy, e nada aqui deve ser executado antes de a #25 ser autorizada.
+> Nenhuma conta, plano pago, domínio ou contrato é criado pelo agente: os passos que exigem login são feitos pelo PO.
+
+## Preview para avaliação no celular (B-84)
+
+O objetivo é uma URL **protegida por login**, com **dados fictícios**, para avaliar a aplicação no celular. Não é a homologação nem a produção.
+
+### Passos (feitos pelo PO, na conta Vercel dele)
+
+1. **Antes de importar**, faça o merge do PR da #84: ele traz o `vercel.json` com `git.deploymentEnabled: { "main": false }`, que impede commits na `main` de gerarem deploy (ou seja, **nenhuma produção** é publicada automaticamente). Branches e PRs continuam gerando previews.
+2. **Importar o repositório:** em vercel.com → *Add New* → *Project* → importar `Marquin25/agenda-digital-shopping` (instala o app oficial da Vercel no GitHub). Framework: Next.js, detectado sozinho; não mude os comandos de build. A documentação da Vercel descreve o `deploymentEnabled` para deploys disparados por commits; se o import ainda criar um deploy de produção, apague-o em *Deployments → ⋯ → Delete*. Sem `DATABASE_URL` em *Production*, esse deploy só mostraria erro. Em *Settings → Git*, mantenha *Production Branch* = `main`.
+3. **Proteção:** em *Settings → Deployment Protection*, deixe **Vercel Authentication** ligada com **Standard Protection** (disponível em todos os planos; protege tudo menos domínios de produção). Para abrir o preview no celular, entre na sua conta Vercel no navegador do celular. A proteção por senha não existe no plano Hobby.
+4. **Banco do preview:** *Storage → Marketplace → Neon* (Postgres), conectado **só ao ambiente Preview**. A Vercel injeta a URL como variável; confira que o nome usado é `DATABASE_URL` (se vier com outro nome, crie `DATABASE_URL` com o mesmo valor, marcada como *Sensitive*, só em Preview). Use um banco exclusivo do preview.
+5. **Migração, dados fictícios e contas de teste:** no seu Terminal, com a URL do banco do preview (sem gravá-la em arquivo versionado):
+   ```sh
+   DATABASE_URL='<url-do-banco-do-preview>' npm run db:migrate
+   DATABASE_URL='<url-do-banco-do-preview>' npm run db:seed     # eventos de demonstração (fictícios)
+   DATABASE_URL='<url-do-banco-do-preview>' npm run admin:create -- --name "Avaliação" --email avaliacao@example.com --role administrator
+   ```
+   A senha é pedida no terminal (sem aparecer) e trocada no primeiro acesso.
+6. **Variáveis** (tabela abaixo) e **Redeploy** do PR que você quer avaliar (*Deployments → ⋯ → Redeploy*). Cada PR passa a ter um link de preview no próprio PR.
+7. **Banners:** veja [Banners no preview](#banners-no-preview); sem armazenamento persistente, use os eventos de demonstração (que não têm banner) e não envie imagens.
+
+### Variáveis por ambiente
+
+| Variável | Preview (avaliação) | Production |
+| --- | --- | --- |
+| `DATABASE_URL` | **Obrigatória.** URL do banco Neon **do preview** (*Sensitive*) | Não cadastrar até a #25 |
+| `DEVICE_ID_PEPPER` | **Obrigatória** (a Vercel roda em modo produção). 32+ caracteres aleatórios: `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"` (*Sensitive*) | Não cadastrar até a #25; depois, valor **diferente** do preview |
+| `PUBLIC_BASE_URL` | Deixe **vazia**: o preview usa a URL da própria branch (`VERCEL_BRANCH_URL`, fornecida pela Vercel). Só preencha para fixar outra URL | URL final do domínio (P-INF-2) |
+| `STORAGE_DRIVER` e `S3_*` | Só se houver um bucket S3-compatível (veja abaixo) | Definido na #25 |
+| `CRON_SECRET` | Não precisa (a retenção não é necessária num preview curto); vazia deixa a rota desligada | 32+ caracteres, na #25 |
+| `TRUSTED_PROXY_HOPS` | Vazia (vale 1) | Vazia (vale 1) |
+| `UPLOAD_DIR`, `ALLOW_EPHEMERAL_PEPPER`, `ALLOW_INSECURE_LOCALHOST_COOKIES` | **Não cadastrar** (só para uso local) | **Não cadastrar** |
+
+`VERCEL_ENV` e `VERCEL_BRANCH_URL` são variáveis de sistema da Vercel: não cadastre. Se a opção *Automatically expose System Environment Variables* estiver desligada em *Settings → Environment Variables*, ligue-a.
+
+### Banners no preview
+
+As funções da Vercel não têm disco persistente, então `STORAGE_DRIVER=local` não serve. Opções:
+
+| Opção | O que exige | Situação |
+| --- | --- | --- |
+| **A. Vercel Blob** (mesma conta Vercel) | Criar um *Blob store* na conta e um **adaptador novo** no código (o Blob não é compatível com S3) | Recomendado para o preview; **depende de aprovação** para acrescentar a integração |
+| **B. Bucket S3-compatível** (AWS S3, Cloudflare R2) | Conta no provedor, bucket e chave só desse bucket; `STORAGE_DRIVER=s3` + `S3_*` (o adaptador já existe, [#58](https://github.com/Marquin25/agenda-digital-shopping/issues/58)) | Depende de conta nova |
+| **C. Sem banners** | Nada | Os eventos de demonstração aparecem com a capa ilustrada da categoria; enviar banner no preview **não** funciona de forma confiável |
+
+### Verificação no celular
+
+Registre na #84: URL, commit, aparelho e navegador, e o resultado de cada passo do [roteiro de verificação rápida](#roteiro-de-verificação-rápida-smoke-test) (pule o passo 5 se não houver armazenamento de banners).
 
 ## Como deve funcionar
 
 - **Integração oficial GitHub ↔ Vercel**, sem GitHub Actions para o deploy e **sem secrets no GitHub**. A validação continua no workflow `CI` (`.github/workflows/ci.yml`).
 - **Preview** para cada push em branch e em pull request.
 - **Produção** só a partir da branch `main`, ou seja, depois do merge aprovado de um PR (Settings → Git → *Production Branch* = `main`).
-- A Vercel detecta Next.js sozinha, então hoje não há `vercel.json`. A pasta `.vercel/`, criada pelo `vercel link` com os IDs do projeto, está no `.gitignore`.
+- A Vercel detecta Next.js sozinha. O `vercel.json` só desliga os deploys automáticos da `main` (B-84); para publicar produção na #25, essa regra terá de ser revista. A pasta `.vercel/`, criada pelo `vercel link` com os IDs do projeto, está no `.gitignore`.
 
 ## O que precisa existir antes de um preview funcionar
 
