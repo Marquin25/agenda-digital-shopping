@@ -6,6 +6,7 @@ Thumbs.db
 .env
 .env.*
 !.env.example
+!.env.docker.example
 *.pem
 *.key
 
@@ -27,6 +28,7 @@ npm-debug.log*
 
 # Local runtime data
 /storage/
+/backups/
 playwright-report/
 test-results/
 *.tsbuildinfo

@@ -278,6 +278,10 @@ Abra <http://localhost:3000>. A área da equipe fica em <http://localhost:3000/a
 - Use PostgreSQL em vez do PGlite: rode `docker compose up -d` e troque o `DATABASE_URL` por `postgres://conecta:conecta_local_only@localhost:5432/conecta`. Essa senha serve só para uso local.
 - Rode a retenção de dados (apaga identificadores com mais de 30 dias e mantém os totais) com `npm run retention:run`.
 
+### Rodar com Docker (produção local)
+
+Para testar como ficaria em produção, ainda só nesta máquina, use a imagem Docker, com backup e restauração: veja [`docs/docker.md`](docs/docker.md).
+
 ### Desfazer uma migração
 
 O Drizzle gera só a ida das migrações. Por isso cada migração `drizzle/<nome>.sql` tem um script de volta escrito à mão em `drizzle/rollback/<nome>.sql`, e um teste falha se algum estiver faltando.
