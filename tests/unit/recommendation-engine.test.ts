@@ -303,4 +303,96 @@ describe("recommend", () => {
 
     expect(recommend(input).recommendations[0]!.score).toBe(0.9);
   });
+  it.each([
+    { comparableEvents: 2, estimatedDevices: 100 },
+    { comparableEvents: 3, estimatedDevices: 29 },
+  ])("ignores insufficient comparable history: %j", (counts) => {
+    const input = createInput();
+    input.weights = DEFAULT_SCORING_WEIGHTS;
+    input.history = [{ templateId: "style-consultation", ...counts, adjustment: 1 }];
+
+    const recommendation = recommend(input).recommendations[0]!;
+
+    expect(recommendation.score).toBe(0.9);
+    expect(recommendation.historyApplied).toBe(false);
+    expect(recommendation.confidence).toBe("low");
+    expect(recommendation.assumptions).toContain("sem histórico suficiente");
+  });
+  it("applies history at exactly three events and thirty estimated devices", () => {
+    const input = createInput();
+    input.weights = DEFAULT_SCORING_WEIGHTS;
+    input.history = [
+      { templateId: "style-consultation", comparableEvents: 3, estimatedDevices: 30, adjustment: 1 },
+    ];
+
+    const recommendation = recommend(input).recommendations[0]!;
+
+    expect(recommendation.score).toBe(1);
+    expect(recommendation.historyApplied).toBe(true);
+    expect(recommendation.confidence).toBe("medium");
+    expect(recommendation.assumptions).not.toContain("sem histórico suficiente");
+  });
+  it("raises confidence at exactly ten events and three hundred estimated devices", () => {
+    const input = createInput();
+    input.weights = DEFAULT_SCORING_WEIGHTS;
+    input.history = [
+      { templateId: "style-consultation", comparableEvents: 10, estimatedDevices: 300, adjustment: 0.5 },
+    ];
+
+    const recommendation = recommend(input).recommendations[0]!;
+
+    expect(recommendation.score).toBe(0.95);
+    expect(recommendation.confidence).toBe("high");
+    expect(recommendation.historyApplied).toBe(true);
+  });
+  it("clamps a negative weighted history score to zero", () => {
+    const input = createInput();
+    input.weights = { objective: 0, audience: 0, segment: 0, history: 1 };
+    input.history = [
+      { templateId: "style-consultation", comparableEvents: 3, estimatedDevices: 30, adjustment: -1 },
+    ];
+
+    expect(recommend(input).recommendations[0]!.score).toBe(0);
+  });
+  it.each([
+    { comparableEvents: 9, estimatedDevices: 300 },
+    { comparableEvents: 10, estimatedDevices: 299 },
+  ])("requires both high-confidence thresholds: %j", (counts) => {
+    const input = createInput();
+    input.history = [{ templateId: "style-consultation", ...counts, adjustment: 0 }];
+
+    expect(recommend(input).recommendations[0]!.confidence).toBe("medium");
+  });
+
+  it.each([
+    { adjustment: -1, score: 0.8 },
+    { adjustment: 0, score: 0.9 },
+  ])("preserves the signed eligible history adjustment: %j", ({ adjustment, score }) => {
+    const input = createInput();
+    input.weights = DEFAULT_SCORING_WEIGHTS;
+    input.history = [
+      { templateId: "style-consultation", comparableEvents: 3, estimatedDevices: 30, adjustment },
+    ];
+
+    const recommendation = recommend(input).recommendations[0]!;
+
+    expect(recommendation.score).toBe(score);
+    expect(recommendation.historyApplied).toBe(true);
+    expect(recommendation.confidence).toBe("medium");
+  });
+
+  it("does not borrow history from another template", () => {
+    const input = createInput();
+    input.weights = DEFAULT_SCORING_WEIGHTS;
+    input.history = [
+      { templateId: "another-template", comparableEvents: 10, estimatedDevices: 300, adjustment: 1 },
+    ];
+
+    const recommendation = recommend(input).recommendations[0]!;
+
+    expect(recommendation.score).toBe(0.9);
+    expect(recommendation.confidence).toBe("low");
+    expect(recommendation.historyApplied).toBe(false);
+    expect(recommendation.assumptions).toContain("sem histórico suficiente");
+  });
 });

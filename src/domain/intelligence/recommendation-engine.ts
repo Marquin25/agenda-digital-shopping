@@ -201,19 +201,27 @@ export function recommend(input: RecommendationInput): RecommendationResult {
       .filter((id) => template.segmentIds.includes(id))
       .sort((a, b) => a - b);
     const segment = segmentIds.length === 0 ? 0 : matchedSegmentIds.length / segmentIds.length;
+    const history = input.history.find((entry) => entry.templateId === template.id);
+    const eligibleHistory =
+      history && history.comparableEvents >= 3 && history.estimatedDevices >= 30 ? history : undefined;
     const weightedScore =
       (input.weights.objective * objective +
         input.weights.audience * audience +
-        input.weights.segment * segment) /
+        input.weights.segment * segment +
+        input.weights.history * (eligibleHistory?.adjustment ?? 0)) /
       totalWeight;
 
     recommendations.push({
       templateId: template.id,
       name: template.name,
       score: Math.round(Math.max(0, Math.min(1, weightedScore)) * 10000) / 10000,
-      confidence: "low",
+      confidence: eligibleHistory
+        ? eligibleHistory.comparableEvents >= 10 && eligibleHistory.estimatedDevices >= 300
+          ? "high"
+          : "medium"
+        : "low",
       reasons: [],
-      assumptions: [],
+      assumptions: eligibleHistory ? [] : ["sem histórico suficiente"],
       compatibleVenueIds: input.venues
         .filter(
           (venue) =>
@@ -229,7 +237,7 @@ export function recommend(input: RecommendationInput): RecommendationResult {
       costMin: template.costMin,
       costMax: template.costMax,
       indicators: [...template.indicators],
-      historyApplied: false,
+      historyApplied: eligibleHistory !== undefined,
     });
   }
 
