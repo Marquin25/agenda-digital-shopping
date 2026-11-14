@@ -14,13 +14,7 @@ O objetivo é uma URL **protegida por login**, com **dados fictícios**, para av
 2. **Importar o repositório:** em vercel.com → *Add New* → *Project* → importar `Marquin25/agenda-digital-shopping` (instala o app oficial da Vercel no GitHub). Framework: Next.js, detectado sozinho; não mude os comandos de build. A documentação da Vercel descreve o `deploymentEnabled` para deploys disparados por commits; se o import ainda criar um deploy de produção, apague-o em *Deployments → ⋯ → Delete*. Sem `DATABASE_URL` em *Production*, esse deploy só mostraria erro. Em *Settings → Git*, mantenha *Production Branch* = `main`.
 3. **Proteção:** em *Settings → Deployment Protection*, deixe **Vercel Authentication** ligada com **Standard Protection** (disponível em todos os planos; protege tudo menos domínios de produção). Para abrir o preview no celular, entre na sua conta Vercel no navegador do celular. A proteção por senha não existe no plano Hobby.
 4. **Banco do preview:** *Storage → Marketplace → Neon* (Postgres), conectado **só ao ambiente Preview**. A Vercel injeta a URL como variável; confira que o nome usado é `DATABASE_URL` (se vier com outro nome, crie `DATABASE_URL` com o mesmo valor, marcada como *Sensitive*, só em Preview). Use um banco exclusivo do preview.
-5. **Migração, dados fictícios e contas de teste:** no seu Terminal, com a URL do banco do preview (sem gravá-la em arquivo versionado):
-   ```sh
-   DATABASE_URL='<url-do-banco-do-preview>' npm run db:migrate
-   DATABASE_URL='<url-do-banco-do-preview>' npm run db:seed     # eventos de demonstração (fictícios)
-   DATABASE_URL='<url-do-banco-do-preview>' npm run admin:create -- --name "Avaliação" --email avaliacao@example.com --role administrator
-   ```
-   A senha é pedida no terminal (sem aparecer) e trocada no primeiro acesso.
+5. **Migração, dados fictícios e conta de avaliação: automáticos.** No preview, o build roda `npm run vercel-build`, que antes do `next build` aplica as migrações, cria os eventos de demonstração (fictícios) e, se `PREVIEW_ADMIN_EMAIL` e `PREVIEW_ADMIN_PASSWORD` existirem em Preview, a conta de avaliação (Administrador, troca de senha obrigatória no primeiro acesso). Ninguém precisa copiar a URL do banco. Fora do preview (`VERCEL_ENV` diferente de `preview`) o script não toca no banco. Com a integração Neon criando um branch de banco por deploy, cada preview nasce com uma cópia nova: o que for testado num preview não passa para o próximo. O log do build mostra só contagens e o resultado da conta, nunca URL, e-mail ou senha (`scripts/vercel-preview-setup.ts`).
 6. **Variáveis** (tabela abaixo) e **Redeploy** do PR que você quer avaliar (*Deployments → ⋯ → Redeploy*). Cada PR passa a ter um link de preview no próprio PR.
 7. **Banners:** veja [Banners no preview](#banners-no-preview); sem armazenamento persistente, use os eventos de demonstração (que não têm banner) e não envie imagens.
 
@@ -30,6 +24,8 @@ O objetivo é uma URL **protegida por login**, com **dados fictícios**, para av
 | --- | --- | --- |
 | `DATABASE_URL` | **Obrigatória.** URL do banco Neon **do preview** (*Sensitive*) | Não cadastrar até a #25 |
 | `DEVICE_ID_PEPPER` | **Obrigatória** (a Vercel roda em modo produção). 32+ caracteres aleatórios: `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"` (*Sensitive*) | Não cadastrar até a #25; depois, valor **diferente** do preview |
+| `PREVIEW_ADMIN_EMAIL` | E-mail da conta de avaliação, por exemplo `avaliacao@example.com` | **Nunca** cadastrar |
+| `PREVIEW_ADMIN_PASSWORD` | Senha **temporária** da conta de avaliação, com 12+ caracteres e fora da lista de senhas vazadas; tipo **Segredo** (*Sensitive*). É trocada no primeiro acesso | **Nunca** cadastrar |
 | `PUBLIC_BASE_URL` | Deixe **vazia**: o preview usa a URL da própria branch (`VERCEL_BRANCH_URL`, fornecida pela Vercel). Só preencha para fixar outra URL | URL final do domínio (P-INF-2) |
 | `STORAGE_DRIVER` e `S3_*` | Só se houver um bucket S3-compatível (veja abaixo) | Definido na #25 |
 | `CRON_SECRET` | Não precisa (a retenção não é necessária num preview curto); vazia deixa a rota desligada | 32+ caracteres, na #25 |
