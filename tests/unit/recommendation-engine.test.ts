@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { recommend, type RecommendationInput } from "@/domain/intelligence/recommendation-engine";
+import {
+  DEFAULT_SCORING_WEIGHTS,
+  RULES_VERSION,
+  recommend,
+  type RecommendationInput,
+} from "@/domain/intelligence/recommendation-engine";
 
 function createInput(): RecommendationInput {
   return {
@@ -193,5 +198,109 @@ describe("recommend", () => {
       "nenhum espaço disponível atende à capacidade mínima necessária",
       "nenhum espaço disponível atende à estrutura necessária",
     ]);
+  });
+  it("normalizes objective adherence with the primary objective weighted twice", () => {
+    const input = createInput();
+    input.brief.secondaryObjectives = ["strengthen_experience", "increase_traffic"];
+    input.templates[0]!.objectiveWeights = {
+      increase_sales: 3,
+      strengthen_experience: 2,
+      increase_traffic: 1,
+    };
+
+    expect(recommend(input).recommendations[0]!.score).toBe(0.75);
+  });
+  it("normalizes audience adherence over the distinct desired audiences", () => {
+    const input = createInput();
+    input.weights = { objective: 0, audience: 1, segment: 0, history: 0 };
+    input.brief.audiences = ["families", "young_adults"];
+    input.templates[0]!.audienceWeights = { families: 3 };
+
+    expect(recommend(input).recommendations[0]!.score).toBe(0.5);
+  });
+  it("normalizes segment adherence by the desired segments", () => {
+    const input = createInput();
+    input.weights = { objective: 0, audience: 0, segment: 1, history: 0 };
+    input.brief.segmentIds = [1, 2, 3];
+    input.templates[0]!.segmentIds = [1, 3, 4];
+
+    const result = recommend(input);
+
+    expect(result.recommendations[0]!.score).toBe(0.6667);
+    expect(result.recommendations[0]!.matchedSegmentIds).toEqual([1, 3]);
+  });
+  it("combines the approved default weights into a score of 0.6500", () => {
+    const input = createInput();
+    input.weights = DEFAULT_SCORING_WEIGHTS;
+    input.rulesVersion = RULES_VERSION;
+    input.brief.audiences = ["families", "young_adults"];
+    input.templates[0]!.audienceWeights = { families: 3 };
+    input.brief.segmentIds = [1, 2];
+
+    const result = recommend(input);
+
+    expect(result.weights).toEqual({ objective: 0.4, audience: 0.3, segment: 0.2, history: 0.1 });
+    expect(result.rulesVersion).toBe("1.0.0");
+    expect(result.recommendations[0]!.score).toBe(0.65);
+  });
+  it("normalizes custom scoring weights without dropping the history weight", () => {
+    const input = createInput();
+    input.weights = { objective: 4, audience: 3, segment: 2, history: 1 };
+    input.brief.audiences = ["families", "young_adults"];
+    input.templates[0]!.audienceWeights = { families: 3 };
+    input.brief.segmentIds = [1, 2];
+
+    const result = recommend(input);
+
+    expect(result.recommendations[0]!.score).toBe(0.65);
+    expect(result.weights).toEqual({ objective: 4, audience: 3, segment: 2, history: 1 });
+  });
+  it.each([
+    { objective: -1, audience: 1, segment: 1, history: 1 },
+    { objective: 1, audience: Number.NaN, segment: 0, history: 0 },
+    { objective: 1, audience: 0, segment: Number.POSITIVE_INFINITY, history: 0 },
+    { objective: 0, audience: 0, segment: 0, history: 0 },
+    { objective: Number.MAX_VALUE, audience: Number.MAX_VALUE, segment: 0, history: 0 },
+  ])("rejects invalid scoring weights: %j", (weights) => {
+    const input = createInput();
+    input.weights = weights;
+
+    expect(() => recommend(input)).toThrow(RangeError);
+    expect(() => recommend(input)).toThrow(
+      "Scoring weights must be finite, non-negative, and have a finite positive sum.",
+    );
+  });
+  it.each([
+    { objective: 0, audience: 1, segment: 0, history: 0 },
+    { objective: 0, audience: 0, segment: 1, history: 0 },
+  ])("assigns zero adherence to unspecified audiences and segments: %j", (weights) => {
+    const input = createInput();
+    input.weights = weights;
+    input.brief.audiences = [];
+    input.brief.segmentIds = [];
+
+    expect(recommend(input).recommendations[0]!.score).toBe(0);
+  });
+
+  it("does not count duplicated objectives, audiences or segments twice", () => {
+    const input = createInput();
+    input.weights = DEFAULT_SCORING_WEIGHTS;
+    input.brief.secondaryObjectives = ["increase_sales", "strengthen_experience", "strengthen_experience"];
+    input.brief.audiences = ["families", "families", "young_adults"];
+    input.brief.segmentIds = [2, 1, 1];
+    input.templates[0]!.audienceWeights = { families: 3 };
+    input.templates[0]!.segmentIds = [1, 1];
+
+    const result = recommend(input);
+
+    expect(result.recommendations[0]!.score).toBe(0.5167);
+    expect(result.recommendations[0]!.matchedSegmentIds).toEqual([1]);
+  });
+
+  it("caps the default score without history at 0.90", () => {
+    const input = createInput();
+    input.weights = DEFAULT_SCORING_WEIGHTS;
+
+    expect(recommend(input).recommendations[0]!.score).toBe(0.9);
   });
 });

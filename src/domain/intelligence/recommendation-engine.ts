@@ -1,4 +1,17 @@
-import type { Audience, IndicatorKey, Objective, Weights } from "./experience-catalog";
+/**
+ * Objective = (2 * primary + sum(distinct secondaries)) / (MAX_WEIGHT * (2 + secondary count)).
+ * Audience = mean(desired catalog weights) / MAX_WEIGHT; segment = matched / desired segments.
+ * Empty audience/segment sets contribute 0. Score = weighted sum / sum of all scoring weights,
+ * clamped to [0, 1] and rounded to four decimals before sorting. History contributes 0 without
+ * sufficient data: with the default weights, the maximum score without history is 0.90.
+ */
+import {
+  MAX_WEIGHT,
+  type Audience,
+  type IndicatorKey,
+  type Objective,
+  type Weights,
+} from "./experience-catalog";
 import { slugify } from "../text/normalize";
 
 export interface BriefInput {
@@ -94,8 +107,28 @@ export interface RecommendationResult {
   eliminated: EliminatedTemplate[];
 }
 
+export const DEFAULT_SCORING_WEIGHTS: ScoringWeights = Object.freeze({
+  objective: 0.4,
+  audience: 0.3,
+  segment: 0.2,
+  history: 0.1,
+});
+export const RULES_VERSION = "1.0.0";
+
 export function recommend(input: RecommendationInput): RecommendationResult {
+  const totalWeight =
+    input.weights.objective + input.weights.audience + input.weights.segment + input.weights.history;
+  if (
+    [input.weights.objective, input.weights.audience, input.weights.segment, input.weights.history].some(
+      (weight) => !Number.isFinite(weight) || weight < 0,
+    ) ||
+    !Number.isFinite(totalWeight) ||
+    totalWeight <= 0
+  ) {
+    throw new RangeError("Scoring weights must be finite, non-negative, and have a finite positive sum.");
+  }
   const eliminated: EliminatedTemplate[] = [];
+  const recommendations: Recommendation[] = [];
 
   for (const template of input.templates) {
     const reasons: string[] = [];
@@ -146,13 +179,64 @@ export function recommend(input: RecommendationInput): RecommendationResult {
     }
     if (reasons.length > 0) {
       eliminated.push({ templateId: template.id, name: template.name, reasons });
+      continue;
     }
+    const secondaryObjectives = [...new Set(input.brief.secondaryObjectives)].filter(
+      (objective) => objective !== input.brief.primaryObjective,
+    );
+    const objective =
+      (2 * (template.objectiveWeights[input.brief.primaryObjective] ?? 0) +
+        secondaryObjectives.reduce((sum, key) => sum + (template.objectiveWeights[key] ?? 0), 0)) /
+      (MAX_WEIGHT * (2 + secondaryObjectives.length));
+
+    const audiences = [...new Set(input.brief.audiences)];
+    const audience =
+      audiences.length === 0
+        ? 0
+        : audiences.reduce((sum, key) => sum + (template.audienceWeights[key] ?? 0), 0) /
+          (MAX_WEIGHT * audiences.length);
+
+    const segmentIds = [...new Set(input.brief.segmentIds)];
+    const matchedSegmentIds = segmentIds
+      .filter((id) => template.segmentIds.includes(id))
+      .sort((a, b) => a - b);
+    const segment = segmentIds.length === 0 ? 0 : matchedSegmentIds.length / segmentIds.length;
+    const weightedScore =
+      (input.weights.objective * objective +
+        input.weights.audience * audience +
+        input.weights.segment * segment) /
+      totalWeight;
+
+    recommendations.push({
+      templateId: template.id,
+      name: template.name,
+      score: Math.round(Math.max(0, Math.min(1, weightedScore)) * 10000) / 10000,
+      confidence: "low",
+      reasons: [],
+      assumptions: [],
+      compatibleVenueIds: input.venues
+        .filter(
+          (venue) =>
+            (minimumArea === null ||
+              (venue.areaSquareMeters !== null && venue.areaSquareMeters >= minimumArea)) &&
+            (minimumCapacity === null || (venue.capacity !== null && venue.capacity >= minimumCapacity)) &&
+            template.facilities.every((facility) =>
+              venue.facilities.map(slugify).includes(slugify(facility)),
+            ),
+        )
+        .map((venue) => venue.id),
+      matchedSegmentIds,
+      costMin: template.costMin,
+      costMax: template.costMax,
+      indicators: [...template.indicators],
+      historyApplied: false,
+    });
   }
 
   return {
     rulesVersion: input.rulesVersion,
     weights: { ...input.weights },
-    recommendations: [],
+    recommendations,
     eliminated,
   };
 }
