@@ -1,6 +1,8 @@
+import { sql } from "drizzle-orm";
 import {
   type AnyPgColumn,
   boolean,
+  check,
   date,
   index,
   integer,
@@ -108,6 +110,8 @@ export const events = pgTable(
       .notNull()
       .default("draft"),
     icsSequence: integer("ics_sequence").notNull().default(0),
+    /** Days the post-event rating stays open after the end (docs/spec/03 §8; 1–30, default 7). */
+    ratingPeriodDays: integer("rating_period_days").notNull().default(7),
     publishedAt: timestamp("published_at", { withTimezone: true }),
     /** Planning brief and catalog idea the event came from (docs/spec/10 §5); null for other events. */
     planId: uuid("plan_id").references((): AnyPgColumn => plans.id, { onDelete: "set null" }),
@@ -123,6 +127,7 @@ export const events = pgTable(
     index("events_starts_at_idx").on(t.startsAt),
     index("events_status_idx").on(t.publicationStatus),
     index("events_experience_template_idx").on(t.experienceTemplateId),
+    check("events_rating_period_days_range", sql`${t.ratingPeriodDays} between 1 and 30`),
   ],
 );
 
@@ -422,4 +427,32 @@ export const auditLog = pgTable(
     createdAt: createdAt(),
   },
   (t) => [index("audit_log_created_idx").on(t.createdAt)],
+);
+
+/**
+ * Post-event ratings (B-26). One per device and event; the device hash is cleared by retention 90 days
+ * after the event ends, and ratings are deleted after 2 years (docs/spec/04 §Retenção, proposal).
+ * Only staff can read them, never with the device hash (docs/spec/06 §4).
+ */
+export const eventRatings = pgTable(
+  "event_ratings",
+  {
+    id: id(),
+    eventId: uuid("event_id")
+      .notNull()
+      .references(() => events.id, { onDelete: "cascade" }),
+    deviceHash: text("device_hash"),
+    score: integer("score").notNull(),
+    tags: jsonb("tags").$type<string[]>().notNull().default([]),
+    comment: text("comment"),
+    /** Always false until check-in exists (B-30/B-31, pending P-PROD-1). */
+    withCheckIn: boolean("with_check_in").notNull().default(false),
+    hidden: boolean("hidden").notNull().default(false),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    check("event_ratings_score_range", sql`${t.score} between 1 and 5`),
+    uniqueIndex("event_ratings_event_device_unique").on(t.eventId, t.deviceHash),
+    index("event_ratings_event_idx").on(t.eventId, t.createdAt),
+  ],
 );

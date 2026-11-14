@@ -33,6 +33,7 @@ function readEventForm(formData: FormData) {
     capacityMode: text("capacityMode"),
     displayedCapacity: text("displayedCapacity"),
     bannerAlt: text("bannerAlt"),
+    ratingPeriodDays: text("ratingPeriodDays"),
     planId: text("planId"),
     experienceTemplateId: text("experienceTemplateId"),
   };

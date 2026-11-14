@@ -354,6 +354,60 @@ test.describe.serial("Phase 1 — admin publishes, visitor discovers", () => {
     await screen.context().close();
   });
 
+  test("visitor rates an ended event once, and staff see aggregates with their caveats", async ({
+    browser,
+  }) => {
+    test.slow(); // includes the 3 s minimum filling time
+    await admin.goto("/admin/eventos/novo");
+    await admin.getByLabel("Título *").fill("Oficina Encerrada E2E");
+    await admin.getByLabel("Descrição *").fill("Oficina que já aconteceu, para testar a avaliação.");
+    await admin.getByLabel(/Início \*/).fill(localDateTime(-1, "10:00"));
+    await admin.getByLabel("Término *").fill(localDateTime(-1, "12:00"));
+    await admin.getByLabel("Espaço *").selectOption({ label: "L1 · Praça Central" });
+    await admin.getByLabel("Categoria *").selectOption({ label: "Música" });
+    await expect(admin.getByLabel("Período de avaliação (dias)")).toHaveValue("7");
+    await admin.getByRole("button", { name: "Salvar rascunho" }).click();
+    await expect(admin.getByRole("status").filter({ hasText: "Alterações salvas." })).toBeVisible();
+    await admin.getByRole("button", { name: "Publicar" }).click();
+    await expect(admin.getByRole("status").filter({ hasText: "Evento publicado." })).toBeVisible();
+    const ratedUrl =
+      (await admin.getByRole("link", { name: "Ver página pública" }).getAttribute("href")) ?? "";
+
+    const visitor = await visitorPage(browser);
+    await visitor.goto(ratedUrl);
+    await expect(visitor.getByText("Este evento já foi encerrado.")).toBeVisible();
+    await visitor.getByRole("link", { name: "Avaliar este evento" }).click();
+    await expect(visitor.getByRole("heading", { name: "Como foi o evento?", level: 1 })).toBeVisible();
+    await expectNoSeriousA11yViolations(visitor);
+
+    await visitor.getByRole("button", { name: "Enviar avaliação" }).click();
+    const alert = visitor.locator(ALERT);
+    await expect(alert).toContainText("Revise os campos destacados");
+    await expect(alert.getByRole("link", { name: /Nota/ })).toBeVisible();
+
+    await visitor.getByRole("radio", { name: /5\s*Excelente/ }).check();
+    await visitor.getByRole("checkbox", { name: "Atração" }).check();
+    await visitor.getByLabel("Comentário (opcional)").fill("Gostei muito da oficina.");
+    // A person takes a few seconds; faster submissions are dropped as automated (docs/spec/03 §5).
+    await visitor.waitForTimeout(3_000);
+    await visitor.getByRole("button", { name: "Enviar avaliação" }).click();
+    await expect(visitor.getByRole("status")).toContainText("Obrigado! Sua avaliação foi registrada.");
+
+    await visitor.goto(ratedUrl);
+    await expect(visitor.getByText("Você já avaliou este evento neste aparelho. Obrigado!")).toBeVisible();
+    await expect(visitor.getByRole("link", { name: "Avaliar este evento" })).toHaveCount(0);
+    await visitor.context().close();
+
+    await admin.goto("/admin/eventos");
+    await admin.getByRole("link", { name: "Oficina Encerrada E2E" }).click();
+    const ratings = admin.getByRole("region", { name: "Avaliações do público" });
+    await expect(ratings.getByText("Avaliações sem check-in não comprovam participação.")).toBeVisible();
+    await expect(ratings.getByText("Amostra pequena (n = 1)")).toBeVisible();
+    await expect(ratings.getByRole("row", { name: /Atração 1/ })).toBeVisible();
+    await expect(ratings.getByText("Gostei muito")).toHaveCount(0);
+    await expectNoSeriousA11yViolations(admin);
+  });
+
   test("promo link and QR code redirect with origin and are counted as measured hits", async ({
     browser,
   }) => {
@@ -470,6 +524,8 @@ test.describe.serial("Phase 1 — admin publishes, visitor discovers", () => {
       "expiredSessions",
       "orphanBanners",
       "pageViewRows",
+      "ratingDeviceHashes",
+      "ratings",
     ]);
   });
 });

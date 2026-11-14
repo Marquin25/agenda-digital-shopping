@@ -26,6 +26,18 @@ export const eventInputSchema = z
       .transform((v) => (v === "" ? null : v))
       .default(null),
     bannerAlt: z.string().trim().max(250).default(""),
+    /** Days the post-event rating stays open (docs/spec/03 §8). */
+    ratingPeriodDays: z
+      .union([
+        z.literal(""),
+        z.coerce
+          .number()
+          .int("Informe um número inteiro de dias.")
+          .min(1, "Use de 1 a 30 dias.")
+          .max(30, "Use de 1 a 30 dias."),
+      ])
+      .transform((v) => (v === "" ? 7 : v))
+      .default(7),
     /** Brief and catalog idea the event comes from; only stored when the event is created. */
     planId: optionalUuid,
     experienceTemplateId: optionalUuid,

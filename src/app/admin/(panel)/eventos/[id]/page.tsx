@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getEventForEdit } from "@/application/events/event-queries";
+import { getEventRatingReport } from "@/application/ratings/ratings";
+import { ratingWindow } from "@/domain/ratings/rating";
 import { can } from "@/domain/auth/permissions";
 import { getEventStatus } from "@/domain/events/event-status";
 import { toLocalDateTimeInput } from "@/domain/time/time-zone";
@@ -9,6 +11,7 @@ import { getDb } from "@/infrastructure/db";
 import { requireAdmin } from "@/infrastructure/web/admin-session";
 import { bannerUrl } from "@/ui/banner-image";
 import { StatusBadge } from "@/ui/status-badge";
+import { RatingSummary } from "@/ui/admin/rating-summary";
 import { EventForm } from "../event-form";
 import { loadEventFormOptions } from "../form-options";
 import { TransitionForm } from "../transition-form";
@@ -68,6 +71,13 @@ export default async function EditEventPage({
         </p>
       )}
 
+      {event.publicationStatus === "published" && (
+        <RatingSummary
+          report={await getEventRatingReport(db, event.id)}
+          window={ratingWindow(event, event.ratingPeriodDays)}
+        />
+      )}
+
       {canManage ? (
         <>
           <section aria-labelledby="acoes" className="panel" style={{ marginBottom: "1.5rem" }}>
@@ -98,6 +108,7 @@ export default async function EditEventPage({
               featureIds,
               storeIds,
               admissionInfo: event.admissionInfo,
+              ratingPeriodDays: String(event.ratingPeriodDays),
               capacityMode: event.capacityMode,
               displayedCapacity: event.displayedCapacity ? String(event.displayedCapacity) : "",
               bannerAlt: event.bannerAlt ?? "",

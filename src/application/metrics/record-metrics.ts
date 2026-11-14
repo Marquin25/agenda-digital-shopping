@@ -4,6 +4,7 @@ import type { TrafficChannel } from "@/domain/metrics/traffic-source";
 import type { Database } from "@/infrastructure/db/client";
 import {
   engagementDaily,
+  eventRatings,
   pageViewsDaily,
   pageViewsRawDaily,
   promoLinkHitsDaily,
@@ -88,5 +89,9 @@ export async function deleteDeviceData(db: Database, deviceHash: string): Promis
     .delete(engagementDaily)
     .where(eq(engagementDaily.deviceHash, deviceHash))
     .returning({ day: engagementDaily.day });
-  return views.length + engagement.length;
+  const ratings = await db
+    .delete(eventRatings)
+    .where(eq(eventRatings.deviceHash, deviceHash))
+    .returning({ id: eventRatings.id });
+  return views.length + engagement.length + ratings.length;
 }

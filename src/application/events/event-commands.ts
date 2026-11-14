@@ -34,6 +34,7 @@ function columnsFrom(input: ValidEventInput) {
     admissionInfo: input.admissionInfo,
     capacityMode: input.capacityMode,
     displayedCapacity: input.displayedCapacity,
+    ratingPeriodDays: input.ratingPeriodDays,
   };
 }
 

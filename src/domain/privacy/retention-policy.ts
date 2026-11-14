@@ -3,18 +3,29 @@ import { addDaysToDateKey, toLocalDateKey } from "@/domain/time/time-zone";
 /** Proposed retention (docs/spec/04 §Retenção; pending validation P-LGPD-3). */
 export const DEVICE_METRICS_RETENTION_DAYS = 30;
 export const AUDIT_LOG_RETENTION_DAYS = 365;
+/** Ratings keep the device hash for 90 days after the event, and score, tags and comment for 2 years. */
+export const RATING_DEVICE_RETENTION_DAYS = 90;
+export const RATING_RETENTION_DAYS = 730;
 
 export interface RetentionCutoffs {
   /** Local date key: rows with device hashes from earlier days are aggregated and deleted. */
   deviceMetricsBefore: string;
   /** Audit entries created before this instant are deleted. */
   auditLogBefore: Date;
+  /** Ratings of events that ended before this instant lose their device hash. */
+  ratingDeviceEventEndedBefore: Date;
+  /** Ratings created before this instant are deleted. */
+  ratingsBefore: Date;
 }
+
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 export function retentionCutoffs(now: Date): RetentionCutoffs {
   const today = toLocalDateKey(now);
   return {
     deviceMetricsBefore: addDaysToDateKey(today, -(DEVICE_METRICS_RETENTION_DAYS - 1)),
-    auditLogBefore: new Date(now.getTime() - AUDIT_LOG_RETENTION_DAYS * 24 * 60 * 60 * 1000),
+    auditLogBefore: new Date(now.getTime() - AUDIT_LOG_RETENTION_DAYS * DAY_MS),
+    ratingDeviceEventEndedBefore: new Date(now.getTime() - RATING_DEVICE_RETENTION_DAYS * DAY_MS),
+    ratingsBefore: new Date(now.getTime() - RATING_RETENTION_DAYS * DAY_MS),
   };
 }
