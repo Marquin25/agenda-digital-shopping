@@ -1,6 +1,6 @@
-import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Browser, type Page } from "@playwright/test";
 import { E2E_ADMIN_PASSWORD, E2E_CRON_SECRET } from "../../playwright.config";
+import { expectNoSeriousA11yViolations } from "./a11y";
 
 /** Next.js route announcer also has role="alert"; exclude it. */
 const ALERT = '[role="alert"]:not(#__next-route-announcer__)';
@@ -10,17 +10,6 @@ const TINY_PNG = Buffer.from(
   "base64",
 );
 const NEW_PASSWORD = "e2e-new-password-after-first-login";
-
-async function expectNoSeriousA11yViolations(page: Page) {
-  // Next.js streams page metadata, so <title> can land just after the body; wait for it instead of
-  // racing axe's document-title rule. A page that never gets a title still fails here.
-  await expect(page).toHaveTitle(/\S/);
-  const results = await new AxeBuilder({ page })
-    .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
-    .analyze();
-  const serious = results.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
-  expect(serious.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`)).toEqual([]);
-}
 
 function localDateTime(daysFromNow: number, time: string) {
   const date = new Date(Date.now() + daysFromNow * 86_400_000);
@@ -67,7 +56,8 @@ test.describe.serial("Phase 1 — admin publishes, visitor discovers", () => {
     admin = watchCsp(await (await browser.newContext()).newPage());
   });
 
-  test.afterAll(() => {
+  test.afterAll(async () => {
+    await admin.context().close();
     expect(cspViolations).toEqual([]);
   });
 

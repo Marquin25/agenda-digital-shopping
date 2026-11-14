@@ -36,8 +36,8 @@ export function VisitsChart({ series }: { series: DailyAgendaPoint[] }) {
       >
         <defs>
           <linearGradient id="chart-fill" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor="#a8461f" stopOpacity="0.28" />
-            <stop offset="100%" stopColor="#a8461f" stopOpacity="0.02" />
+            <stop offset="0%" style={{ stopColor: "var(--color-primary)" }} stopOpacity="0.28" />
+            <stop offset="100%" style={{ stopColor: "var(--color-primary)" }} stopOpacity="0.02" />
           </linearGradient>
         </defs>
         {[0.25, 0.5, 0.75].map((f) => (

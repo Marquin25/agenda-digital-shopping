@@ -153,6 +153,7 @@ O visual segue as referências da equipe: paleta terracota e creme, fonte Plus J
 - **Agenda:** eventos agrupados por dia, com categoria, horário, local e recursos de acessibilidade.
 - **Filtros:** busca por texto, "hoje", "fim de semana", datas, categorias e acessibilidade. Ficam na URL, então dá para compartilhar uma busca.
 - **Detalhes:** capa, ficha com data, horário e local, "Adicionar à agenda" (`.ics` e Google) e "Compartilhar" numa barra fixa, e recursos de acessibilidade.
+- **Modo escuro:** o botão da lua, no topo, alterna entre claro e escuro em toda a aplicação. Ao escurecer, uma revoada de morcegos cruza a tela (sem animação para quem prefere movimento reduzido). A escolha fica só neste navegador.
 - **Salvos:** o coração guarda o evento só neste aparelho (nada vai para o servidor).
 - **Privacidade:** explica o que é guardado e tem o botão "Apagar meus dados deste dispositivo".
 

@@ -44,6 +44,10 @@ export default async function PrivacyPage({ searchParams }: { searchParams: Prom
           navegador.
         </li>
         <li>
+          <strong>Modo escuro</strong> (botão da lua no topo): a escolha entre modo claro e escuro fica só no
+          armazenamento deste navegador e nunca é enviada para nós.
+        </li>
+        <li>
           <strong>Endereço IP</strong>: usado só em memória, por alguns minutos, para evitar abuso. Não é
           gravado no banco de dados.
         </li>
