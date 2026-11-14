@@ -27,6 +27,7 @@
     "admin:create": "tsx scripts/create-admin.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "3.1160.0",
     "@electric-sql/pglite": "0.5.16",
     "@fontsource-variable/plus-jakarta-sans": "5.3.0",
     "@node-rs/argon2": "2.2.2",

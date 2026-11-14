@@ -11,10 +11,9 @@ import {
 } from "@/application/events/event-commands";
 import { BannerStorageError, type NewBanner, saveEventWithBanner } from "@/application/events/event-banner";
 import { eventInputSchema } from "@/application/events/event-input";
-import { getConfig } from "@/infrastructure/config";
 import { getDb } from "@/infrastructure/db";
 import { BannerError, processBanner } from "@/infrastructure/storage/banner-image";
-import { LocalFileStorage } from "@/infrastructure/storage/file-storage";
+import { getFileStorage } from "@/infrastructure/storage";
 import { requireAdmin } from "@/infrastructure/web/admin-session";
 import { fieldErrorsFrom, INVALID_FORM_MESSAGE, type FormState } from "@/ui/admin/form-state";
 
@@ -52,11 +51,15 @@ export async function saveEventAction(
   const parsed = eventInputSchema.safeParse(readEventForm(formData));
   if (!parsed.success) return { message: INVALID_FORM_MESSAGE, fieldErrors: fieldErrorsFrom(parsed.error) };
   const db = await getDb();
-  const storage = new LocalFileStorage(getConfig().uploadDir);
   let id: string;
   try {
     const banner = await readBanner(formData);
-    id = await saveEventWithBanner(db, storage, { userId: admin.id, eventId, input: parsed.data, banner });
+    id = await saveEventWithBanner(db, getFileStorage(), {
+      userId: admin.id,
+      eventId,
+      input: parsed.data,
+      banner,
+    });
   } catch (error) {
     if (error instanceof BannerError || error instanceof BannerStorageError)
       return { fieldErrors: { banner: error.message }, message: INVALID_FORM_MESSAGE };

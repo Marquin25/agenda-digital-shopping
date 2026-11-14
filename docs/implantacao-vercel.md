@@ -14,7 +14,7 @@
 | Item | Para quê | Situação |
 | --- | --- | --- |
 | **PostgreSQL gerenciado** (ex.: Neon, Supabase ou um do Vercel Marketplace) | Banco da aplicação. O PGlite grava em disco local, e na Vercel esse disco é efêmero | **Pendente** (provedor, região e custo) |
-| **Armazenamento de imagens** (S3-compatível ou Vercel Blob) | Banners. Hoje eles vão para o disco local (`UPLOAD_DIR`), que **não persiste** na Vercel | **Pendente**. Exige um novo adaptador da porta `FileStorage` (`src/infrastructure/storage/file-storage.ts`) |
+| **Armazenamento de imagens** (S3-compatível: AWS S3, Cloudflare R2 ou MinIO) | Banners. O disco local (`UPLOAD_DIR`) **não persiste** na Vercel | **Pendente** (fornecedor, bucket e credenciais). O adaptador já existe: `STORAGE_DRIVER=s3` (`src/infrastructure/storage/s3-file-storage.ts`, B-58) |
 | **Domínio** | `PUBLIC_BASE_URL` final, links e QR de divulgação impressos, Open Graph | **Pendente** (P-INF-2) |
 
 Sem banco, o build passa, mas as páginas respondem com erro.
@@ -28,7 +28,11 @@ Nunca versionar os valores. Use valores **diferentes** para Preview e Production
 | `DATABASE_URL` | Preview, Production | URL `postgres://…` do banco gerenciado (marcar como *Sensitive*). Use um banco separado para Preview |
 | `DEVICE_ID_PEPPER` | Preview, Production | Segredo aleatório com 32 caracteres ou mais: `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"`. **Obrigatório** em produção, senão a aplicação não sobe. Trocar o valor zera a deduplicação de visitantes |
 | `PUBLIC_BASE_URL` | Production (e Preview, se quiser) | URL pública sem barra no fim, por exemplo `https://agenda.exemplo-do-shopping.com.br`. Sem ela, links e QR usam `http://localhost:3000` |
-| `UPLOAD_DIR` | — | Não serve na Vercel; será substituída pelo adaptador de armazenamento |
+| `STORAGE_DRIVER` | Preview, Production | `s3` (o disco local não persiste na Vercel) |
+| `S3_REGION`, `S3_BUCKET` | Preview, Production | Região e bucket do armazenamento. Use um bucket separado para Preview |
+| `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | Preview, Production | Chave com acesso só a esse bucket (marcar como *Sensitive*). Sem elas, a aplicação não sobe |
+| `S3_ENDPOINT`, `S3_FORCE_PATH_STYLE` | Se necessário | Endpoint do R2/MinIO; `true` para endereçamento por caminho (MinIO) |
+| `UPLOAD_DIR` | — | Não serve na Vercel; use `STORAGE_DRIVER=s3` |
 
 ## Banco: migração e primeira conta
 
