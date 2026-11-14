@@ -426,6 +426,38 @@ test.describe.serial("Phase 1 — admin publishes, visitor discovers", () => {
     ).toBeAttached();
   });
 
+  test("visitor suggests an event and only staff read and triage it", async ({ browser }) => {
+    test.slow(); // includes the 3 s minimum filling time
+    const visitor = await visitorPage(browser);
+    await visitor.goto("/");
+    await visitor.getByRole("contentinfo").getByRole("link", { name: "Sugerir um evento" }).click();
+    await expect(visitor.getByRole("heading", { name: "Sugira um evento", level: 1 })).toBeVisible();
+    await expectNoSeriousA11yViolations(visitor);
+
+    await visitor.getByLabel("Sua sugestão *").fill("Curto");
+    await visitor.getByRole("button", { name: "Enviar sugestão" }).click();
+    const alert = visitor.locator(ALERT);
+    await expect(alert).toContainText("Revise os campos destacados");
+    await expect(visitor.getByLabel("Sua sugestão *")).toHaveValue("Curto");
+
+    await visitor.getByLabel("Sua sugestão *").fill("Oficina de violão para iniciantes aos domingos");
+    await visitor.getByLabel("Tema (opcional)").selectOption({ label: "Música" });
+    await visitor.waitForTimeout(3_000);
+    await visitor.getByRole("button", { name: "Enviar sugestão" }).click();
+    await expect(visitor.getByRole("status")).toContainText("Obrigado! Sua sugestão foi enviada");
+    await visitor.context().close();
+
+    await admin.goto("/admin/sugestoes");
+    await expect(admin.getByRole("heading", { name: "Mural de sugestões", level: 1 })).toBeVisible();
+    const row = admin.getByRole("row", { name: /Oficina de violão para iniciantes/ });
+    await expect(row).toContainText("Música");
+    await expectNoSeriousA11yViolations(admin);
+    await row.getByRole("button", { name: /^Marcar como lida/ }).click();
+    await expect(row).toHaveCount(0);
+    await admin.getByRole("link", { name: /^Lidas \(/ }).click();
+    await expect(admin.getByRole("row", { name: /Oficina de violão para iniciantes/ })).toBeVisible();
+  });
+
   test("promo link and QR code redirect with origin and are counted as measured hits", async ({
     browser,
   }) => {
@@ -487,6 +519,9 @@ test.describe.serial("Phase 1 — admin publishes, visitor discovers", () => {
     await analyst.goto("/admin/avaliacoes");
     await expect(analyst.getByRole("row", { name: /Oficina Encerrada E2E/ })).toBeVisible();
     await expect(analyst.getByRole("button", { name: /Ocultar|Reexibir/ })).toHaveCount(0);
+    await analyst.goto("/admin/sugestoes?situacao=read");
+    await expect(analyst.getByRole("row", { name: /Oficina de violão para iniciantes/ })).toBeVisible();
+    await expect(analyst.getByRole("button", { name: /Arquivar|Marcar como lida/ })).toHaveCount(0);
     await analyst.context().close();
   });
 
@@ -547,6 +582,8 @@ test.describe.serial("Phase 1 — admin publishes, visitor discovers", () => {
       "pageViewRows",
       "ratingDeviceHashes",
       "ratings",
+      "suggestionDeviceHashes",
+      "suggestions",
     ]);
   });
 });

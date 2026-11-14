@@ -6,8 +6,6 @@
 /** Days the rating stays open after the event ends (P-PROD-2 proposes 7). */
 export const RATING_PERIOD_DAYS = { min: 1, max: 30, default: 7 } as const;
 export const MAX_COMMENT_LENGTH = 280;
-/** Minimum time between showing the form and sending it; faster submissions are dropped silently. */
-export const MIN_FILL_MS = 3_000;
 
 export const RATING_SCORES = [1, 2, 3, 4, 5] as const;
 export type RatingScore = (typeof RATING_SCORES)[number];
@@ -79,17 +77,6 @@ export function parseRatingForm(form: {
     errors.comment = `O comentário pode ter até ${MAX_COMMENT_LENGTH} caracteres.`;
   if (Object.keys(errors).length > 0 || score === null) return { ok: false, errors };
   return { ok: true, value: { score, tags: tags as RatingTag[], comment: comment || null } };
-}
-
-/** Heuristic only (docs/spec/03 §5): a filled hidden field or a form sent in under 3 s. */
-export function isLikelyAutomated(form: {
-  honeypot: string | undefined;
-  startedAt: string | undefined;
-  now: number;
-}) {
-  if (form.honeypot) return true;
-  if (!/^\d{1,15}$/.test(form.startedAt ?? "")) return true;
-  return form.now - Number(form.startedAt) < MIN_FILL_MS;
 }
 
 export interface RatingSummary {

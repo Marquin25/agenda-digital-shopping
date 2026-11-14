@@ -6,6 +6,7 @@ import {
   Lightbulb,
   LayoutDashboard,
   LogOut,
+  Megaphone,
   MessageSquareText,
   Plus,
   QrCode,
@@ -55,6 +56,7 @@ export default async function AdminPanelLayout({ children }: { children: React.R
       : []),
     { href: "/admin/divulgacao", label: "Divulgação", icon: icon(QrCode) },
     { href: "/admin/avaliacoes", label: "Avaliações", icon: icon(MessageSquareText) },
+    { href: "/admin/sugestoes", label: "Sugestões", icon: icon(Megaphone) },
     ...(can(admin.role, "users:manage")
       ? [{ href: "/admin/usuarios", label: "Usuários", icon: icon(Users) }]
       : []),

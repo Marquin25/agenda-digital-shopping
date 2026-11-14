@@ -456,3 +456,26 @@ export const eventRatings = pgTable(
     index("event_ratings_event_idx").on(t.eventId, t.createdAt),
   ],
 );
+
+/**
+ * Suggestions wall (B-29): only staff read it. The device hash (used only for the 3-per-day limit and
+ * "Apagar meus dados") is cleared 30 days after sending; the text is deleted after 2 years
+ * (docs/spec/04 §Retenção, proposal pending P-LGPD).
+ */
+export const suggestions = pgTable(
+  "suggestions",
+  {
+    id: id(),
+    text: text("text").notNull(),
+    categoryId: integer("category_id").references(() => categories.id, { onDelete: "set null" }),
+    deviceHash: text("device_hash"),
+    status: text("status", { enum: ["new", "read", "archived"] }).notNull().default("new"),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    check("suggestions_text_length", sql`char_length(${t.text}) between 1 and 500`),
+    check("suggestions_status_valid", sql`${t.status} in ('new', 'read', 'archived')`),
+    index("suggestions_status_created_idx").on(t.status, t.createdAt),
+    index("suggestions_device_idx").on(t.deviceHash),
+  ],
+);

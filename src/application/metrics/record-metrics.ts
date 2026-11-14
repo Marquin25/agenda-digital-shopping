@@ -8,6 +8,7 @@ import {
   pageViewsDaily,
   pageViewsRawDaily,
   promoLinkHitsDaily,
+  suggestions,
 } from "@/infrastructure/db/schema";
 
 export const AGENDA_TARGET = "agenda";
@@ -93,5 +94,9 @@ export async function deleteDeviceData(db: Database, deviceHash: string): Promis
     .delete(eventRatings)
     .where(eq(eventRatings.deviceHash, deviceHash))
     .returning({ id: eventRatings.id });
-  return views.length + engagement.length + ratings.length;
+  const sent = await db
+    .delete(suggestions)
+    .where(eq(suggestions.deviceHash, deviceHash))
+    .returning({ id: suggestions.id });
+  return views.length + engagement.length + ratings.length + sent.length;
 }
