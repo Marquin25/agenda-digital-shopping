@@ -4,11 +4,12 @@
 # The backup holds the same data as the database, including staff accounts (password hashes):
 # keep it private and out of version control (backups/ is ignored by git).
 set -euo pipefail
+# Backup files hold personal data: readable by the owner only.
+umask 077
 
 compose=(docker compose --env-file .env.docker -f docker-compose.prod.yml)
 target="${1:-backups/$(date +%Y%m%d-%H%M%S)}"
 mkdir -p "$target"
-chmod 700 "$target"
 
 "${compose[@]}" exec -T db pg_dump -U conecta -d conecta --format=custom --no-owner >"$target/database.dump"
 "${compose[@]}" exec -T app tar -C /app/storage/uploads -cf - . >"$target/uploads.tar"

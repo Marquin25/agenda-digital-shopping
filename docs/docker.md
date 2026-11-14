@@ -1,6 +1,6 @@
 # Imagem Docker, backup e restauração (B-24)
 
-> Revisão 1 · 2026-11-14 · Issue [#24](https://github.com/Marquin25/agenda-digital-shopping/issues/24). **Uso local.** Nada aqui publica a aplicação: o app responde só em `127.0.0.1` e o banco não é publicado.
+> Revisão 2 · 2026-11-14 · Issue [#24](https://github.com/Marquin25/agenda-digital-shopping/issues/24). **Uso local.** Nada aqui publica a aplicação: o app responde só em `127.0.0.1` e o banco não é publicado.
 
 ## O que existe
 
@@ -47,4 +47,8 @@ scripts/docker/restore.sh backups/AAAAMMDD-HHMMSS --yes
 | --- | --- |
 | Saída *standalone* (`NEXT_OUTPUT=standalone`) | Testada sem Docker em 2026-11-14: build, migração, `/api/saude` 200, agenda 200, CSP e HSTS presentes; `sharp`, `argon2` e `pglite` copiados para a saída |
 | `docker compose config` dos dois arquivos | Válido; o app só em `127.0.0.1` e o banco sem porta publicada |
-| Build da imagem, subida da pilha, backup e restauração | **Pendente**: o Docker Desktop desta máquina não iniciou (janela de erro) |
+| Build das imagens | Testado em 2026-11-14 (Docker 29.5.2, macOS arm64): `app` com 455 MB, `migrate` com 1,57 GB |
+| Subida da pilha | `up -d --wait`: banco e app *healthy*, `migrate` sai com 0; app em `127.0.0.1:3100`, banco sem porta no host; processo do app como `node` (uid 1000); nenhum segredo do `.env.docker` nos logs |
+| Páginas e cabeçalhos | `/api/saude`, agenda, `/painel`, privacidade e login respondem 200; CSP com *nonce*, HSTS, `X-Frame-Options`, `nosniff`, COOP |
+| Conta da equipe e login | `create-admin` pela entrada padrão; login no navegador leva à troca de senha obrigatória |
+| Backup e restauração | Backup → mudanças (conta nova, banner trocado) → restauração: banco e banners voltam exatamente ao backup e o app volta *healthy*. Restauração recusada sem `--yes` e com *checksum* adulterado, sem tocar no banco. Arquivos do backup só legíveis pelo dono (`umask 077`) |

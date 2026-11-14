@@ -220,19 +220,21 @@ O projeto segue os princípios da LGPD desde o desenho. A conformidade formal de
 - [#37](https://github.com/Marquin25/agenda-digital-shopping/issues/37) segmentos e lojas participantes;
 - [#39](https://github.com/Marquin25/agenda-digital-shopping/issues/39) catálogo de modelos de experiência (base do motor de recomendações).
 
-**Em andamento:**
+**Entregue depois da Fase 1:**
 - [#57](https://github.com/Marquin25/agenda-digital-shopping/issues/57) troca de banner consistente quando o armazenamento falha;
 - [#58](https://github.com/Marquin25/agenda-digital-shopping/issues/58) armazenamento de banners compatível com S3;
 - [#59](https://github.com/Marquin25/agenda-digital-shopping/issues/59) WebKit (Safari) nos testes ponta a ponta;
 - [#60](https://github.com/Marquin25/agenda-digital-shopping/issues/60) "Salvos" mostra eventos além dos 200 primeiros;
 - [#61](https://github.com/Marquin25/agenda-digital-shopping/issues/61) quadro de status no topo deste README;
-- [#62](https://github.com/Marquin25/agenda-digital-shopping/issues/62) guia de implantação (retenção agendada, verificação rápida e checklist de aceite).
+- [#62](https://github.com/Marquin25/agenda-digital-shopping/issues/62) guia de implantação (retenção agendada, verificação rápida e checklist de aceite);
+- [#23](https://github.com/Marquin25/agenda-digital-shopping/issues/23) endurecimento de segurança e checklist ASVS nível 1;
+- [#82](https://github.com/Marquin25/agenda-digital-shopping/issues/82) recusa de senhas vazadas;
+- [#24](https://github.com/Marquin25/agenda-digital-shopping/issues/24) imagem Docker, backup e restauração, testados localmente ([`docs/docker.md`](docs/docker.md));
+- [#45](https://github.com/Marquin25/agenda-digital-shopping/issues/45) modo painel digital (`/painel`).
 
 **Fase 1, ainda aberto:**
 - [#25](https://github.com/Marquin25/agenda-digital-shopping/issues/25) publicar a homologação (prioridade P0, bloqueada por decisão de hospedagem, orçamento, domínio e privacidade);
-- [#7](https://github.com/Marquin25/agenda-digital-shopping/issues/7) teste em celulares reais (Instagram e Wi-Fi);
-- [#23](https://github.com/Marquin25/agenda-digital-shopping/issues/23) limitador compartilhado e checklist ASVS;
-- [#24](https://github.com/Marquin25/agenda-digital-shopping/issues/24) Dockerfile, backup e restauração.
+- [#7](https://github.com/Marquin25/agenda-digital-shopping/issues/7) teste em celulares reais (Instagram e Wi-Fi).
 
 Depois dessa fatia, a próxima funcionalidade prevista é [#20](https://github.com/Marquin25/agenda-digital-shopping/issues/20) "Tenho interesse", que depende da decisão P-FASE-1.
 
