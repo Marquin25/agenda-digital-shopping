@@ -469,7 +469,9 @@ export const suggestions = pgTable(
     text: text("text").notNull(),
     categoryId: integer("category_id").references(() => categories.id, { onDelete: "set null" }),
     deviceHash: text("device_hash"),
-    status: text("status", { enum: ["new", "read", "archived"] }).notNull().default("new"),
+    status: text("status", { enum: ["new", "read", "archived"] })
+      .notNull()
+      .default("new"),
     createdAt: createdAt(),
   },
   (t) => [
