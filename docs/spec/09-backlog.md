@@ -1,6 +1,8 @@
 # 09 — Backlog ordenado por fase
 
-> Papel: **PO** · Revisão 3 · 2026-11-13 · **Fonte local** do backlog. Cada item virou uma issue em `Marquin25/agenda-digital-shopping` em 2026-11-13, **com o mesmo número**: B-01 = #1 … B-50 = #50 (rótulos e dependências criados; board ainda não criado). As issues passam a ser a fonte do status.
+> Papel: **PO** · Revisão 4 · 2026-11-13 · **Fonte local** do backlog. Cada item é uma issue em `Marquin25/agenda-digital-shopping` **com o mesmo número**: B-01 = #1 … B-50 = #50 e, depois, B-57 = #57 … B-62 = #62 (os números #51–#56 são pull requests). As issues e o [quadro do projeto](https://github.com/users/Marquin25/projects/1) são a fonte do status.
+>
+> Revisão 4: inclui as tarefas B-57 a B-62, derivadas do relatório de melhorias de 2026-11-13 (análise externa do commit `5a29c0e`), e eleva B-25 para P0. As decisões foram confirmadas pelo PO na mesma data.
 >
 > Origem: **[C]** confirmado · **[PDF]** · **[R]** recomendação · **[P]** pendente (não implementar).
 > Tamanho: **P** ≈ até 1 dia · **M** ≈ 2–3 dias. Todos os itens herdam a Definição de pronto (`08-testes-e-dod.md` §4), que inclui acessibilidade, segurança, privacidade e testes.
@@ -8,11 +10,11 @@
 
 ## Rótulos propostos
 
-`fase:1|2|3` · `epico:*` · `tipo:feature|spike|infra` · `bug` · `prioridade:p1|p2|p3` · `origem:confirmado|pdf|recomendacao` · `bloqueado:decisao` · `bloqueado:terceiros` · triagem: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`.
+`fase:1|2|3` · `epico:*` · `tipo:feature|spike|infra` · `bug` · `prioridade:p0|p1|p2|p3` · `origem:confirmado|pdf|recomendacao` · `bloqueado:decisao` · `bloqueado:terceiros` · triagem: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`.
 
 ## Board (GitHub Projects) — colunas e campos
 
-Colunas: `Backlog` → `Pronto para fazer` → `Em andamento` → `Em revisão` → `Concluído`. Campos: **Fase**, **Épico**, **Prioridade**, **Bloqueado (sim/não)**.
+Quadro: [Conecta Shopping](https://github.com/users/Marquin25/projects/1). Status: `A fazer` → `Em andamento` → `Bloqueado` → `Feito`. Campos: **Fase**, **Épico**, **Prioridade** (P0–P3; P0 = bloqueia a primeira entrega), **Bloqueio** (aguarda decisão / aguarda terceiros). A automação de "item fechado" ainda não move o Status sozinha: ajustar manualmente.
 
 ## Épicos
 
@@ -35,7 +37,7 @@ Colunas: `Backlog` → `Pronto para fazer` → `Em andamento` → `Em revisão` 
 
 ### Status da implementação (2026-11-13, branch `main`)
 
-O status vale para a `main` depois do merge do PR #51, verificado com `npm test` (97 testes de unidade e integração), `npm run test:e2e` (12 cenários com axe), `typecheck`, `lint`, `build` e o CI do GitHub Actions. **Nada foi publicado**: o sistema roda só localmente.
+O status vale para a `main` depois do merge do PR #56, verificado com `npm test` (132 testes de unidade e integração), `npm run test:e2e` (14 cenários com axe), `typecheck`, `lint`, `build` e o CI do GitHub Actions. **Núcleo da Fase 1 pronto para uso local; homologação e validação em dispositivos reais pendentes.** Nada foi publicado.
 
 | Item | Status | Observações |
 | --- | --- | --- |
@@ -57,7 +59,8 @@ O status vale para a `main` depois do merge do PR #51, verificado com `npm test`
 | B-22 | Feito | `npm run retention:run` ou `/api/cron/retention` (com `CRON_SECRET`): agrega e apaga identificadores com mais de 30 dias, sessões vencidas e auditoria com mais de 365 dias. **Falta agendar** quando a hospedagem for definida |
 | B-23 | Parcial | CSP com *nonce* e `npm audit`/gitleaks no CI estão prontos. Pendências: limitador de requisições em memória (não serve para várias instâncias); o IP é o **último** valor de `X-Forwarded-For`, o que pressupõe **exatamente um** proxy confiável na frente (revisar quando a hospedagem for definida) |
 | B-24 | Parcial | Guia de preparação para a Vercel em `docs/implantacao-vercel.md`; sem Dockerfile, porque por enquanto o uso é só local |
-| B-25 | **Bloqueado** | P-INF-1, P-INF-2, P-ORC-1, P-LGPD-* |
+| B-25 | **Bloqueado** (P0) | P-INF-1, P-INF-2, P-ORC-1, P-LGPD-*. Pré-requisitos técnicos locais: B-57, B-58, B-62 |
+| B-57, B-58, B-59, B-60, B-61, B-62 | Em andamento | Desenvolvidos por agentes em worktrees isolados; um PR por item, aguardando revisão e merge do PO (ver a seção "Entrega da homologação") |
 | Extra | Feito | **Salvos**: eventos guardados só no aparelho (localStorage), sem cadastro. **Visual novo** (terracota/creme) baseado nas telas de referência da equipe |
 
 
@@ -158,12 +161,42 @@ Tabelas do núcleo (`04-dados-e-integracoes.md` §Núcleo), migrações e sement
 **[B-24](https://github.com/Marquin25/agenda-digital-shopping/issues/24) Imagem de produção e guia de implantação** · P2 · M · depende de B-01 · [R]
 - [ ] Dockerfile multi-stage, Compose de produção, backup e restauração testados localmente. **Sem publicar.**
 
-**[B-25](https://github.com/Marquin25/agenda-digital-shopping/issues/25) Publicar a homologação** · P3 · P · `bloqueado:decisao` (P-INF-1, P-INF-2, P-ORC-1, P-LGPD-*)
-- [ ] Só com autorização explícita.
+**[B-25](https://github.com/Marquin25/agenda-digital-shopping/issues/25) Publicar a homologação** · **P0** (era P3) · P · `bloqueado:decisao` (P-INF-1, P-INF-2, P-ORC-1, P-LGPD-*)
+- [ ] Só com autorização explícita. É o passo que torna a solução acessível fora da máquina de desenvolvimento; continua bloqueado até as decisões. Ao publicar, registrar na issue a URL, o ambiente, o commit implantado e o resultado do smoke test (B-62).
+
+### Entrega da homologação (relatório de melhorias, 2026-11-13)
+
+Decisões do PO (2026-11-13): a publicação continua bloqueada e tudo fica local; nenhum agente cria contas, credenciais ou deploy; o armazenamento persistente é um adaptador compatível com S3, sem escolher fornecedor; "Tenho interesse" (B-20) continua bloqueado até depois da homologação; #7 (celular real) e #23 (limitador compartilhado) seguem como estão.
+
+**[B-57](https://github.com/Marquin25/agenda-digital-shopping/issues/57) Troca de banner consistente quando o armazenamento falha** · **P0** · P · `bug` · [R] · confirmado na leitura do código
+- [ ] Gravar o evento primeiro; apagar o banner antigo em melhor esforço (falha gera log e nunca desfaz a imagem nova).
+- [ ] Falha ao gravar uma variante antes de salvar o evento: apagar as variantes já escritas e mostrar erro; o evento mantém o banner anterior. Erro de regra ao salvar: apagar as variantes novas.
+- [ ] A retenção remove banners órfãos (não referenciados) mais antigos que uma margem de segurança (proposta: 24 h); a porta `FileStorage` ganha `list()`.
+- [ ] Orquestração na camada `application`, testada com `FileStorage` falso que falha sob demanda.
+
+**[B-58](https://github.com/Marquin25/agenda-digital-shopping/issues/58) Armazenamento de banners compatível com S3** · **P0** · M · `tipo:infra` · depende de B-57 · [R]
+- [ ] `S3FileStorage` (save, read, delete, list) com endpoint configurável (S3, R2, MinIO); `STORAGE_DRIVER=local|s3` (padrão `local`) e variáveis `S3_*` vazias no `.env.example`.
+- [ ] Falta de variável com `STORAGE_DRIVER=s3` falha na inicialização sem imprimir valores; nomes de arquivo continuam validados.
+- [ ] Teste de contrato da porta contra o adaptador local e o S3 com cliente falso; nenhum acesso à rede na CI. Fora do escopo: contas, buckets, credenciais, deploy.
+
+**[B-59](https://github.com/Marquin25/agenda-digital-shopping/issues/59) WebKit (Safari) na suíte E2E** · **P0** · P · `tipo:infra` · relacionada a B-07 · [R]
+- [ ] Projeto `mobile-webkit` no Playwright e na CI, com banco e uploads limpos por projeto; toda a suíte passa nos dois navegadores; `skip` só para limitação real do navegador automatizado, com motivo.
+- [ ] Não substitui o teste manual em aparelhos reais e no navegador interno do Instagram (B-07).
+
+**[B-60](https://github.com/Marquin25/agenda-digital-shopping/issues/60) Salvos mostra eventos além dos 200 primeiros** · P2 · P · `bug` · [R] · confirmado na leitura do código
+- [ ] `/salvos` usa uma consulta enxuta própria, sem o limite de 200 da agenda; o servidor nunca recebe a lista de salvos; teste com 201 eventos futuros.
+
+**[B-61](https://github.com/Marquin25/agenda-digital-shopping/issues/61) Quadro de status no topo do README** · P1 · P · `documentation` · [R]
+- [ ] O que funciona, o que depende de infraestrutura, URL de homologação ("ainda não existe"), como entrar com dados de demonstração e próxima fatia; frase de status: "Núcleo da Fase 1 pronto para uso local; homologação e validação em dispositivos reais pendentes."
+
+**[B-62](https://github.com/Marquin25/agenda-digital-shopping/issues/62) Guia de implantação: CRON_SECRET, agendador, smoke test e checklist** · P1 · P · `documentation` · relacionada a B-25 · [R]
+- [ ] `CRON_SECRET` e agendador da retenção, `PUBLIC_BASE_URL` por ambiente, variáveis S3 (após B-58), roteiro de smoke test, checklist de aceite da homologação e tabela de riscos. Só documentação: nenhum arquivo de configuração de deploy.
 
 ---
 
 # Fase 2 — Inteligência e indicadores
+
+**Status (2026-11-13):** B-37 feito (PR #55); B-39 feito (PR #56). Os demais itens da Fase 2 estão a fazer ou bloqueados.
 
 ### E-PART (continuação)
 
@@ -251,6 +284,9 @@ Tabelas do núcleo (`04-dados-e-integracoes.md` §Núcleo), migrações e sement
 ---
 
 ## Ordem sugerida (fatias verticais)
+
+**Primeira entrega (prioridade, relatório de 2026-11-13)**
+0. *Homologação:* B-57 → B-58 → B-62 → B-59 → B-61 → **B-25** (bloqueada até as decisões) → B-07 (aparelhos reais); B-60 em paralelo; depois decidir B-20.
 
 **Fase 1**
 1. *Ver a agenda:* B-01 → B-02 → B-03 → B-04 → B-06
