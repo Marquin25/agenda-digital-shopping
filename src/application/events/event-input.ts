@@ -2,6 +2,10 @@ import { z } from "zod";
 import { localDateTimeToUtc } from "@/domain/time/time-zone";
 
 const LOCAL_DATE_TIME = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
+const optionalUuid = z
+  .union([z.literal(""), z.null(), z.uuid()])
+  .optional()
+  .transform((v) => v || null);
 
 /** Admin form input; dates are `datetime-local` values in mall time. */
 export const eventInputSchema = z
@@ -22,6 +26,9 @@ export const eventInputSchema = z
       .transform((v) => (v === "" ? null : v))
       .default(null),
     bannerAlt: z.string().trim().max(250).default(""),
+    /** Brief and catalog idea the event comes from; only stored when the event is created. */
+    planId: optionalUuid,
+    experienceTemplateId: optionalUuid,
   })
   .transform((v, ctx) => {
     const startsAt = localDateTimeToUtc(v.startsAt);

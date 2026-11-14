@@ -21,6 +21,9 @@ export interface EventFormValues {
   displayedCapacity: string;
   bannerAlt: string;
   bannerUrl: string | null;
+  /** Set when the event is created from a recommended idea (docs/spec/10 §5). */
+  planId?: string;
+  experienceTemplateId?: string;
 }
 
 const LABELS: Record<string, string> = {
@@ -62,6 +65,10 @@ export function EventForm({
   return (
     <ActionForm action={action} state={state} className="panel" noValidate>
       <FormMessage state={state} labels={LABELS} />
+      {values.planId && <input type="hidden" name="planId" value={values.planId} />}
+      {values.experienceTemplateId && (
+        <input type="hidden" name="experienceTemplateId" value={values.experienceTemplateId} />
+      )}
       <div className="form-grid">
         <div className="field full">
           <label htmlFor="title">Título *</label>

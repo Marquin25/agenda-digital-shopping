@@ -53,11 +53,16 @@ export default async function PlanPage({
         Atualizado em {formatDateTime(plan.updatedAt)}
         {plan.archived && " · arquivado"}
       </p>
-      <form action={archivePlanAction.bind(null, plan.id, !plan.archived)} style={{ marginBottom: "1.5rem" }}>
-        <button type="submit" className="button button--secondary">
-          {plan.archived ? "Restaurar planejamento" : "Arquivar planejamento"}
-        </button>
-      </form>
+      <div className="toolbar" style={{ marginBottom: "1.5rem" }}>
+        <Link className="button" href={`/admin/planejamento/${plan.id}/recomendacoes`}>
+          Ver recomendações
+        </Link>
+        <form action={archivePlanAction.bind(null, plan.id, !plan.archived)}>
+          <button type="submit" className="button button--secondary">
+            {plan.archived ? "Restaurar planejamento" : "Arquivar planejamento"}
+          </button>
+        </form>
+      </div>
       <h2>Dados do planejamento</h2>
       <PlanForm
         planId={plan.id}
