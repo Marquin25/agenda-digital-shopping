@@ -34,9 +34,14 @@ export default async function AdminEventsPage({
       <div className="toolbar">
         <h1>Eventos</h1>
         {canManage && (
-          <Link className="button" href="/admin/eventos/novo">
-            + Novo evento
-          </Link>
+          <div className="actions">
+            <Link className="button button--secondary" href="/admin/eventos/importar">
+              Importar planilha
+            </Link>
+            <Link className="button" href="/admin/eventos/novo">
+              + Novo evento
+            </Link>
+          </div>
         )}
       </div>
       {params.excluido && (

@@ -70,6 +70,7 @@ O status vale para a `main` depois do merge do PR #69, verificado com `npm test`
 | B-45 | Feito | `/painel` com destaques em rotação pausável (WCAG 2.2.2), sem links e sem piscar; parâmetros por tela na URL (`tela`, `intervalo`, `limite` e os filtros da agenda); QR gerado no servidor com `utm_source=painel` e `utm_campaign` = tela; a própria tela não conta como visitante. Guia em `docs/painel.md`. O equipamento (P-INT-2) segue pendente: falta testar no player real |
 | B-82 | Feito | Senhas da equipe conferidas contra 46.794 senhas vazadas públicas de 12+ caracteres (SecLists, MIT), embarcadas; script para regerar em `scripts/security/` |
 | Extra | Feito | **Salvos**: eventos guardados só no aparelho (localStorage), sem cadastro. **Visual novo** (terracota/creme) baseado nas telas de referência da equipe |
+| B-94 | **Em andamento** | Importação de eventos por planilha (.xlsx/.csv) com prévia e confirmação; implementação em PR. Guia em `docs/importacao-de-eventos.md` |
 | B-76 | Feito | Gato preto com lua no rodapé público: a 13ª ativação (clique ou teclado) comemora a sexta-feira 13 numa região `aria-live`; contagem só em memória, nada salvo nem enviado |
 
 
@@ -138,6 +139,11 @@ Tabelas do núcleo (`04-dados-e-integracoes.md` §Núcleo), migrações e sement
 
 **[B-14](https://github.com/Marquin25/agenda-digital-shopping/issues/14) Upload de banner** · P2 · M · depende de B-13 · [R]
 - [ ] JPEG, PNG ou WebP ≤ 5 MB, tipo real verificado, EXIF removido, tamanhos responsivos, alt obrigatório, armazenamento atrás de uma interface.
+
+**[B-94](https://github.com/Marquin25/agenda-digital-shopping/issues/94) Importação de eventos por planilha** · P2 · M · depende de B-13 · [C]
+- [ ] Modelo CSV; envio de .xlsx (1ª aba) ou .csv UTF-8 até 1 MB e 500 linhas; validação no servidor (extensão, assinatura, macros, tamanho descompactado, cabeçalhos, conteúdo); prévia com novos, atualizados, ignorados e rejeitados por linha; confirmação revalidada; relatório CSV de erros; auditoria só com contagens.
+- [ ] Atualização apenas pela coluna "Código"; sem código, duplicata (título + início + espaço) é ignorada; banners e URLs da planilha nunca são baixados; não cria espaços, categorias, lojas, usuários nem configurações; permissão `events:manage`.
+- [ ] E2E: enviar CSV → prévia → confirmar → evento na agenda; analista sem acesso.
 
 ### E-DIV
 

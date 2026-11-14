@@ -53,6 +53,8 @@ describe("migrations apply and roll back on a clean database", async () => {
     await connection.migrate(MIGRATIONS);
     expect(await publicTables(db)).toContain("engagement_daily");
 
+    expect(await rollbackLastMigration(db, MIGRATIONS)).toBe("0009_event_imports");
+    expect(await publicTables(db)).not.toContain("event_imports");
     expect(await rollbackLastMigration(db, MIGRATIONS)).toBe("0008_event_interests");
     expect(await publicTables(db)).not.toContain("event_interests");
     expect(await publicTables(db)).not.toContain("event_interest_totals");

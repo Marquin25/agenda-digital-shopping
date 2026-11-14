@@ -41,6 +41,7 @@ erDiagram
 | `usuario_admin` | id, nome, email, senha_hash (Argon2id), papel, ativo, troca_senha_obrigatoria, totp_segredo, falhas_login, bloqueado_ate | Sem cadastro aberto |
 | `sessao` | id (hash), usuario_id, expira_em, criado_em | Ociosa 8 h; absoluta 7 dias |
 | `auditoria` | id, usuario_id, acao, entidade, entidade_id, criado_em, detalhes (sem dados pessoais) | |
+| `importacao_eventos` (B-94) | id, criado_por, nome_arquivo, linhas (células como texto), confirmada_em, resumo (só contagens e ids dos eventos), criado_em | Tabela `event_imports` (migração 0009); apagada após 7 dias. O evento ganha `codigo_importacao` único (`events.import_code`) |
 | `configuracao` | chave, valor | Período de avaliação, tolerâncias, Turnstile, pesos do motor |
 
 ### Participação, avaliação e inteligência (Fase 2)

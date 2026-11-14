@@ -120,10 +120,13 @@ export const events = pgTable(
       { onDelete: "set null" },
     ),
     createdBy: uuid("created_by").references(() => adminUsers.id, { onDelete: "set null" }),
+    /** Spreadsheet code (B-94), upper case; the only key a re-import uses to update this event. */
+    importCode: text("import_code"),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
   (t) => [
+    uniqueIndex("events_import_code_unique").on(t.importCode),
     index("events_starts_at_idx").on(t.startsAt),
     index("events_status_idx").on(t.publicationStatus),
     index("events_experience_template_idx").on(t.experienceTemplateId),
@@ -456,6 +459,21 @@ export const eventRatings = pgTable(
     index("event_ratings_event_idx").on(t.eventId, t.createdAt),
   ],
 );
+
+/**
+ * Spreadsheet imports waiting for confirmation (B-94). Holds the sheet's cells as text (event data
+ * only, never the file) so the preview can be recomputed on confirmation; deleted by retention after
+ * 7 days. `summary` keeps only counts and the ids of the events written.
+ */
+export const eventImports = pgTable("event_imports", {
+  id: id(),
+  createdBy: uuid("created_by").references(() => adminUsers.id, { onDelete: "set null" }),
+  fileName: text("file_name").notNull(),
+  rows: jsonb("rows").$type<string[][]>().notNull(),
+  confirmedAt: timestamp("confirmed_at", { withTimezone: true }),
+  summary: jsonb("summary").$type<Record<string, unknown>>(),
+  createdAt: createdAt(),
+});
 
 /**
  * "Tenho interesse" (B-20): one row per device and event while the interest is on; turning it off

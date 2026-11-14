@@ -1,5 +1,6 @@
 import { and, inArray, isNotNull, lt, or, sql } from "drizzle-orm";
 import { SESSION_IDLE_MS } from "@/application/auth/admin-auth";
+import { deleteOldEventImports, EVENT_IMPORT_RETENTION_DAYS } from "@/application/events/event-import";
 import { orphanBannerFiles } from "@/domain/media/banner-variants";
 import { retentionCutoffs } from "@/domain/privacy/retention-policy";
 import type { Database } from "@/infrastructure/db/client";
@@ -35,6 +36,8 @@ export interface RetentionResult {
   suggestionDeviceHashes: number;
   /** Suggestions older than 2 years, deleted. */
   suggestions: number;
+  /** Staged spreadsheet imports older than 7 days, deleted (B-94). */
+  eventImports: number;
   /** Banner files no event references, older than the grace period, deleted from storage. */
   orphanBanners: number;
 }
@@ -209,5 +212,9 @@ export async function applyRetention(
       suggestions: deletedSuggestions.length,
     };
   });
-  return { ...rows, orphanBanners: await removeOrphanBanners(db, storage, now) };
+  const eventImports = await deleteOldEventImports(
+    db,
+    new Date(now.getTime() - EVENT_IMPORT_RETENTION_DAYS * 24 * 60 * 60 * 1000),
+  );
+  return { ...rows, eventImports, orphanBanners: await removeOrphanBanners(db, storage, now) };
 }
