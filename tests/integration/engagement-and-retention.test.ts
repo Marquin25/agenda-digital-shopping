@@ -13,6 +13,7 @@ import {
 } from "@/application/metrics/record-metrics";
 import { applyRetention } from "@/application/metrics/retention";
 import { auditLog } from "@/infrastructure/db/schema";
+import { MemoryFileStorage } from "./memory-file-storage";
 import { createTestDb } from "./test-db";
 
 // 2026-11-13 09:00 in São Paulo. Device-level rows from before 2026-10-15 are expired.
@@ -23,6 +24,7 @@ describe("engagement metrics and retention", async () => {
   const connection = await createTestDb();
   const db = connection.db;
   afterAll(() => connection.close());
+  const storage = new MemoryFileStorage();
 
   const userId = await createAdminUser(db, null, {
     name: "Editor",
@@ -106,7 +108,7 @@ describe("engagement metrics and retention", async () => {
     await recordEngagement(db, { eventId, deviceHash: "old-1", action: "share", day: "2026-10-01" });
     const before = await getDashboardSummary(db, PERIOD, NOW);
 
-    const result = await applyRetention(db, NOW);
+    const result = await applyRetention(db, storage, NOW);
     expect(result).toMatchObject({ pageViewRows: 3, engagementRows: 1 });
 
     // Same numbers after retention, but the identifiers are gone.
@@ -118,7 +120,7 @@ describe("engagement metrics and retention", async () => {
 
   it("is idempotent", async () => {
     const before = await getDashboardSummary(db, PERIOD, NOW);
-    expect(await applyRetention(db, NOW)).toMatchObject({ pageViewRows: 0, engagementRows: 0 });
+    expect(await applyRetention(db, storage, NOW)).toMatchObject({ pageViewRows: 0, engagementRows: 0 });
     expect(await getDashboardSummary(db, PERIOD, NOW)).toEqual(before);
   });
 
@@ -128,6 +130,6 @@ describe("engagement metrics and retention", async () => {
     await db
       .insert(auditLog)
       .values({ action: "old.entry", entity: "test", createdAt: new Date("2025-10-01") });
-    expect(await applyRetention(db, NOW)).toMatchObject({ expiredSessions: 1, auditEntries: 1 });
+    expect(await applyRetention(db, storage, NOW)).toMatchObject({ expiredSessions: 1, auditEntries: 1 });
   });
 });

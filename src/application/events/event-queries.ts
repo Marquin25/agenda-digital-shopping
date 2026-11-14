@@ -38,6 +38,24 @@ export interface EventView {
   stores: { id: string; name: string; floor: string; segmentName: string }[];
 }
 
+/** The subset of an event that the public event card shows (lean payload for client lists). */
+export type EventCardView = Pick<
+  EventView,
+  | "id"
+  | "slug"
+  | "title"
+  | "description"
+  | "startsAt"
+  | "endsAt"
+  | "status"
+  | "category"
+  | "venue"
+  | "locationDetail"
+  | "bannerPath"
+  | "bannerAlt"
+  | "features"
+>;
+
 const effectiveEnd = sql`coalesce(${events.endedAt}, ${events.endsAt})`;
 
 const baseSelect = {
@@ -175,6 +193,57 @@ export async function listPublicAgenda(db: Database, filters: AgendaFilters, now
     .orderBy(asc(events.startsAt))
     .limit(200);
   return hydrate(db, rows, now);
+}
+
+/**
+ * Every upcoming public event as card data, without the agenda's 200-event limit. Used by "Salvos":
+ * the saved list stays in the browser, so the server sends all candidates and the client keeps only
+ * the saved ones (the server never learns what was saved). Same visibility rules as the agenda.
+ */
+export async function listUpcomingEventCards(db: Database, now = new Date()): Promise<EventCardView[]> {
+  const rows = await db
+    .select({
+      id: events.id,
+      slug: events.slug,
+      title: events.title,
+      description: events.description,
+      startsAt: events.startsAt,
+      endsAt: events.endsAt,
+      endedAt: events.endedAt,
+      publicationStatus: events.publicationStatus,
+      locationDetail: events.locationDetail,
+      bannerPath: events.bannerPath,
+      bannerAlt: events.bannerAlt,
+      categorySlug: categories.slug,
+      categoryName: categories.name,
+      venueName: venues.name,
+      venueFloor: venues.floor,
+      venueReference: venues.reference,
+    })
+    .from(events)
+    .innerJoin(categories, eq(categories.id, events.categoryId))
+    .innerJoin(venues, eq(venues.id, events.venueId))
+    .where(and(ne(events.publicationStatus, "draft"), gt(effectiveEnd, now)))
+    .orderBy(asc(events.startsAt));
+  const features = await loadFeatures(
+    db,
+    rows.map((r) => r.id),
+  );
+  return rows.map((r) => ({
+    id: r.id,
+    slug: r.slug,
+    title: r.title,
+    description: r.description,
+    startsAt: r.startsAt,
+    endsAt: r.endsAt,
+    status: getEventStatus(r, now),
+    category: { slug: r.categorySlug, name: r.categoryName },
+    venue: { name: r.venueName, floor: r.venueFloor, reference: r.venueReference },
+    locationDetail: r.locationDetail,
+    bannerPath: r.bannerPath,
+    bannerAlt: r.bannerAlt,
+    features: features.get(r.id) ?? [],
+  }));
 }
 
 /** Public detail page: anything except drafts (ended events stay reachable for shared links). */

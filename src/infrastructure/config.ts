@@ -5,16 +5,67 @@ const schema = z.object({
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required (see .env.example)"),
   DEVICE_ID_PEPPER: z.string().optional(),
   PUBLIC_BASE_URL: z.url().default("http://localhost:3000"),
-  UPLOAD_DIR: z.string().default("./storage/uploads"),
   CRON_SECRET: z.string().min(32).optional(),
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
 });
+
+/** Where uploaded banners live: the local disk (default) or an S3-compatible bucket (AWS S3, R2, MinIO). */
+export type StorageConfig =
+  | { driver: "local"; uploadDir: string }
+  | {
+      driver: "s3";
+      /** Custom endpoint for R2/MinIO; null uses the AWS endpoint for the region. */
+      endpoint: string | null;
+      region: string;
+      bucket: string;
+      accessKeyId: string;
+      secretAccessKey: string;
+      forcePathStyle: boolean;
+    };
+
+type Env = Record<string, string | undefined>;
+
+const S3_REQUIRED = ["S3_REGION", "S3_BUCKET", "S3_ACCESS_KEY_ID", "S3_SECRET_ACCESS_KEY"] as const;
+
+const present = (value: string | undefined) => (value && value.trim() !== "" ? value : undefined);
+
+/**
+ * Reads the storage settings. Errors name the variables but never echo their values,
+ * so a misconfigured secret does not end up in the logs.
+ */
+export function parseStorageConfig(env: Env): StorageConfig {
+  const driver = present(env.STORAGE_DRIVER)?.trim() ?? "local";
+  if (driver === "local") return { driver, uploadDir: present(env.UPLOAD_DIR) ?? "./storage/uploads" };
+  if (driver !== "s3") throw new Error('STORAGE_DRIVER must be "local" or "s3" (see .env.example)');
+
+  const missing = S3_REQUIRED.filter((name) => !present(env[name]));
+  if (missing.length > 0) {
+    throw new Error(`STORAGE_DRIVER=s3 requires ${missing.join(", ")} (see .env.example)`);
+  }
+  const endpoint = present(env.S3_ENDPOINT)?.trim() ?? null;
+  if (endpoint !== null && !/^https?:$/.test(URL.parse(endpoint)?.protocol ?? "")) {
+    throw new Error("S3_ENDPOINT must be an http(s) URL (see .env.example)");
+  }
+  const pathStyle = present(env.S3_FORCE_PATH_STYLE)?.trim() ?? "false";
+  if (pathStyle !== "true" && pathStyle !== "false") {
+    throw new Error('S3_FORCE_PATH_STYLE must be "true" or "false" (see .env.example)');
+  }
+  return {
+    driver,
+    endpoint,
+    region: env.S3_REGION!,
+    bucket: env.S3_BUCKET!,
+    accessKeyId: env.S3_ACCESS_KEY_ID!,
+    secretAccessKey: env.S3_SECRET_ACCESS_KEY!,
+    forcePathStyle: pathStyle === "true",
+  };
+}
 
 export interface AppConfig {
   databaseUrl: string;
   deviceIdPepper: string;
   publicBaseUrl: string;
-  uploadDir: string;
+  storage: StorageConfig;
   /** Bearer token for scheduled jobs called over HTTP (e.g. Vercel Cron); jobs are disabled when unset. */
   cronSecret: string | null;
   isProduction: boolean;
@@ -59,7 +110,7 @@ export function getConfig(): AppConfig {
     databaseUrl: env.DATABASE_URL,
     deviceIdPepper: pepper,
     publicBaseUrl,
-    uploadDir: env.UPLOAD_DIR,
+    storage: parseStorageConfig(process.env),
     cronSecret: env.CRON_SECRET ?? null,
     isProduction: env.NODE_ENV === "production",
     secureCookies: shouldUseSecureCookies({

@@ -1,11 +1,10 @@
 import { originalBannerFileName } from "@/domain/media/banner-variants";
-import { getConfig } from "@/infrastructure/config";
-import { LocalFileStorage } from "@/infrastructure/storage/file-storage";
+import { getFileStorage } from "@/infrastructure/storage";
 
 export async function GET(_request: Request, { params }: { params: Promise<{ file: string }> }) {
   const { file } = await params;
   if (!/^[a-z0-9-]+\.webp$/.test(file)) return new Response("Not found", { status: 404 });
-  const storage = new LocalFileStorage(getConfig().uploadDir);
+  const storage = getFileStorage();
   // Banners stored before responsive sizes existed only have the original file.
   const content = (await storage.read(file)) ?? (await storage.read(originalBannerFileName(file)));
   if (!content) return new Response("Not found", { status: 404 });
