@@ -388,6 +388,21 @@ test.describe.serial("Phase 1 — admin publishes, visitor discovers", () => {
     await visitor.context().close();
   });
 
+  test("pages are served with the security headers", async ({ request }) => {
+    const response = await request.get("/");
+    const headers = response.headers();
+    expect(headers["content-security-policy"]).toContain("frame-ancestors 'none'");
+    expect(headers["content-security-policy"]).toMatch(/script-src 'self' 'nonce-[^']+' 'strict-dynamic'/);
+    expect(headers).toMatchObject({
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "DENY",
+      "referrer-policy": "strict-origin-when-cross-origin",
+      "cross-origin-opener-policy": "same-origin",
+      "strict-transport-security": "max-age=31536000; includeSubDomains",
+    });
+    expect(headers).not.toHaveProperty("x-powered-by");
+  });
+
   test("retention job runs only with the cron secret", async ({ request }) => {
     expect((await request.get("/api/cron/retention")).status()).toBe(401);
     const wrong = await request.get("/api/cron/retention", { headers: { authorization: "Bearer nope" } });

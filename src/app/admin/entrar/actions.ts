@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { login } from "@/application/auth/admin-auth";
+import { getConfig } from "@/infrastructure/config";
 import { getDb } from "@/infrastructure/db";
 import { RateLimiter } from "@/infrastructure/security/rate-limiter";
 import { setAdminSessionCookie } from "@/infrastructure/web/admin-session";
@@ -13,7 +14,7 @@ const loginAttemptsPerIp = new RateLimiter(20, 15 * 60 * 1000);
 const GENERIC_ERROR = "E-mail ou senha incorretos, ou acesso temporariamente bloqueado.";
 
 export async function loginAction(_previous: FormState, formData: FormData): Promise<FormState> {
-  if (!loginAttemptsPerIp.consume(clientIp(await headers()))) {
+  if (!loginAttemptsPerIp.consume(clientIp(await headers(), getConfig().trustedProxyHops))) {
     return { message: "Muitas tentativas. Aguarde alguns minutos e tente novamente." };
   }
   const email = String(formData.get("email") ?? "");

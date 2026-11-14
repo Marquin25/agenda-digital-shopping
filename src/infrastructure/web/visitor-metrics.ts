@@ -38,11 +38,11 @@ const tooManyRequests = () => new NextResponse(null, { status: 429 });
  */
 export async function openVisitorMetric(request: Request): Promise<VisitorMetricGate> {
   if (isLikelyBot(request.headers.get("user-agent"))) return { accepted: false, response: noContent() };
-  const ip = clientIp(request.headers);
+  const config = getConfig();
+  const ip = clientIp(request.headers, config.trustedProxyHops);
   if (!perIp.consume(ip)) return { accepted: false, response: tooManyRequests() };
   if (await isStaffRequest()) return { accepted: false, response: noContent() };
 
-  const config = getConfig();
   const response = noContent();
   let deviceId = (await cookies()).get(DEVICE_COOKIE)?.value;
   if (!isValidDeviceId(deviceId)) {

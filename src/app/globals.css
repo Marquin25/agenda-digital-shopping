@@ -344,6 +344,69 @@ main {
   align-items: center;
 }
 
+/* Black cat easter egg (B-76): decorative, counted only in memory. */
+.black-cat {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+.black-cat__button {
+  display: inline-grid;
+  place-items: center;
+  min-width: var(--tap);
+  min-height: var(--tap);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  /* Rapid taps count as taps, not as a double-tap zoom on iOS. */
+  touch-action: manipulation;
+}
+.black-cat__button:hover {
+  background: var(--color-surface-2);
+}
+.black-cat__moon,
+.black-cat__eye {
+  fill: var(--color-gold);
+}
+.black-cat__body {
+  fill: currentColor;
+}
+.black-cat__tail {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.black-cat__message {
+  margin: 0;
+  font-weight: 650;
+  color: var(--color-text);
+}
+.black-cat__button[data-celebrating="true"] svg {
+  animation: black-cat-hop 0.5s ease-in-out 4;
+}
+.black-cat__button[data-celebrating="true"] .black-cat__moon {
+  animation: black-cat-glow 1s ease-in-out 2;
+}
+@keyframes black-cat-hop {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0);
+  }
+  50% {
+    transform: translateY(-8px) rotate(-8deg);
+  }
+}
+@keyframes black-cat-glow {
+  50% {
+    fill: var(--color-primary);
+  }
+}
+
 /* Theme toggle and bat flight (B-77) ------------------------------------- */
 .theme-toggle {
   display: inline-grid;

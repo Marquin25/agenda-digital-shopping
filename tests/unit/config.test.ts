@@ -45,3 +45,16 @@ describe("blank values in other variables", () => {
     expect(config.storage).toEqual({ driver: "local", uploadDir: "./storage/uploads" });
   });
 });
+
+describe("trusted proxy hops", () => {
+  it("trusts exactly one proxy by default", () => {
+    expect(readConfig(BASE).trustedProxyHops).toBe(1);
+  });
+
+  it("accepts from 1 to 5 trusted proxies", () => {
+    expect(readConfig({ ...BASE, TRUSTED_PROXY_HOPS: "2" }).trustedProxyHops).toBe(2);
+    for (const value of ["0", "6", "um"]) {
+      expect(() => readConfig({ ...BASE, TRUSTED_PROXY_HOPS: value })).toThrow(/TRUSTED_PROXY_HOPS/);
+    }
+  });
+});

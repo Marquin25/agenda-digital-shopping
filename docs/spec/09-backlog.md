@@ -57,7 +57,7 @@ O status vale para a `main` depois do merge do PR #69, verificado com `npm test`
 | B-20 | **Bloqueado** | P-FASE-1; nada foi implementado |
 | B-21 | Feito | Texto marcado como pendente de validação do shopping |
 | B-22 | Feito | `npm run retention:run` ou `/api/cron/retention` (com `CRON_SECRET`): agrega e apaga identificadores com mais de 30 dias, sessões vencidas e auditoria com mais de 365 dias. **Falta agendar** quando a hospedagem for definida |
-| B-23 | Parcial | CSP com *nonce* e `npm audit`/gitleaks no CI estão prontos. Pendências: limitador de requisições em memória (não serve para várias instâncias); o IP é o **último** valor de `X-Forwarded-For`, o que pressupõe **exatamente um** proxy confiável na frente (revisar quando a hospedagem for definida) |
+| B-23 | Feito | Cabeçalhos num módulo testado (com `Cross-Origin-Opener-Policy` e HSTS em produção), CSP com *nonce*, `npm audit`/gitleaks na CI, `TRUSTED_PROXY_HOPS` para a leitura do IP, limite por IP na contagem de links promocionais e checklist ASVS nível 1 em `docs/seguranca/asvs-nivel-1.md`. Continuam em aberto, registrados no checklist: lista de senhas vazadas, limitador compartilhado (depende de P-LGPD e da hospedagem) e conferência do `X-Forwarded-For` na hospedagem (#25) |
 | B-24 | Parcial | Guia de preparação para a Vercel em `docs/implantacao-vercel.md`; sem Dockerfile, porque por enquanto o uso é só local |
 | B-25 | **Bloqueado** (P0) | P-INF-1, P-INF-2, P-ORC-1, P-LGPD-*. Pré-requisitos técnicos locais: B-57, B-58, B-62 |
 | B-57 | Feito | PR #67: troca de banner grava o evento antes de apagar o antigo; retenção remove banners órfãos com mais de 24 h |
@@ -68,6 +68,7 @@ O status vale para a `main` depois do merge do PR #69, verificado com `npm test`
 | B-68 | A fazer | `CRON_SECRET` vazio impede a aplicação de subir (agravado pela validação na subida de B-58) |
 | B-77 | Em revisão | Modo escuro com morcegos: botão da lua no cabeçalho público e na barra do admin (`aria-pressed`); revoada de morcegos em SVG/CSS numa camada `aria-hidden` sem `pointer-events`, desligada com `prefers-reduced-motion`; escolha só no `localStorage`, aplicada antes da pintura; paleta escura conferida para WCAG AA |
 | Extra | Feito | **Salvos**: eventos guardados só no aparelho (localStorage), sem cadastro. **Visual novo** (terracota/creme) baseado nas telas de referência da equipe |
+| B-76 | Em revisão | Gato preto com lua no rodapé público: a 13ª ativação (clique ou teclado) comemora a sexta-feira 13 numa região `aria-live`; contagem só em memória, nada salvo nem enviado |
 
 
 ### E-FUND
@@ -110,6 +111,10 @@ Tabelas do núcleo (`04-dados-e-integracoes.md` §Núcleo), migrações e sement
 
 **[B-08](https://github.com/Marquin25/agenda-digital-shopping/issues/8) Adicionar à agenda (.ics + Google)** · P2 · P · depende de B-06 · TDD · [R]
 - [ ] `.ics` conforme a RFC 5545 (UID estável, DTSTAMP, UTC, SEQUENCE, escaping, quebra de linhas); link do Google como secundário; alternativa "copiar link".
+
+**[B-76](https://github.com/Marquin25/agenda-digital-shopping/issues/76) Easter egg: gato preto na agenda pública** · P3 · P · pedido do PO (2026-11-13)
+- [ ] Botão decorativo (gato preto e lua) no rodapé público; cada ativação por clique ou teclado conta uma vez; na 13ª, animação breve e mensagem da sexta-feira 13 anunciada por `aria-live`, sem diálogo.
+- [ ] Contagem só em memória: nada em cookie, `localStorage`, banco ou servidor; animação desligada com `prefers-reduced-motion`.
 
 ### E-ADM
 

@@ -156,6 +156,7 @@ O visual segue as referências da equipe: paleta terracota e creme, fonte Plus J
 - **Modo escuro:** o botão da lua, no topo, alterna entre claro e escuro em toda a aplicação. Ao escurecer, uma revoada de morcegos cruza a tela (sem animação para quem prefere movimento reduzido). A escolha fica só neste navegador.
 - **Salvos:** o coração guarda o evento só neste aparelho (nada vai para o servidor).
 - **Privacidade:** explica o que é guardado e tem o botão "Apagar meus dados deste dispositivo".
+- **Gato preto:** no rodapé, um gatinho com a lua. Toque nele 13 vezes para uma surpresa de sexta-feira 13 (a contagem fica só na página e nada é enviado).
 
 ### Equipe do shopping (computador)
 

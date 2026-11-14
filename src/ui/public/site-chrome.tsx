@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Brand } from "@/ui/brand";
 import { ThemeToggle } from "@/ui/theme/theme-toggle";
+import { BlackCatButton } from "./black-cat-button";
 import { PublicNav } from "./public-nav";
 
 export function SiteHeader() {
@@ -36,6 +37,7 @@ export function SiteFooter() {
           Consulte a programação sem cadastro. Usamos um identificador aleatório deste dispositivo para contar
           acessos sem duplicar. <Link href="/privacidade">Saiba mais e apague seus dados</Link>.
         </p>
+        <BlackCatButton />
       </div>
     </footer>
   );
