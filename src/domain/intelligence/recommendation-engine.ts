@@ -221,7 +221,10 @@ export function recommend(input: RecommendationInput): RecommendationResult {
           : "medium"
         : "low",
       reasons: [],
-      assumptions: eligibleHistory ? [] : ["sem histórico suficiente"],
+      assumptions: [
+        ...(eligibleHistory ? [] : ["sem histórico suficiente"]),
+        ...(template.reviewStatus === "draft" ? ["modelo em rascunho para revisão"] : []),
+      ],
       compatibleVenueIds: input.venues
         .filter(
           (venue) =>

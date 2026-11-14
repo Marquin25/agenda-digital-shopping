@@ -395,4 +395,15 @@ describe("recommend", () => {
     expect(recommendation.historyApplied).toBe(false);
     expect(recommendation.assumptions).toContain("sem histórico suficiente");
   });
+  it("keeps draft templates eligible with a review assumption", () => {
+    const input = createInput();
+    input.templates[0]!.reviewStatus = "draft";
+
+    const result = recommend(input);
+
+    expect(result.eliminated).toEqual([]);
+    expect(result.recommendations[0]!.templateId).toBe("style-consultation");
+    expect(result.recommendations[0]!.score).toBe(1);
+    expect(result.recommendations[0]!.assumptions).toContain("modelo em rascunho para revisão");
+  });
 });
