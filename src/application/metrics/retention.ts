@@ -8,6 +8,8 @@ import {
   auditLog,
   engagementDaily,
   engagementDailyTotals,
+  eventInterests,
+  eventInterestTotals,
   eventRatings,
   events,
   pageViewDailyTotals,
@@ -23,6 +25,8 @@ export interface RetentionResult {
   engagementRows: number;
   expiredSessions: number;
   auditEntries: number;
+  /** "Tenho interesse" rows folded into per-event totals and deleted (90 days after the event ended). */
+  interestRows: number;
   /** Ratings whose device hash was cleared (90 days after the event ended). */
   ratingDeviceHashes: number;
   /** Ratings older than 2 years, deleted. */
@@ -144,6 +148,33 @@ export async function applyRetention(
       .select({ id: events.id })
       .from(events)
       .where(lt(sql`coalesce(${events.endedAt}, ${events.endsAt})`, ratingDeviceEventEndedBefore));
+    const interestEnded = tx
+      .select({ id: events.id })
+      .from(events)
+      .where(lt(sql`coalesce(${events.endedAt}, ${events.endsAt})`, cutoffs.interestEventEndedBefore));
+    const expiredInterests = inArray(eventInterests.eventId, interestEnded);
+    await tx
+      .insert(eventInterestTotals)
+      .select(
+        tx
+          .select({
+            eventId: eventInterests.eventId,
+            devices: sql<number>`count(*)::int`.as("devices"),
+            frozenAt: sql<Date>`${now.toISOString()}::timestamptz`.as("frozen_at"),
+          })
+          .from(eventInterests)
+          .where(expiredInterests)
+          .groupBy(eventInterests.eventId),
+      )
+      .onConflictDoUpdate({
+        target: eventInterestTotals.eventId,
+        set: { devices: sql`${eventInterestTotals.devices} + excluded.devices` },
+      });
+    const interestRows = await tx
+      .delete(eventInterests)
+      .where(expiredInterests)
+      .returning({ eventId: eventInterests.eventId });
+
     const ratingDeviceHashes = await tx
       .update(eventRatings)
       .set({ deviceHash: null })
@@ -171,6 +202,7 @@ export async function applyRetention(
       engagementRows: engagementRows.length,
       expiredSessions: expiredSessions.length,
       auditEntries: auditEntries.length,
+      interestRows: interestRows.length,
       ratingDeviceHashes: ratingDeviceHashes.length,
       ratings: ratings.length,
       suggestionDeviceHashes: suggestionDeviceHashes.length,

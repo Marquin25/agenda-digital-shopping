@@ -82,7 +82,7 @@ Colunas: **Fase** (1, 2, 3 ou —) e **Origem** (legenda acima).
 | RF05 | Página de detalhes: descrição, horário, local/espaço, acessibilidade, informações de entrada, status | 1 | [C][PDF] |
 | RF06 | Compartilhamento (API nativa ou copiar link) e URL própria por evento, com prévia Open Graph | 1 | [C][PDF] |
 | RF07 | Links diretos para a programação, para um evento ou para uma categoria/filtro, com parâmetros de origem | 1 | [PDF] |
-| RF08 | "Tenho interesse" (liga e desliga; uma vez por dispositivo e por evento; **não reserva vaga**) | 1 [P] | [C] · fase pendente (P-FASE-1; rec. Fase 1) |
+| RF08 | "Tenho interesse" (liga e desliga; uma vez por dispositivo e por evento; **não reserva vaga**) | 1 | [C] · P-FASE-1 decidido em 2026-11-14 |
 | RF09 | Adicionar à agenda: `.ics` (principal) e link do Google Calendar (secundário) | 1 | [C] · fase [R] |
 | RF10 | Página Privacidade + "Apagar meus dados deste dispositivo" | 1 | [R] |
 | RF11 | Avaliação pós-evento aberta (sem exigir check-in), período configurável, nota de 1 a 5, tags, comentário ≤ 280 | 2 | Regras [C] · fase [P] |

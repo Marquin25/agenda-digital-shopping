@@ -37,7 +37,7 @@ erDiagram
 | `visualizacao_diaria` | evento_id (nulo = agenda), dia, id_hash, origem_canal, link_id | `UNIQUE(evento_id, dia, id_hash)`; agregada e apagada após a retenção |
 | `contagem_diaria` | evento_id, dia, origem_canal, link_id, unicos, brutos | Agregado sem ID (longo prazo) |
 | `acao_engajamento` | evento_id, id_hash, tipo (`compartilhar` · `agenda_ics` · `agenda_google`), dia | `UNIQUE(evento_id, id_hash, tipo, dia)` |
-| `interesse` | evento_id, id_hash, criado_em | `UNIQUE(evento_id, id_hash)`; desligar = apagar · **criada só quando P-FASE-1 for decidido** |
+| `interesse` | evento_id, id_hash, criado_em | `UNIQUE(evento_id, id_hash)`; desligar = apagar · tabela `event_interests` (migração 0008); 90 dias após o fim do evento vira o total em `event_interest_totals` |
 | `usuario_admin` | id, nome, email, senha_hash (Argon2id), papel, ativo, troca_senha_obrigatoria, totp_segredo, falhas_login, bloqueado_ate | Sem cadastro aberto |
 | `sessao` | id (hash), usuario_id, expira_em, criado_em | Ociosa 8 h; absoluta 7 dias |
 | `auditoria` | id, usuario_id, acao, entidade, entidade_id, criado_em, detalhes (sem dados pessoais) | |

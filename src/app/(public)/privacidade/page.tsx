@@ -48,6 +48,10 @@ export default async function PrivacyPage({ searchParams }: { searchParams: Prom
           armazenamento deste navegador e nunca é enviada para nós.
         </li>
         <li>
+          <strong>“Tenho interesse”</strong> (se você marcar): o evento e o identificador cifrado deste
+          dispositivo, para contar cada aparelho uma vez. Desmarcar apaga o registro. Não é reserva de vaga.
+        </li>
+        <li>
           <strong>Avaliações de eventos</strong> (se você avaliar): nota, destaques marcados e o comentário
           opcional, ligados ao identificador cifrado deste dispositivo para impedir avaliações repetidas. Só a
           equipe do shopping lê os comentários; por isso, não escreva dados pessoais neles.
@@ -71,7 +75,8 @@ export default async function PrivacyPage({ searchParams }: { searchParams: Prom
       <p>
         Prazo proposto: uma rotina de retenção agrega e apaga os registros por dispositivo com mais de 30
         dias; ficam só os totais, sem identificador. Nas avaliações, o identificador é apagado 90 dias depois
-        do fim do evento, e a nota, os destaques e o comentário, depois de 2 anos. Nas sugestões, o
+        do fim do evento, e a nota, os destaques e o comentário, depois de 2 anos. As marcações de “Tenho
+        interesse” são apagadas 90 dias depois do fim do evento; fica só o total do evento. Nas sugestões, o
         identificador é apagado 30 dias depois do envio, e o texto, depois de 2 anos. Esses prazos ainda
         dependem de validação pelo shopping. Você também pode usar o botão abaixo para apagar seus dados
         quando quiser.

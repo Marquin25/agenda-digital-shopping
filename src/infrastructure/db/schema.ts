@@ -458,6 +458,32 @@ export const eventRatings = pgTable(
 );
 
 /**
+ * "Tenho interesse" (B-20): one row per device and event while the interest is on; turning it off
+ * deletes the row. Interest is not a reservation and not attendance (docs/spec/03 §6). 90 days after the
+ * event ends the rows are folded into `event_interest_totals` and deleted (docs/spec/04 §Retenção).
+ */
+export const eventInterests = pgTable(
+  "event_interests",
+  {
+    eventId: uuid("event_id")
+      .notNull()
+      .references(() => events.id, { onDelete: "cascade" }),
+    deviceHash: text("device_hash").notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [primaryKey({ columns: [t.eventId, t.deviceHash] })],
+);
+
+/** Interest counts kept after retention deleted the device rows. No device data. */
+export const eventInterestTotals = pgTable("event_interest_totals", {
+  eventId: uuid("event_id")
+    .primaryKey()
+    .references(() => events.id, { onDelete: "cascade" }),
+  devices: integer("devices").notNull(),
+  frozenAt: timestamp("frozen_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/**
  * Suggestions wall (B-29): only staff read it. The device hash (used only for the 3-per-day limit and
  * "Apagar meus dados") is cleared 30 days after sending; the text is deleted after 2 years
  * (docs/spec/04 §Retenção, proposal pending P-LGPD).

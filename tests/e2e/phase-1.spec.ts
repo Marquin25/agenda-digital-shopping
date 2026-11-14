@@ -258,7 +258,6 @@ test.describe.serial("Phase 1 — admin publishes, visitor discovers", () => {
     await visitor.getByRole("link", { name: "Show Acústico E2E" }).click();
     await expect(visitor.getByRole("heading", { name: "Show Acústico E2E", level: 1 })).toBeVisible();
     await expect(visitor.getByText("Vagas limitadas, por ordem de chegada.")).toBeVisible();
-    await expect(visitor.getByText("Tenho interesse")).toHaveCount(0);
     const stores = visitor.getByRole("region", { name: "Lojas participantes" });
     await expect(stores.getByText("Empório Violão")).toBeVisible();
     await expect(stores.getByText("Lazer · Piso L2")).toBeVisible();
@@ -278,6 +277,34 @@ test.describe.serial("Phase 1 — admin publishes, visitor discovers", () => {
     await visitor.getByRole("link", { name: "Adicionar à agenda (.ics)" }).click();
     expect((await download).suggestedFilename()).toMatch(/\.ics$/);
     await visitor.waitForLoadState("networkidle");
+    await visitor.context().close();
+  });
+
+  test("visitor marks “Tenho interesse”, which is not a reservation, and can undo it", async ({
+    browser,
+  }) => {
+    const visitor = await visitorPage(browser);
+    await visitor.goto(eventUrl);
+    const interest = visitor.getByRole("button", { name: "Tenho interesse" });
+    await expect(interest).toHaveAttribute("aria-pressed", "false");
+    await expect(visitor.getByText("Não reserva vaga.")).toBeVisible();
+
+    await interest.click();
+    await expect(interest).toHaveAttribute("aria-pressed", "true");
+    await expect(visitor.getByRole("status").filter({ hasText: "Interesse registrado" })).toBeVisible();
+    await expectNoSeriousA11yViolations(visitor);
+
+    await visitor.reload();
+    await expect(visitor.getByRole("button", { name: "Tenho interesse" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    await visitor.getByRole("button", { name: "Tenho interesse" }).click();
+    await expect(visitor.getByRole("status").filter({ hasText: "Interesse removido." })).toBeVisible();
+    await expect(visitor.getByRole("button", { name: "Tenho interesse" })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
     await visitor.context().close();
   });
 
@@ -587,6 +614,7 @@ test.describe.serial("Phase 1 — admin publishes, visitor discovers", () => {
       "auditEntries",
       "engagementRows",
       "expiredSessions",
+      "interestRows",
       "orphanBanners",
       "pageViewRows",
       "ratingDeviceHashes",

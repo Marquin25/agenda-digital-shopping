@@ -1,4 +1,14 @@
-import { CalendarCheck, CalendarPlus, Eye, ImageIcon, Info, Lightbulb, Share2 } from "lucide-react";
+import {
+  CalendarCheck,
+  CalendarPlus,
+  Eye,
+  ImageIcon,
+  Info,
+  Lightbulb,
+  MessageSquareText,
+  Share2,
+  Star,
+} from "lucide-react";
 import Link from "next/link";
 import { getDashboardSummary, type DashboardSummary } from "@/application/metrics/dashboard";
 import { SMALL_SAMPLE_THRESHOLD, type Metric } from "@/domain/metrics/metric-quality";
@@ -100,6 +110,24 @@ export default async function DashboardPage({
             icon={<CalendarPlus size={18} />}
           />
         </li>
+        <li>
+          <MetricCard
+            label="Interessados"
+            metric={summary.interested}
+            unit="dispositivos estimados"
+            note="“Tenho interesse” ativos nos eventos do período. Não é reserva nem presença."
+            icon={<Star size={18} />}
+          />
+        </li>
+        <li>
+          <MetricCard
+            label="Avaliações"
+            metric={summary.ratings}
+            unit="envios"
+            note="Recebidas no período, sem as ocultadas pela moderação. Sem check-in, não comprovam presença."
+            icon={<MessageSquareText size={18} />}
+          />
+        </li>
       </ul>
 
       <div className="dashboard-grid">
@@ -122,9 +150,7 @@ export default async function DashboardPage({
         <ul className="unavailable-list">
           {(
             [
-              ["Interessados", summary.interested],
               ["Check-ins", summary.checkIns],
-              ["Avaliações", summary.ratings],
               ["Fluxo de visitantes", summary.footfall],
               ["Vendas", summary.sales],
             ] as const

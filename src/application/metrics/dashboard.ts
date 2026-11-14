@@ -5,6 +5,7 @@ import {
   eq,
   gt,
   gte,
+  inArray,
   isNotNull,
   lte,
   ne,
@@ -17,13 +18,16 @@ import { getEventStatus, type EventStatus } from "@/domain/events/event-status";
 import type { EngagementAction } from "@/domain/metrics/engagement";
 import type { Metric } from "@/domain/metrics/metric-quality";
 import type { TrafficChannel } from "@/domain/metrics/traffic-source";
-import { addDaysToDateKey } from "@/domain/time/time-zone";
+import { addDaysToDateKey, MALL_TIME_ZONE } from "@/domain/time/time-zone";
 import { loadEventStores } from "@/application/events/event-queries";
 import type { Database } from "@/infrastructure/db/client";
 import {
   categories,
   engagementDaily,
   engagementDailyTotals,
+  eventInterests,
+  eventInterestTotals,
+  eventRatings,
   events,
   pageViewDailyTotals,
   pageViewsDaily,
@@ -140,6 +144,40 @@ function engagementCounts(db: Database, period: DashboardPeriod) {
       .from(engagementDailyTotals)
       .where(inPeriod(engagementDailyTotals.day, period)),
   ).as("engagement_counts");
+}
+
+/** The mall's local calendar date of an instant, as `YYYY-MM-DD`. */
+const localDay = (column: SQLWrapper) => sql`(${column} at time zone ${MALL_TIME_ZONE})::date`;
+const localDayInPeriod = (column: SQLWrapper, p: DashboardPeriod) =>
+  sql`${localDay(column)} between ${p.from} and ${p.to}`;
+
+/**
+ * Estimated "Interessados" (B-20): active interests plus the totals retention kept, for events taking
+ * place in the period. Interest is not attendance and is never added to other indicators.
+ */
+async function interestedInPeriod(db: Database, period: DashboardPeriod): Promise<number> {
+  const inPeriodEvents = db
+    .select({ id: events.id })
+    .from(events)
+    .where(localDayInPeriod(events.startsAt, period));
+  const [live] = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(eventInterests)
+    .where(inArray(eventInterests.eventId, inPeriodEvents));
+  const [kept] = await db
+    .select({ n: sumInt(eventInterestTotals.devices) })
+    .from(eventInterestTotals)
+    .where(inArray(eventInterestTotals.eventId, inPeriodEvents));
+  return (live?.n ?? 0) + (kept?.n ?? 0);
+}
+
+/** Measured: ratings sent in the period (local dates), without those hidden by moderation (B-26/B-28). */
+async function ratingsInPeriod(db: Database, period: DashboardPeriod): Promise<number> {
+  const [row] = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(eventRatings)
+    .where(and(eq(eventRatings.hidden, false), localDayInPeriod(eventRatings.createdAt, period)));
+  return row?.n ?? 0;
 }
 
 /** Every local date of the period, so days without visits show as zero on the chart. */
@@ -308,12 +346,12 @@ export async function getDashboardSummary(
     activeEvents: { quality: "measured", value: active?.n ?? 0 },
     shares: { quality: "estimated", value: engagementTotals?.shares ?? 0 },
     calendarAdds: { quality: "estimated", value: engagementTotals?.calendarAdds ?? 0 },
-    interested: { quality: "unavailable", reason: "“Tenho interesse” aguarda decisão de fase (P-FASE-1)." },
+    interested: { quality: "estimated", value: await interestedInPeriod(db, period) },
     checkIns: {
       quality: "unavailable",
       reason: "Check-in não habilitado: desenho antifraude pendente (P-PROD-1).",
     },
-    ratings: { quality: "unavailable", reason: "Avaliações previstas para a Fase 2." },
+    ratings: { quality: "measured", value: await ratingsInPeriod(db, period) },
     footfall: { quality: "unavailable", reason: "Sem integração com sensores de fluxo (Fase 3)." },
     sales: { quality: "unavailable", reason: "Sem integração com dados de vendas (Fase 3)." },
     sources: sources.map((s) => ({ channel: s.channel as TrafficChannel, devices: s.devices })),

@@ -54,7 +54,7 @@ O status vale para a `main` depois do merge do PR #69, verificado com `npm test`
 | B-17 | Feito | |
 | B-18 | Feito | Visualizações (únicas e brutas), origem, leituras de link/QR, compartilhamentos e cliques em "adicionar à agenda" (`.ics` e Google) |
 | B-19 | Feito | Cartões de indicadores, gráfico diário de acessos (com tabela equivalente), barras por canal e tabela de eventos com status |
-| B-20 | **Bloqueado** | P-FASE-1; nada foi implementado |
+| B-20 | **Em andamento** | P-FASE-1 decidido em 2026-11-14; implementação em PR |
 | B-21 | Feito | Texto marcado como pendente de validação do shopping |
 | B-22 | Feito | `npm run retention:run` ou `/api/cron/retention` (com `CRON_SECRET`): agrega e apaga identificadores com mais de 30 dias, sessões vencidas e auditoria com mais de 365 dias. **Falta agendar** quando a hospedagem for definida |
 | B-23 | Feito | Cabeçalhos num módulo testado (com `Cross-Origin-Opener-Policy` e HSTS em produção), CSP com *nonce*, `npm audit`/gitleaks na CI, `TRUSTED_PROXY_HOPS` para a leitura do IP, limite por IP na contagem de links promocionais e checklist ASVS nível 1 em `docs/seguranca/asvs-nivel-1.md`. Continuam em aberto, registrados no checklist: limitador compartilhado (depende de P-LGPD e da hospedagem) e conferência do `X-Forwarded-For` na hospedagem (#25) |
@@ -161,7 +161,7 @@ Tabelas do núcleo (`04-dados-e-integracoes.md` §Núcleo), migrações e sement
 
 ### E-PART
 
-**[B-20](https://github.com/Marquin25/agenda-digital-shopping/issues/20) "Tenho interesse"** · P1 · M · depende de B-06, B-17 · [C] · `bloqueado:decisao` — fase [P: P-FASE-1, rec. Fase 1]
+**[B-20](https://github.com/Marquin25/agenda-digital-shopping/issues/20) "Tenho interesse"** · P1 · M · depende de B-06, B-17 · [C] · fase decidida (P-FASE-1, 2026-11-14)
 - [ ] Toggle com `aria-pressed`, idempotente, funciona com e sem JavaScript, com limites; o texto deixa claro que **não reserva vaga**; aparece no painel básico como "interessados (estimado)".
 
 ### E-PRIV
