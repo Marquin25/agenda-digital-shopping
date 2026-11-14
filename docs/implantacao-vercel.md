@@ -32,6 +32,7 @@ Nunca versionar os valores. Use valores **diferentes** para Preview e Production
 | `DEVICE_ID_PEPPER` | Preview, Production | Segredo aleatório com 32 caracteres ou mais: `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"`. **Obrigatório** em produção, senão a aplicação não sobe. Trocar o valor zera a deduplicação de visitantes |
 | `PUBLIC_BASE_URL` | Production e Preview, cada um com a sua URL | URL pública **final** do ambiente, sem barra no fim, por exemplo `https://agenda.exemplo-do-shopping.com.br`. Sem ela, links e QR usam `http://localhost:3000`. Veja [`PUBLIC_BASE_URL`](#public_base_url) |
 | `CRON_SECRET` | Production (e Preview, se a retenção rodar lá) | Segredo aleatório com 32 caracteres ou mais, gerado como o `DEVICE_ID_PEPPER` (marcar como *Sensitive*). Liga a rota `GET /api/cron/retention`. **Sem ele, a rota responde 404** e a retenção não roda por HTTP. Um valor preenchido com menos de 32 caracteres faz a aplicação recusar a subida (a mensagem cita só o nome da variável). Para desligar a rota, deixe a variável vazia ou não a cadastre |
+| `TRUSTED_PROXY_HOPS` | — | Deixe vazio (vale `1`). É o número de proxies que acrescentam o IP ao `X-Forwarded-For`; a Vercel é um só. Mude apenas se houver outro proxy na frente (ex.: CDN própria) e depois de conferir o cabeçalho real |
 | `UPLOAD_DIR` | — | Não serve na Vercel (disco efêmero); use o armazenamento S3 abaixo |
 
 ### Armazenamento S3 ([#58](https://github.com/Marquin25/agenda-digital-shopping/issues/58))
@@ -157,6 +158,7 @@ A CI roda os testes de integração com PGlite. Por isso este roteiro, contra o 
 
 ## Limitações conhecidas neste ambiente
 
-- **Limitador de requisições em memória:** cada instância serverless tem o próprio contador, então os limites ficam mais frouxos. Antes de uso real, trocar por um armazenamento compartilhado ([#23](https://github.com/Marquin25/agenda-digital-shopping/issues/23)).
-- **IP do cliente:** o código lê o último valor de `X-Forwarded-For`. Validar o comportamento na Vercel antes de confiar no limite por IP.
+- **Limitador de requisições em memória:** cada instância serverless tem o próprio contador, então os limites ficam mais frouxos. Antes de uso real com várias instâncias, trocar por um armazenamento compartilhado, o que depende das decisões P-LGPD ([#25](https://github.com/Marquin25/agenda-digital-shopping/issues/25); veja o checklist de segurança).
+- **IP do cliente:** o código lê o valor de `X-Forwarded-For` que fica `TRUSTED_PROXY_HOPS` posições antes do fim (padrão: o último). Validar o comportamento na Vercel antes de confiar no limite por IP.
+- **Checklist de segurança:** a autoavaliação ASVS nível 1 e as pendências ficam em [`docs/seguranca/asvs-nivel-1.md`](seguranca/asvs-nivel-1.md).
 - **Região:** escolher a região das funções e do banco perto de São Paulo (ex.: `gru1`) depende da decisão de residência dos dados (P-LGPD-5).

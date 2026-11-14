@@ -10,6 +10,12 @@ const schema = z.object({
     .min(32, "CRON_SECRET must have at least 32 characters (see .env.example)")
     .optional(),
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
+  TRUSTED_PROXY_HOPS: z.coerce
+    .number()
+    .int()
+    .min(1, "TRUSTED_PROXY_HOPS must be a whole number from 1 to 5 (see .env.example)")
+    .max(5, "TRUSTED_PROXY_HOPS must be a whole number from 1 to 5 (see .env.example)")
+    .default(1),
 });
 
 /** Where uploaded banners live: the local disk (default) or an S3-compatible bucket (AWS S3, R2, MinIO). */
@@ -72,6 +78,8 @@ export interface AppConfig {
   /** Bearer token for scheduled jobs called over HTTP (e.g. Vercel Cron); jobs are disabled when unset. */
   cronSecret: string | null;
   isProduction: boolean;
+  /** Reverse proxies in front of the app that append to X-Forwarded-For (see clientIp). */
+  trustedProxyHops: number;
   /** Whether session and visitor cookies carry the `Secure` attribute (see shouldUseSecureCookies). */
   secureCookies: boolean;
 }
@@ -126,6 +134,7 @@ export function readConfig(rawEnv: Env): AppConfig {
     publicBaseUrl,
     storage: parseStorageConfig(source),
     cronSecret: env.CRON_SECRET ?? null,
+    trustedProxyHops: env.TRUSTED_PROXY_HOPS,
     isProduction: env.NODE_ENV === "production",
     secureCookies: shouldUseSecureCookies({
       isProduction: env.NODE_ENV === "production",
