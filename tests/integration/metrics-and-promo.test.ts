@@ -65,8 +65,8 @@ describe("metrics and promo links", async () => {
 
   it("reports pending indicators as unavailable instead of zero", async () => {
     const summary = await getDashboardSummary(db, period);
-    expect(summary.interested.quality).toBe("unavailable");
     expect(summary.checkIns.quality).toBe("unavailable");
+    expect(summary.footfall.quality).toBe("unavailable");
     expect(summary.sales.quality).toBe("unavailable");
   });
 

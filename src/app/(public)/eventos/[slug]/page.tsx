@@ -14,16 +14,19 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import { getPublicEventBySlug, type EventView } from "@/application/events/event-queries";
+import { isInterested } from "@/application/interests/interests";
 import { getRatingContext, hasRated } from "@/application/ratings/ratings";
 import { buildGoogleCalendarUrl } from "@/domain/calendar/ics";
 import { getConfig } from "@/infrastructure/config";
 import { getDb } from "@/infrastructure/db";
 import { NONCE_HEADER } from "@/infrastructure/web/content-security-policy";
+import { toggleInterestAction } from "./interest-actions";
 import { currentDeviceHash } from "@/infrastructure/web/visitor-device";
 import { CategoryIcon } from "@/ui/category-icon";
 import { formatDateTime, formatEventDate, formatEventTime, formatVenue } from "@/ui/format";
 import { BannerImage, bannerUrl } from "@/ui/banner-image";
 import { CalendarLinks } from "@/ui/public/calendar-links";
+import { InterestButton } from "@/ui/public/interest-button";
 import { SaveButton } from "@/ui/public/save-button";
 import { ShareButton } from "@/ui/public/share-button";
 import { ViewBeacon } from "@/ui/public/view-beacon";
@@ -94,6 +97,7 @@ export default async function EventPage({ params }: { params: Params }) {
   const isOpen = event.status === "scheduled" || event.status === "ongoing";
   const capacity = capacityText(event);
   const rating = event.status === "ended" ? await ratingInvite(event.slug) : null;
+  const interested = isOpen ? await deviceIsInterested(event.id) : false;
   const googleUrl = buildGoogleCalendarUrl({
     id: event.id,
     title: event.title,
@@ -195,6 +199,14 @@ export default async function EventPage({ params }: { params: Params }) {
               )}
             </dl>
 
+            {isOpen && (
+              <InterestButton
+                eventId={event.id}
+                initiallyInterested={interested}
+                action={toggleInterestAction}
+              />
+            )}
+
             <section className="prose" aria-labelledby="sobre">
               <h2 id="sobre">Sobre o evento</h2>
               <p>{event.description}</p>
@@ -260,6 +272,12 @@ export default async function EventPage({ params }: { params: Params }) {
       </div>
     </>
   );
+}
+
+/** Whether this browser already marked "Tenho interesse" (B-20). */
+async function deviceIsInterested(eventId: string) {
+  const deviceHash = await currentDeviceHash();
+  return deviceHash ? isInterested(await getDb(), eventId, deviceHash) : false;
 }
 
 /** Invitation to rate an ended event while its rating period is open (B-26). */

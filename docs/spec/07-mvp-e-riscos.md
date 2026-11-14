@@ -11,7 +11,7 @@
 | Gestão de eventos, espaços, usuários e papéis | Comparação entre eventos e períodos | Vendas agregadas (se houver fonte e autorização) |
 | Links diretos e QR Codes de divulgação | Estabelecimentos e segmentos | Painéis digitais (modo painel / integração) |
 | Métricas básicas: visualizações e origem | Planejamento: objetivos, público, segmentos, orçamento, período, espaços | Recomendações com modelos analíticos (com dados suficientes) |
-| "Tenho interesse" [C] · **fase pendente** (P-FASE-1; rec. Fase 1) | Catálogo de modelos + motor de regras transparente | |
+| "Tenho interesse" [C] · P-FASE-1 decidido em 2026-11-14 (B-20) | Catálogo de modelos + motor de regras transparente | |
 | `.ics` / Google Calendar [R] | Oportunidades descritivas | |
 | Privacidade + apagar dados do dispositivo [R] | Avaliação pós-evento (regras [C], fase [P]) | |
 | | Mural de sugestões (fase [P]) | |
@@ -61,7 +61,7 @@ Antes de implementar **reserva** ou **cobrança**, o trabalho para e as implica�
 | ID | Tema | Decisão necessária | Bloqueia |
 | --- | --- | --- | --- |
 | **P-MVP-1** | Escopo | O "MVP" é a Fase 1 ou as Fases 1 + 2? | Comunicação do marco |
-| **P-FASE-1** | Prioridade | Fase do "Tenho interesse" (rec.: Fase 1) | Ordem do backlog |
+| **P-FASE-1** | Prioridade | Fase do "Tenho interesse" (rec.: Fase 1) · **Decidido pelo PO em 2026-11-14: implementar já (B-20)** | — |
 | **P-FASE-2** | Prioridade | Fase das avaliações (rec.: início da Fase 2; alt.: fim da Fase 1) | Ordem do backlog |
 | **P-FASE-3** | Prioridade | Fase do mural de sugestões (rec.: Fase 2) | Ordem do backlog |
 | **P-PROD-1** | Check-in | Aprovar o desenho do QR rotativo (`03-metricas.md` §7) e a fase (rec.: Fase 2) | E-PART check-in |

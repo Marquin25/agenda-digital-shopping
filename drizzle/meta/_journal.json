@@ -57,6 +57,20 @@
       "when": 1794655918722,
       "tag": "0007_suggestions",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1794662485136,
+      "tag": "0008_event_interests",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1794663567107,
+      "tag": "0009_event_imports",
+      "breakpoints": true
     }
   ]
 }

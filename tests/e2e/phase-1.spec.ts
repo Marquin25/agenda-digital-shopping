@@ -258,7 +258,6 @@ test.describe.serial("Phase 1 — admin publishes, visitor discovers", () => {
     await visitor.getByRole("link", { name: "Show Acústico E2E" }).click();
     await expect(visitor.getByRole("heading", { name: "Show Acústico E2E", level: 1 })).toBeVisible();
     await expect(visitor.getByText("Vagas limitadas, por ordem de chegada.")).toBeVisible();
-    await expect(visitor.getByText("Tenho interesse")).toHaveCount(0);
     const stores = visitor.getByRole("region", { name: "Lojas participantes" });
     await expect(stores.getByText("Empório Violão")).toBeVisible();
     await expect(stores.getByText("Lazer · Piso L2")).toBeVisible();
@@ -278,6 +277,34 @@ test.describe.serial("Phase 1 — admin publishes, visitor discovers", () => {
     await visitor.getByRole("link", { name: "Adicionar à agenda (.ics)" }).click();
     expect((await download).suggestedFilename()).toMatch(/\.ics$/);
     await visitor.waitForLoadState("networkidle");
+    await visitor.context().close();
+  });
+
+  test("visitor marks “Tenho interesse”, which is not a reservation, and can undo it", async ({
+    browser,
+  }) => {
+    const visitor = await visitorPage(browser);
+    await visitor.goto(eventUrl);
+    const interest = visitor.getByRole("button", { name: "Tenho interesse" });
+    await expect(interest).toHaveAttribute("aria-pressed", "false");
+    await expect(visitor.getByText("Não reserva vaga.")).toBeVisible();
+
+    await interest.click();
+    await expect(interest).toHaveAttribute("aria-pressed", "true");
+    await expect(visitor.getByRole("status").filter({ hasText: "Interesse registrado" })).toBeVisible();
+    await expectNoSeriousA11yViolations(visitor);
+
+    await visitor.reload();
+    await expect(visitor.getByRole("button", { name: "Tenho interesse" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    await visitor.getByRole("button", { name: "Tenho interesse" }).click();
+    await expect(visitor.getByRole("status").filter({ hasText: "Interesse removido." })).toBeVisible();
+    await expect(visitor.getByRole("button", { name: "Tenho interesse" })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
     await visitor.context().close();
   });
 
@@ -396,6 +423,15 @@ test.describe.serial("Phase 1 — admin publishes, visitor discovers", () => {
     await visitor.goto(ratedUrl);
     await expect(visitor.getByText("Você já avaliou este evento neste aparelho. Obrigado!")).toBeVisible();
     await expect(visitor.getByRole("link", { name: "Avaliar este evento" })).toHaveCount(0);
+
+    // B-27: the agenda leads to recently ended events, which remember this device's rating.
+    await visitor.goto("/");
+    await visitor.getByRole("link", { name: "Avalie os encerrados recentes" }).click();
+    await expect(visitor.getByRole("heading", { name: "Encerrados recentes", level: 1 })).toBeVisible();
+    const ended = visitor.getByRole("listitem").filter({ hasText: "Oficina Encerrada E2E" });
+    await expect(ended).toContainText("Você já avaliou este evento neste aparelho.");
+    await expect(ended.getByRole("link", { name: /^Avaliar/ })).toHaveCount(0);
+    await expectNoSeriousA11yViolations(visitor);
     await visitor.context().close();
 
     await admin.goto("/admin/eventos");
@@ -500,6 +536,62 @@ test.describe.serial("Phase 1 — admin publishes, visitor discovers", () => {
     await expect(promoHits(admin)).toHaveText("1");
   });
 
+  test("staff imports events from a spreadsheet after reviewing a preview", async ({ browser }) => {
+    test.slow(); // three pages checked with axe, plus a visitor page
+    const brDate = (days: number, time: string) => {
+      const [y, m, d] = localDateTime(days, time).slice(0, 10).split("-");
+      return `${d}/${m}/${y} ${time}`;
+    };
+    await admin.goto("/admin/eventos");
+    await admin.getByRole("link", { name: "Importar planilha" }).click();
+    await expect(
+      admin.getByRole("heading", { name: "Importar eventos de planilha", level: 1 }),
+    ).toBeVisible();
+    await expectNoSeriousA11yViolations(admin);
+    const template = await admin.request.get("/admin/eventos/importar/modelo.csv");
+    expect(template.headers()["content-type"]).toContain("text/csv");
+    expect(await template.text()).toContain("Código;Título;Descrição;Início;Término;Espaço");
+
+    await admin.getByLabel(/^Planilha de eventos/).setInputFiles({
+      name: "falsa.xlsx",
+      mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      buffer: Buffer.from("Título;Início\n"),
+    });
+    await admin.getByRole("button", { name: "Ver prévia" }).click();
+    await expect(admin.locator(ALERT)).toContainText("não é uma planilha .xlsx válida");
+
+    const csv = [
+      "Código;Título;Descrição;Início;Término;Espaço;Categoria;Publicar;Banner",
+      `IMP-E2E-1;Sarau Importado E2E;Leitura de poesia aberta ao público.;${brDate(4, "18:00")};${brDate(4, "19:30")};praca central;musica;Sim;https://example.test/banner.png`,
+      `;Linha Rejeitada E2E;Evento em espaço que não existe.;${brDate(4, "10:00")};${brDate(4, "11:00")};Terraço;Música;Sim;`,
+    ].join("\r\n");
+    await admin.getByLabel(/^Planilha de eventos/).setInputFiles({
+      name: "eventos.csv",
+      mimeType: "text/csv",
+      buffer: Buffer.from(csv, "utf8"),
+    });
+    await admin.getByRole("button", { name: "Ver prévia" }).click();
+    await expect(admin.getByRole("heading", { name: "Prévia da importação", level: 1 })).toBeVisible();
+    await expect(admin.getByText("Banner", { exact: false }).first()).toBeVisible();
+    await expect(admin.getByRole("row", { name: /Linha Rejeitada E2E/ })).toContainText("Terraço");
+    await expect(admin.getByRole("row", { name: /Sarau Importado E2E/ })).toContainText("Será criado");
+    await expectNoSeriousA11yViolations(admin);
+    // Nothing is in the agenda before the confirmation.
+    const visitor = await visitorPage(browser);
+    await visitor.goto("/?q=Sarau+Importado");
+    await expect(visitor.getByRole("link", { name: "Sarau Importado E2E" })).toHaveCount(0);
+
+    await admin.getByRole("button", { name: "Confirmar importação de 1 evento(s)" }).click();
+    await expect(admin.getByRole("heading", { name: "Importação concluída", level: 1 })).toBeVisible();
+    await expect(admin.getByRole("status").first()).toContainText("1 evento(s) criado(s)");
+    await expect(admin.getByRole("link", { name: "Sarau Importado E2E" })).toBeVisible();
+    await expectNoSeriousA11yViolations(admin);
+
+    await visitor.reload();
+    await expect(visitor.getByRole("link", { name: "Sarau Importado E2E" })).toBeVisible();
+    await visitor.context().close();
+  });
+
   test("analyst can read the dashboard but cannot manage events", async ({ browser }) => {
     const analyst = await visitorPage(browser);
     await signIn(analyst, "analista@e2e.test", E2E_ADMIN_PASSWORD);
@@ -512,6 +604,9 @@ test.describe.serial("Phase 1 — admin publishes, visitor discovers", () => {
     await analyst.goto("/admin/eventos/novo");
     await expect(analyst.getByRole("heading", { name: "Acesso negado" })).toBeVisible();
     await expect(analyst.getByRole("link", { name: "Planejamento" })).toBeVisible();
+    await analyst.goto("/admin/eventos/importar");
+    await expect(analyst.getByRole("heading", { name: "Acesso negado" })).toBeVisible();
+    expect((await analyst.request.get("/admin/eventos/importar/modelo.csv")).status()).toBe(401);
     await analyst.goto("/admin/catalogo");
     await expect(analyst.getByRole("heading", { name: "Acesso negado" })).toBeVisible();
     await analyst.goto("/admin/usuarios");
@@ -577,7 +672,9 @@ test.describe.serial("Phase 1 — admin publishes, visitor discovers", () => {
     expect(Object.keys(await ok.json()).sort()).toEqual([
       "auditEntries",
       "engagementRows",
+      "eventImports",
       "expiredSessions",
+      "interestRows",
       "orphanBanners",
       "pageViewRows",
       "ratingDeviceHashes",

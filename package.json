@@ -10,6 +10,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "vercel-build": "tsx scripts/vercel-preview-setup.ts && next build",
     "start": "next start",
     "lint": "eslint .",
     "format": "prettier --write .",
@@ -32,12 +33,14 @@
     "@fontsource-variable/plus-jakarta-sans": "5.3.0",
     "@node-rs/argon2": "2.2.2",
     "drizzle-orm": "0.45.4",
+    "fflate": "0.8.3",
     "lucide-react": "1.64.0",
     "next": "16.4.6",
     "pg": "8.23.1",
     "qrcode": "1.5.4",
     "react": "19.3.1",
     "react-dom": "19.3.1",
+    "read-excel-file": "9.3.13",
     "server-only": "0.0.1",
     "sharp": "0.35.5",
     "zod": "4.6.7"
@@ -57,5 +60,8 @@
     "tsx": "4.23.15",
     "typescript": "5.9.3",
     "vitest": "5.1.0"
+  },
+  "overrides": {
+    "worker-f": "0.1.21"
   }
 }
