@@ -37,7 +37,7 @@ Quadro: [Conecta Shopping](https://github.com/users/Marquin25/projects/1). Statu
 
 ### Status da implementação (2026-11-13, branch `main`)
 
-O status vale para a `main` depois do merge do PR #56, verificado com `npm test` (132 testes de unidade e integração), `npm run test:e2e` (14 cenários com axe), `typecheck`, `lint`, `build` e o CI do GitHub Actions. **Núcleo da Fase 1 pronto para uso local; homologação e validação em dispositivos reais pendentes.** Nada foi publicado.
+O status vale para a `main` depois do merge do PR #69, verificado com `npm test` (168 testes de unidade e integração), `npm run test:e2e` (14 cenários com axe em Chromium e em WebKit), `typecheck`, `lint`, `build` e o CI do GitHub Actions. **Núcleo da Fase 1 pronto para uso local; homologação e validação em dispositivos reais pendentes.** Nada foi publicado.
 
 | Item | Status | Observações |
 | --- | --- | --- |
@@ -60,7 +60,12 @@ O status vale para a `main` depois do merge do PR #56, verificado com `npm test`
 | B-23 | Parcial | CSP com *nonce* e `npm audit`/gitleaks no CI estão prontos. Pendências: limitador de requisições em memória (não serve para várias instâncias); o IP é o **último** valor de `X-Forwarded-For`, o que pressupõe **exatamente um** proxy confiável na frente (revisar quando a hospedagem for definida) |
 | B-24 | Parcial | Guia de preparação para a Vercel em `docs/implantacao-vercel.md`; sem Dockerfile, porque por enquanto o uso é só local |
 | B-25 | **Bloqueado** (P0) | P-INF-1, P-INF-2, P-ORC-1, P-LGPD-*. Pré-requisitos técnicos locais: B-57, B-58, B-62 |
-| B-57, B-58, B-59, B-60, B-61, B-62 | Em andamento | Desenvolvidos por agentes em worktrees isolados; um PR por item, aguardando revisão e merge do PO (ver a seção "Entrega da homologação") |
+| B-57 | Feito | PR #67: troca de banner grava o evento antes de apagar o antigo; retenção remove banners órfãos com mais de 24 h |
+| B-58 | Feito | PR #70: `STORAGE_DRIVER=local\|s3` (padrão `local`); a configuração é validada na subida do servidor. Nenhum bucket ou credencial criado |
+| B-59 | Feito | PR #69: Chromium e WebKit, cada um com banco e porta próprios. Corrigido o cookie `Secure` em `http://localhost` só para o E2E (`ALLOW_INSECURE_LOCALHOST_COOKIES`, nunca em ambiente publicado) |
+| B-60 | Feito | PR #66: consulta própria para `/salvos`, sem o limite da agenda; o servidor não recebe a lista de salvos |
+| B-61, B-62 | Feito | PRs #64 e #65 |
+| B-68 | A fazer | `CRON_SECRET` vazio impede a aplicação de subir (agravado pela validação na subida de B-58) |
 | Extra | Feito | **Salvos**: eventos guardados só no aparelho (localStorage), sem cadastro. **Visual novo** (terracota/creme) baseado nas telas de referência da equipe |
 
 
@@ -169,28 +174,31 @@ Tabelas do núcleo (`04-dados-e-integracoes.md` §Núcleo), migrações e sement
 Decisões do PO (2026-11-13): a publicação continua bloqueada e tudo fica local; nenhum agente cria contas, credenciais ou deploy; o armazenamento persistente é um adaptador compatível com S3, sem escolher fornecedor; "Tenho interesse" (B-20) continua bloqueado até depois da homologação; #7 (celular real) e #23 (limitador compartilhado) seguem como estão.
 
 **[B-57](https://github.com/Marquin25/agenda-digital-shopping/issues/57) Troca de banner consistente quando o armazenamento falha** · **P0** · P · `bug` · [R] · confirmado na leitura do código
-- [ ] Gravar o evento primeiro; apagar o banner antigo em melhor esforço (falha gera log e nunca desfaz a imagem nova).
-- [ ] Falha ao gravar uma variante antes de salvar o evento: apagar as variantes já escritas e mostrar erro; o evento mantém o banner anterior. Erro de regra ao salvar: apagar as variantes novas.
-- [ ] A retenção remove banners órfãos (não referenciados) mais antigos que uma margem de segurança (proposta: 24 h); a porta `FileStorage` ganha `list()`.
-- [ ] Orquestração na camada `application`, testada com `FileStorage` falso que falha sob demanda.
+- [x] Gravar o evento primeiro; apagar o banner antigo em melhor esforço (falha gera log e nunca desfaz a imagem nova).
+- [x] Falha ao gravar uma variante antes de salvar o evento: apagar as variantes já escritas e mostrar erro; o evento mantém o banner anterior. Erro de regra ao salvar: apagar as variantes novas.
+- [x] A retenção remove banners órfãos (não referenciados) mais antigos que uma margem de segurança (proposta: 24 h); a porta `FileStorage` ganha `list()`.
+- [x] Orquestração na camada `application`, testada com `FileStorage` falso que falha sob demanda.
 
 **[B-58](https://github.com/Marquin25/agenda-digital-shopping/issues/58) Armazenamento de banners compatível com S3** · **P0** · M · `tipo:infra` · depende de B-57 · [R]
-- [ ] `S3FileStorage` (save, read, delete, list) com endpoint configurável (S3, R2, MinIO); `STORAGE_DRIVER=local|s3` (padrão `local`) e variáveis `S3_*` vazias no `.env.example`.
-- [ ] Falta de variável com `STORAGE_DRIVER=s3` falha na inicialização sem imprimir valores; nomes de arquivo continuam validados.
-- [ ] Teste de contrato da porta contra o adaptador local e o S3 com cliente falso; nenhum acesso à rede na CI. Fora do escopo: contas, buckets, credenciais, deploy.
+- [x] `S3FileStorage` (save, read, delete, list) com endpoint configurável (S3, R2, MinIO); `STORAGE_DRIVER=local|s3` (padrão `local`) e variáveis `S3_*` vazias no `.env.example`.
+- [x] Falta de variável com `STORAGE_DRIVER=s3` falha na inicialização sem imprimir valores; nomes de arquivo continuam validados.
+- [x] Teste de contrato da porta contra o adaptador local e o S3 com cliente falso; nenhum acesso à rede na CI. Fora do escopo: contas, buckets, credenciais, deploy.
 
 **[B-59](https://github.com/Marquin25/agenda-digital-shopping/issues/59) WebKit (Safari) na suíte E2E** · **P0** · P · `tipo:infra` · relacionada a B-07 · [R]
-- [ ] Projeto `mobile-webkit` no Playwright e na CI, com banco e uploads limpos por projeto; toda a suíte passa nos dois navegadores; `skip` só para limitação real do navegador automatizado, com motivo.
-- [ ] Não substitui o teste manual em aparelhos reais e no navegador interno do Instagram (B-07).
+- [x] Projeto `mobile-webkit` no Playwright e na CI, com banco e uploads limpos por projeto; toda a suíte passa nos dois navegadores; `skip` só para limitação real do navegador automatizado, com motivo.
+- [x] Não substitui o teste manual em aparelhos reais e no navegador interno do Instagram (B-07).
 
 **[B-60](https://github.com/Marquin25/agenda-digital-shopping/issues/60) Salvos mostra eventos além dos 200 primeiros** · P2 · P · `bug` · [R] · confirmado na leitura do código
-- [ ] `/salvos` usa uma consulta enxuta própria, sem o limite de 200 da agenda; o servidor nunca recebe a lista de salvos; teste com 201 eventos futuros.
+- [x] `/salvos` usa uma consulta enxuta própria, sem o limite de 200 da agenda; o servidor nunca recebe a lista de salvos; teste com 201 eventos futuros.
 
 **[B-61](https://github.com/Marquin25/agenda-digital-shopping/issues/61) Quadro de status no topo do README** · P1 · P · `documentation` · [R]
-- [ ] O que funciona, o que depende de infraestrutura, URL de homologação ("ainda não existe"), como entrar com dados de demonstração e próxima fatia; frase de status: "Núcleo da Fase 1 pronto para uso local; homologação e validação em dispositivos reais pendentes."
+- [x] O que funciona, o que depende de infraestrutura, URL de homologação ("ainda não existe"), como entrar com dados de demonstração e próxima fatia; frase de status: "Núcleo da Fase 1 pronto para uso local; homologação e validação em dispositivos reais pendentes."
+
+**[B-68](https://github.com/Marquin25/agenda-digital-shopping/issues/68) `CRON_SECRET` vazio derruba a leitura da configuração** · P1 · P · `bug` · [R] · confirmado na leitura do código
+- [ ] `CRON_SECRET` vazio ou só com espaços vale como ausente (rota de retenção desligada); valor curto continua recusado sem imprimir o valor; testes para ausente, vazio, curto e válido; revisar `DEVICE_ID_PEPPER` e as variáveis de armazenamento com a mesma regra.
 
 **[B-62](https://github.com/Marquin25/agenda-digital-shopping/issues/62) Guia de implantação: CRON_SECRET, agendador, smoke test e checklist** · P1 · P · `documentation` · relacionada a B-25 · [R]
-- [ ] `CRON_SECRET` e agendador da retenção, `PUBLIC_BASE_URL` por ambiente, variáveis S3 (após B-58), roteiro de smoke test, checklist de aceite da homologação e tabela de riscos. Só documentação: nenhum arquivo de configuração de deploy.
+- [x] `CRON_SECRET` e agendador da retenção, `PUBLIC_BASE_URL` por ambiente, variáveis S3 (após B-58), roteiro de smoke test, checklist de aceite da homologação e tabela de riscos. Só documentação: nenhum arquivo de configuração de deploy.
 
 ---
 
@@ -286,7 +294,7 @@ Decisões do PO (2026-11-13): a publicação continua bloqueada e tudo fica loca
 ## Ordem sugerida (fatias verticais)
 
 **Primeira entrega (prioridade, relatório de 2026-11-13)**
-0. *Homologação:* B-57 → B-58 → B-62 → B-59 → B-61 → **B-25** (bloqueada até as decisões) → B-07 (aparelhos reais); B-60 em paralelo; depois decidir B-20.
+0. *Homologação:* ~~B-57 → B-58 → B-62 → B-59 → B-61 → B-60~~ (feitos) → B-68 → **B-25** (bloqueada até as decisões) → B-07 (aparelhos reais); depois decidir B-20.
 
 **Fase 1**
 1. *Ver a agenda:* B-01 → B-02 → B-03 → B-04 → B-06
