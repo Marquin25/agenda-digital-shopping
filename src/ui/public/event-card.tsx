@@ -1,6 +1,6 @@
 import { Accessibility, ArrowRight, CalendarDays, MapPin } from "lucide-react";
 import Link from "next/link";
-import type { EventView } from "@/application/events/event-queries";
+import type { EventCardView } from "@/application/events/event-queries";
 import { BannerImage } from "@/ui/banner-image";
 import { CategoryIcon } from "@/ui/category-icon";
 import { formatEventWhen, formatVenue } from "@/ui/format";
@@ -12,7 +12,7 @@ export function EventCard({
   headingLevel = 3,
   featured = false,
 }: {
-  event: EventView;
+  event: EventCardView;
   headingLevel?: 2 | 3;
   /** Larger card used for the first event happening today. */
   featured?: boolean;
