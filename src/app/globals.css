@@ -2300,3 +2300,8 @@ fieldset[aria-invalid="true"] .rating-score {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+
+ul.actions--list {
+  list-style: none;
+  padding: 0;
+}

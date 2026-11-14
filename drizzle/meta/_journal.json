@@ -50,6 +50,13 @@
       "when": 1794654312779,
       "tag": "0006_post_event_ratings",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1794655918722,
+      "tag": "0007_suggestions",
+      "breakpoints": true
     }
   ]
 }

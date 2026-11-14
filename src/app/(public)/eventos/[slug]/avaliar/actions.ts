@@ -2,7 +2,8 @@
 
 import { headers } from "next/headers";
 import { getRatingContext, submitRating } from "@/application/ratings/ratings";
-import { isLikelyAutomated, parseRatingForm, type RatingFormErrors } from "@/domain/ratings/rating";
+import { isLikelyAutomated } from "@/domain/abuse/automated-submission";
+import { parseRatingForm, type RatingFormErrors } from "@/domain/ratings/rating";
 import { getConfig } from "@/infrastructure/config";
 import { getDb } from "@/infrastructure/db";
 import { RateLimiter } from "@/infrastructure/security/rate-limiter";

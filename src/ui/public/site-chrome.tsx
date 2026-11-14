@@ -30,6 +30,9 @@ export function SiteFooter() {
             <Link href="/salvos">Salvos</Link>
           </li>
           <li>
+            <Link href="/sugerir">Sugerir um evento</Link>
+          </li>
+          <li>
             <Link href="/privacidade">Privacidade</Link>
           </li>
         </ul>

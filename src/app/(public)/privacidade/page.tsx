@@ -53,6 +53,11 @@ export default async function PrivacyPage({ searchParams }: { searchParams: Prom
           equipe do shopping lê os comentários; por isso, não escreva dados pessoais neles.
         </li>
         <li>
+          <strong>Sugestões</strong> (se você sugerir): o texto e o tema escolhido. O identificador cifrado
+          deste dispositivo fica junto por 30 dias, só para limitar a 3 sugestões por dia e permitir que você
+          as apague. Só a equipe do shopping lê as sugestões.
+        </li>
+        <li>
           <strong>Endereço IP</strong>: usado só em memória, por alguns minutos, para evitar abuso. Não é
           gravado no banco de dados.
         </li>
@@ -66,8 +71,10 @@ export default async function PrivacyPage({ searchParams }: { searchParams: Prom
       <p>
         Prazo proposto: uma rotina de retenção agrega e apaga os registros por dispositivo com mais de 30
         dias; ficam só os totais, sem identificador. Nas avaliações, o identificador é apagado 90 dias depois
-        do fim do evento, e a nota, os destaques e o comentário, depois de 2 anos. Esses prazos ainda dependem
-        de validação pelo shopping. Você também pode usar o botão abaixo para apagar seus dados quando quiser.
+        do fim do evento, e a nota, os destaques e o comentário, depois de 2 anos. Nas sugestões, o
+        identificador é apagado 30 dias depois do envio, e o texto, depois de 2 anos. Esses prazos ainda
+        dependem de validação pelo shopping. Você também pode usar o botão abaixo para apagar seus dados
+        quando quiser.
       </p>
 
       <h2>Apagar meus dados deste dispositivo</h2>

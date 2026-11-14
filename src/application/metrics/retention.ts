@@ -12,6 +12,7 @@ import {
   events,
   pageViewDailyTotals,
   pageViewsDaily,
+  suggestions,
 } from "@/infrastructure/db/schema";
 import type { FileStorage } from "@/infrastructure/storage/file-storage";
 
@@ -26,6 +27,10 @@ export interface RetentionResult {
   ratingDeviceHashes: number;
   /** Ratings older than 2 years, deleted. */
   ratings: number;
+  /** Suggestions whose device hash was cleared (30 days after sending). */
+  suggestionDeviceHashes: number;
+  /** Suggestions older than 2 years, deleted. */
+  suggestions: number;
   /** Banner files no event references, older than the grace period, deleted from storage. */
   orphanBanners: number;
 }
@@ -64,8 +69,8 @@ export async function applyRetention(
   storage: FileStorage,
   now = new Date(),
 ): Promise<RetentionResult> {
-  const { deviceMetricsBefore, auditLogBefore, ratingDeviceEventEndedBefore, ratingsBefore } =
-    retentionCutoffs(now);
+  const cutoffs = retentionCutoffs(now);
+  const { deviceMetricsBefore, auditLogBefore, ratingDeviceEventEndedBefore, ratingsBefore } = cutoffs;
   const rows = await db.transaction(async (tx) => {
     const expiredViews = lt(pageViewsDaily.day, deviceMetricsBefore);
     await tx
@@ -149,6 +154,18 @@ export async function applyRetention(
       .where(lt(eventRatings.createdAt, ratingsBefore))
       .returning({ id: eventRatings.id });
 
+    const suggestionDeviceHashes = await tx
+      .update(suggestions)
+      .set({ deviceHash: null })
+      .where(
+        and(isNotNull(suggestions.deviceHash), lt(suggestions.createdAt, cutoffs.suggestionDeviceBefore)),
+      )
+      .returning({ id: suggestions.id });
+    const deletedSuggestions = await tx
+      .delete(suggestions)
+      .where(lt(suggestions.createdAt, cutoffs.suggestionsBefore))
+      .returning({ id: suggestions.id });
+
     return {
       pageViewRows: pageViewRows.length,
       engagementRows: engagementRows.length,
@@ -156,6 +173,8 @@ export async function applyRetention(
       auditEntries: auditEntries.length,
       ratingDeviceHashes: ratingDeviceHashes.length,
       ratings: ratings.length,
+      suggestionDeviceHashes: suggestionDeviceHashes.length,
+      suggestions: deletedSuggestions.length,
     };
   });
   return { ...rows, orphanBanners: await removeOrphanBanners(db, storage, now) };
