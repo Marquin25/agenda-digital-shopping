@@ -4,6 +4,7 @@ import { listPublicAgenda, type EventView } from "@/application/events/event-que
 import { countActiveFilters, parseAgendaFilters } from "@/domain/agenda/agenda-filters";
 import { toLocalDateKey } from "@/domain/time/time-zone";
 import { getDb } from "@/infrastructure/db";
+import { toUrlSearchParams } from "@/infrastructure/web/search-params";
 import { formatDayHeading } from "@/ui/format";
 import { AgendaFiltersForm } from "@/ui/public/agenda-filters-form";
 import { EventCard } from "@/ui/public/event-card";
@@ -12,14 +13,6 @@ import { ViewBeacon } from "@/ui/public/view-beacon";
 export const dynamic = "force-dynamic";
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
-
-function toUrlSearchParams(raw: Record<string, string | string[] | undefined>) {
-  const params = new URLSearchParams();
-  for (const [key, value] of Object.entries(raw)) {
-    for (const v of Array.isArray(value) ? value : value ? [value] : []) params.append(key, v);
-  }
-  return params;
-}
 
 function groupByDay(events: EventView[], now: Date) {
   const groups = new Map<string, EventView[]>();
