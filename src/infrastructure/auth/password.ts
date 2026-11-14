@@ -1,4 +1,5 @@
 import { hash, verify } from "@node-rs/argon2";
+import breachedPasswords from "./breached-passwords.json";
 
 // Argon2id with OWASP-recommended baseline parameters.
 const OPTIONS = { memoryCost: 19_456, timeCost: 2, parallelism: 1 } as const;
@@ -26,11 +27,24 @@ const COMMON_PASSWORDS = new Set([
   "administrador",
 ]);
 
+/**
+ * Public breached passwords with 12+ characters (shorter ones fail the length rule anyway), embedded so
+ * no password ever leaves the server. Source, license and regeneration: scripts/security/build-breached-passwords.sh.
+ */
+let breached: Set<string> | null = null;
+function isBreached(lowercased: string): boolean {
+  breached ??= new Set(breachedPasswords.entries);
+  return breached.has(lowercased);
+}
+
 /** Returns a pt-BR error message, or null when acceptable. */
 export function validateNewPassword(password: string): string | null {
   if (password.length < MIN_PASSWORD_LENGTH)
     return `A senha precisa ter pelo menos ${MIN_PASSWORD_LENGTH} caracteres.`;
   if (password.length > 256) return "A senha é longa demais.";
-  if (COMMON_PASSWORDS.has(password.toLowerCase())) return "Essa senha é muito comum. Escolha outra.";
+  const lowercased = password.toLowerCase();
+  // One generic message: it never says which list matched.
+  if (COMMON_PASSWORDS.has(lowercased) || isBreached(lowercased))
+    return "Essa senha é muito comum. Escolha outra.";
   return null;
 }
