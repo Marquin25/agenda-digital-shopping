@@ -33,6 +33,12 @@ describe("permissions matrix (docs/spec/01 §7)", () => {
     expect(can("editor", "plans:manage")).toBe(false);
   });
 
+  it("lets administrators and editors moderate ratings and suggestions; analysts only read them", () => {
+    expect(can("administrator", "feedback:moderate")).toBe(true);
+    expect(can("editor", "feedback:moderate")).toBe(true);
+    expect(can("analyst", "feedback:moderate")).toBe(false);
+  });
+
   it("keeps analysts read-only", () => {
     expect(can("analyst", "events:manage")).toBe(false);
     expect(can("analyst", "promo-links:manage")).toBe(false);

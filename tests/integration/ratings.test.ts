@@ -10,9 +10,11 @@ import {
   getEventRatingReport,
   getRatingContext,
   hasRated,
+  listRatingsForModeration,
+  setRatingHidden,
   submitRating,
 } from "@/application/ratings/ratings";
-import { eventRatings, events } from "@/infrastructure/db/schema";
+import { auditLog, eventRatings, events } from "@/infrastructure/db/schema";
 import { MemoryFileStorage } from "./memory-file-storage";
 import { createTestDb } from "./test-db";
 
@@ -186,5 +188,47 @@ describe("post-event ratings (B-26)", async () => {
     const deleted = await applyRetention(db, storage, new Date(AFTER.getTime() + 731 * DAY));
     expect(deleted.ratings).toBeGreaterThanOrEqual(1);
     expect((await getEventRatingReport(db, event.id)).summary.count).toBe(0);
+  });
+
+  it("lists ratings for moderation, newest first, without device hashes (B-28)", async () => {
+    const event = await newEvent("Moderação");
+    await submitRating(db, { eventId: event.id, deviceHash: "m1", input: good, now: AFTER });
+    await submitRating(db, {
+      eventId: event.id,
+      deviceHash: "m2",
+      input: { score: 2, tags: [], comment: "Som alto demais" },
+      now: new Date(AFTER.getTime() + 60_000),
+    });
+    const listed = await listRatingsForModeration(db, { eventId: event.id });
+    expect(listed.map((r) => r.comment)).toEqual(["Som alto demais", "Muito bom"]);
+    expect(listed[0]).toMatchObject({ eventTitle: "Moderação", score: 2, hidden: false });
+    expect(JSON.stringify(listed)).not.toMatch(/m1|m2|deviceHash/);
+    const onlyComments = await listRatingsForModeration(db, { eventId: event.id, withComment: true });
+    expect(onlyComments).toHaveLength(2);
+  });
+
+  it("hides and shows a rating, recording who did it in the audit log", async () => {
+    const event = await newEvent("Ocultar");
+    await submitRating(db, {
+      eventId: event.id,
+      deviceHash: "h1",
+      input: { score: 1, tags: [], comment: "ofensivo" },
+      now: AFTER,
+    });
+    const [rating] = await listRatingsForModeration(db, { eventId: event.id });
+
+    expect(await setRatingHidden(db, userId, rating!.id, true)).toBe(true);
+    expect((await getEventRatingReport(db, event.id)).hiddenCount).toBe(1);
+    expect(await setRatingHidden(db, userId, rating!.id, false)).toBe(true);
+    expect((await getEventRatingReport(db, event.id)).summary.count).toBe(1);
+    expect(await setRatingHidden(db, userId, crypto.randomUUID(), true)).toBe(false);
+
+    const entries = await db
+      .select({ action: auditLog.action, userId: auditLog.userId, details: auditLog.details })
+      .from(auditLog)
+      .where(eq(auditLog.entityId, rating!.id));
+    expect(entries.map((e) => e.action)).toEqual(["rating.hide", "rating.show"]);
+    expect(entries[0]).toMatchObject({ userId, details: { eventId: event.id } });
+    expect(JSON.stringify(entries)).not.toContain("ofensivo");
   });
 });

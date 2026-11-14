@@ -16,12 +16,14 @@ export type Permission =
   | "plans:manage"
   | "promo-links:manage"
   | "users:manage"
+  | "feedback:moderate"
   | "audit:view";
 
 /**
  * Permission matrix (docs/spec/01 §7, provisional roles confirmed by the product owner).
  * `catalog:manage` is administrator-only until P-INT-IA-1 says who maintains the catalog.
  * `plans:manage` follows docs/spec/01 §7 (administrators and analysts); editors wait for P-INT-IA-2.
+ * `feedback:moderate` (hide/show ratings, triage suggestions) follows docs/spec/01 §7; analysts only read.
  */
 const MATRIX: Record<AdminRole, ReadonlySet<Permission>> = {
   administrator: new Set<Permission>([
@@ -33,6 +35,7 @@ const MATRIX: Record<AdminRole, ReadonlySet<Permission>> = {
     "plans:manage",
     "promo-links:manage",
     "users:manage",
+    "feedback:moderate",
     "audit:view",
   ]),
   editor: new Set<Permission>([
@@ -41,6 +44,7 @@ const MATRIX: Record<AdminRole, ReadonlySet<Permission>> = {
     "venues:manage",
     "stores:manage",
     "promo-links:manage",
+    "feedback:moderate",
   ]),
   analyst: new Set<Permission>(["dashboard:view", "plans:manage"]),
 };

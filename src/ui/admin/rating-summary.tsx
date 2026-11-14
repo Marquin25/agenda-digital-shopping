@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { EventRatingReport } from "@/application/ratings/ratings";
 import { SMALL_SAMPLE_THRESHOLD } from "@/domain/metrics/metric-quality";
 import {
@@ -18,7 +19,15 @@ const percent = (share: number) => `${Math.round(share * 100)}%`;
  * Staff view of an event's ratings (B-26): aggregates only, each number with its quality label,
  * sample size and how it is calculated (docs/spec/03 §1, §5). Never shows device data.
  */
-export function RatingSummary({ report, window }: { report: EventRatingReport; window: RatingWindow }) {
+export function RatingSummary({
+  eventId,
+  report,
+  window,
+}: {
+  eventId: string;
+  report: EventRatingReport;
+  window: RatingWindow;
+}) {
   const { summary } = report;
   const unavailable = { quality: "unavailable" as const, reason: "Sem avaliações ainda." };
   return (
@@ -140,6 +149,13 @@ export function RatingSummary({ report, window }: { report: EventRatingReport; w
           )}
         </ul>
       </details>
+      {summary.count + report.hiddenCount > 0 && (
+        <p>
+          <Link href={`/admin/avaliacoes?evento=${eventId}`}>
+            Ler comentários e moderar as avaliações deste evento
+          </Link>
+        </p>
+      )}
     </section>
   );
 }

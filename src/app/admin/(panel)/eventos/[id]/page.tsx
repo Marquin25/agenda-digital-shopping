@@ -73,6 +73,7 @@ export default async function EditEventPage({
 
       {event.publicationStatus === "published" && (
         <RatingSummary
+          eventId={event.id}
           report={await getEventRatingReport(db, event.id)}
           window={ratingWindow(event, event.ratingPeriodDays)}
         />
