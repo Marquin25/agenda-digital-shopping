@@ -301,6 +301,59 @@ test.describe.serial("Phase 1 — admin publishes, visitor discovers", () => {
     await visitor.context().close();
   });
 
+  /** The slide fade-in is real-time (not driven by the fake clock); axe must see the settled slide. */
+  async function settledSignage(page: Page) {
+    await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished)));
+    await expectNoSeriousA11yViolations(page);
+  }
+
+  test("digital signage shows highlights with 'painel' QR codes and a pausable rotation", async ({
+    browser,
+  }) => {
+    const screen = await visitorPage(browser);
+    const metrics: string[] = [];
+    screen.on("request", (r) => r.url().includes("/api/metrics/") && metrics.push(r.url()));
+    await screen.clock.install();
+    await screen.goto("/painel?tela=entrada-a&intervalo=6");
+    await expect(screen.getByRole("heading", { name: "Destaques da agenda", level: 1 })).toBeVisible();
+    await expect(screen.getByRole("heading", { name: "Show Acústico E2E", level: 2 })).toBeVisible();
+    const qr = screen.getByRole("img", { name: "QR Code: abre “Show Acústico E2E” no celular" });
+    expect(await qr.getAttribute("data-qr-value")).toMatch(
+      /\/eventos\/show-acustico-e2e[^?]*\?utm_source=painel&utm_campaign=entrada-a$/,
+    );
+    // Made to be looked at: no links, and nothing to pause while there is a single highlight.
+    await expect(screen.locator("main a")).toHaveCount(0);
+    await expect(screen.getByRole("button", { name: "Pausar rotação" })).toHaveCount(0);
+    await settledSignage(screen);
+
+    await admin.goto("/admin/eventos");
+    await admin.getByRole("link", { name: "Consultoria de estilo E2E" }).click();
+    await admin.getByRole("button", { name: "Publicar" }).click();
+    await expect(admin.getByRole("status").filter({ hasText: "Evento publicado." })).toBeVisible();
+
+    await screen.reload();
+    const first = screen.getByRole("heading", { name: "Show Acústico E2E", level: 2 });
+    const second = screen.getByRole("heading", { name: "Consultoria de estilo E2E", level: 2 });
+    await expect(first).toBeVisible();
+    await expect(second).toBeHidden();
+    await screen.clock.runFor(6_000);
+    await expect(second).toBeVisible();
+    await expect(first).toBeHidden();
+
+    await screen.getByRole("button", { name: "Pausar rotação" }).click();
+    await screen.clock.runFor(30_000);
+    await expect(second).toBeVisible();
+    await settledSignage(screen);
+    await screen.getByRole("button", { name: "Retomar rotação" }).click();
+    await screen.clock.runFor(6_000);
+    await expect(first).toBeVisible();
+
+    // The screen itself is not a visitor: only phones that open a QR are counted.
+    expect(metrics).toEqual([]);
+    expect(await screen.context().cookies()).toEqual([]);
+    await screen.context().close();
+  });
+
   test("promo link and QR code redirect with origin and are counted as measured hits", async ({
     browser,
   }) => {

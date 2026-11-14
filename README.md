@@ -156,6 +156,7 @@ O visual segue as referências da equipe: paleta terracota e creme, fonte Plus J
 - **Modo escuro:** o botão da lua, no topo, alterna entre claro e escuro em toda a aplicação. Ao escurecer, uma revoada de morcegos cruza a tela (sem animação para quem prefere movimento reduzido). A escolha fica só neste navegador.
 - **Salvos:** o coração guarda o evento só neste aparelho (nada vai para o servidor).
 - **Privacidade:** explica o que é guardado e tem o botão "Apagar meus dados deste dispositivo".
+- **Painel digital** (`/painel`): página para telas e totens do shopping, com um destaque por vez em letras grandes e um QR Code para abrir o evento no celular. A rotação tem botão de pausa e não pisca; cada tela é configurada pela URL (veja [`docs/painel.md`](docs/painel.md)).
 - **Gato preto:** no rodapé, um gatinho com a lua. Toque nele 13 vezes para uma surpresa de sexta-feira 13 (a contagem fica só na página e nada é enviado).
 
 ### Equipe do shopping (computador)
@@ -309,4 +310,5 @@ Antes do primeiro `test:e2e` ou `screens`, instale os navegadores com `npx playw
 | [`GLOSSARY.md`](GLOSSARY.md) | Termos do domínio e seus nomes no código |
 | [`docs/research/referencias.md`](docs/research/referencias.md) | Pesquisa: WCAG, LGPD, iCalendar, métricas e antiabuso |
 | [`docs/implantacao-vercel.md`](docs/implantacao-vercel.md) | Preparação para publicar na Vercel, quando a hospedagem for decidida |
+| [`docs/painel.md`](docs/painel.md) | Modo painel digital: como configurar cada tela pela URL |
 | [`CLAUDE.md`](CLAUDE.md) | Convenções: documentação e interface em pt-BR, código em inglês, SOLID |
