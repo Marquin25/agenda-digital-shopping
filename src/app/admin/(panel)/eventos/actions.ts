@@ -4,19 +4,16 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
   cancelEvent,
-  createEvent,
   deleteDraftEvent,
   endEventNow,
   EventRuleError,
   publishEvent,
-  updateEvent,
 } from "@/application/events/event-commands";
+import { BannerStorageError, type NewBanner, saveEventWithBanner } from "@/application/events/event-banner";
 import { eventInputSchema } from "@/application/events/event-input";
-import { bannerFileNames } from "@/domain/media/banner-variants";
-import { getConfig } from "@/infrastructure/config";
 import { getDb } from "@/infrastructure/db";
 import { BannerError, processBanner } from "@/infrastructure/storage/banner-image";
-import { type FileStorage, LocalFileStorage } from "@/infrastructure/storage/file-storage";
+import { getFileStorage } from "@/infrastructure/storage";
 import { requireAdmin } from "@/infrastructure/web/admin-session";
 import { fieldErrorsFrom, INVALID_FORM_MESSAGE, type FormState } from "@/ui/admin/form-state";
 
@@ -39,16 +36,10 @@ function readEventForm(formData: FormData) {
   };
 }
 
-function deleteBannerFiles(storage: FileStorage, fileName: string) {
-  return Promise.all(bannerFileNames(fileName).map((name) => storage.delete(name)));
-}
-
-async function storeBanner(storage: FileStorage, formData: FormData): Promise<{ path: string } | null> {
+async function readBanner(formData: FormData): Promise<NewBanner | null> {
   const file = formData.get("banner");
   if (!(file instanceof File) || file.size === 0) return null;
-  const { fileName, files } = await processBanner(Buffer.from(await file.arrayBuffer()));
-  await Promise.all(files.map((f) => storage.save(f.fileName, f.content)));
-  return { path: fileName };
+  return processBanner(Buffer.from(await file.arrayBuffer()));
 }
 
 export async function saveEventAction(
@@ -60,21 +51,17 @@ export async function saveEventAction(
   const parsed = eventInputSchema.safeParse(readEventForm(formData));
   if (!parsed.success) return { message: INVALID_FORM_MESSAGE, fieldErrors: fieldErrorsFrom(parsed.error) };
   const db = await getDb();
-  const storage = new LocalFileStorage(getConfig().uploadDir);
-  let id = eventId;
-  let banner: { path: string } | null = null;
+  let id: string;
   try {
-    banner = await storeBanner(storage, formData);
-    if (id) {
-      const { replacedBannerPath } = await updateEvent(db, admin.id, id, parsed.data, banner);
-      if (replacedBannerPath) await deleteBannerFiles(storage, replacedBannerPath);
-    } else {
-      id = await createEvent(db, admin.id, parsed.data, banner);
-    }
+    const banner = await readBanner(formData);
+    id = await saveEventWithBanner(db, getFileStorage(), {
+      userId: admin.id,
+      eventId,
+      input: parsed.data,
+      banner,
+    });
   } catch (error) {
-    // The new file is only referenced once the event row is saved; drop it on any failure.
-    if (banner) await deleteBannerFiles(storage, banner.path);
-    if (error instanceof BannerError)
+    if (error instanceof BannerError || error instanceof BannerStorageError)
       return { fieldErrors: { banner: error.message }, message: INVALID_FORM_MESSAGE };
     if (error instanceof EventRuleError) return { message: error.message };
     throw error;

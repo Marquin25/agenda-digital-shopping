@@ -340,6 +340,7 @@ test.describe.serial("Phase 1 — admin publishes, visitor discovers", () => {
       "auditEntries",
       "engagementRows",
       "expiredSessions",
+      "orphanBanners",
       "pageViewRows",
     ]);
   });
