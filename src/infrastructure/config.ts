@@ -5,7 +5,10 @@ const schema = z.object({
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required (see .env.example)"),
   DEVICE_ID_PEPPER: z.string().optional(),
   PUBLIC_BASE_URL: z.url().default("http://localhost:3000"),
-  CRON_SECRET: z.string().min(32).optional(),
+  CRON_SECRET: z
+    .string()
+    .min(32, "CRON_SECRET must have at least 32 characters (see .env.example)")
+    .optional(),
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
 });
 
@@ -92,12 +95,23 @@ export function shouldUseSecureCookies(options: {
   return !(url.protocol === "http:" && LOOPBACK_HOSTS.has(url.hostname));
 }
 
+/** A variable set to an empty or blank value (`CRON_SECRET=` in .env.example) counts as unset. */
+function withoutBlankValues(env: Env): Env {
+  return Object.fromEntries(Object.entries(env).filter(([, value]) => present(value) !== undefined));
+}
+
 let cached: AppConfig | undefined;
 
 export function getConfig(): AppConfig {
-  if (cached) return cached;
-  const env = schema.parse(process.env);
-  const isProduction = env.NODE_ENV === "production" && process.env.ALLOW_EPHEMERAL_PEPPER !== "true";
+  cached ??= readConfig(process.env);
+  return cached;
+}
+
+/** Builds the configuration from environment variables; errors name variables, never their values. */
+export function readConfig(rawEnv: Env): AppConfig {
+  const source = withoutBlankValues(rawEnv);
+  const env = schema.parse(source);
+  const isProduction = env.NODE_ENV === "production" && source.ALLOW_EPHEMERAL_PEPPER !== "true";
   let pepper = env.DEVICE_ID_PEPPER;
   if (!pepper || pepper.length < 32) {
     if (isProduction) throw new Error("DEVICE_ID_PEPPER must be set (>= 32 chars) in production");
@@ -106,18 +120,17 @@ export function getConfig(): AppConfig {
     console.warn("[config] DEVICE_ID_PEPPER not set; using an ephemeral value (development only).");
   }
   const publicBaseUrl = env.PUBLIC_BASE_URL.replace(/\/$/, "");
-  cached = {
+  return {
     databaseUrl: env.DATABASE_URL,
     deviceIdPepper: pepper,
     publicBaseUrl,
-    storage: parseStorageConfig(process.env),
+    storage: parseStorageConfig(source),
     cronSecret: env.CRON_SECRET ?? null,
     isProduction: env.NODE_ENV === "production",
     secureCookies: shouldUseSecureCookies({
       isProduction: env.NODE_ENV === "production",
       publicBaseUrl,
-      allowInsecureLocalhostCookies: process.env.ALLOW_INSECURE_LOCALHOST_COOKIES === "true",
+      allowInsecureLocalhostCookies: source.ALLOW_INSECURE_LOCALHOST_COOKIES === "true",
     }),
   };
-  return cached;
 }
