@@ -57,7 +57,7 @@ O status vale para a `main` depois do merge do PR #69, verificado com `npm test`
 | B-20 | **Bloqueado** | P-FASE-1; nada foi implementado |
 | B-21 | Feito | Texto marcado como pendente de validação do shopping |
 | B-22 | Feito | `npm run retention:run` ou `/api/cron/retention` (com `CRON_SECRET`): agrega e apaga identificadores com mais de 30 dias, sessões vencidas e auditoria com mais de 365 dias. **Falta agendar** quando a hospedagem for definida |
-| B-23 | Parcial | CSP com *nonce* e `npm audit`/gitleaks no CI estão prontos. Pendências: limitador de requisições em memória (não serve para várias instâncias); o IP é o **último** valor de `X-Forwarded-For`, o que pressupõe **exatamente um** proxy confiável na frente (revisar quando a hospedagem for definida) |
+| B-23 | Feito | Cabeçalhos num módulo testado (com `Cross-Origin-Opener-Policy` e HSTS em produção), CSP com *nonce*, `npm audit`/gitleaks na CI, `TRUSTED_PROXY_HOPS` para a leitura do IP, limite por IP na contagem de links promocionais e checklist ASVS nível 1 em `docs/seguranca/asvs-nivel-1.md`. Continuam em aberto, registrados no checklist: lista de senhas vazadas, limitador compartilhado (depende de P-LGPD e da hospedagem) e conferência do `X-Forwarded-For` na hospedagem (#25) |
 | B-24 | Parcial | Guia de preparação para a Vercel em `docs/implantacao-vercel.md`; sem Dockerfile, porque por enquanto o uso é só local |
 | B-25 | **Bloqueado** (P0) | P-INF-1, P-INF-2, P-ORC-1, P-LGPD-*. Pré-requisitos técnicos locais: B-57, B-58, B-62 |
 | B-57 | Feito | PR #67: troca de banner grava o evento antes de apagar o antigo; retenção remove banners órfãos com mais de 24 h |
